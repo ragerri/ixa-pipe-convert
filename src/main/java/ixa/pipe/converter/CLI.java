@@ -52,6 +52,8 @@ public class CLI {
     ArgumentParser parser = ArgumentParsers.newArgumentParser(
         "ixa-pipe-converter-1.0.jar").description(
         "ixa-pipe-converter-1.0 converts corpora from one format into another.\n");
+    
+    parser.addArgument("--ancora2treebank").help("Converts ancora constituent parsing annotation into Penn Treebank bracketing format");
 
     parser.addArgument("--treebank2WordPos").help("Converts Treebank into Apache OpenNLP POS training format.\n");
     
@@ -74,6 +76,12 @@ public class CLI {
       File inputTree = new File(parsedArguments.getString("treebank2WordPos"));
       Convert converter = new Convert();
       converter.treebank2WordPos(inputTree);
+    }
+    
+    else if (parsedArguments.get("ancora2treebank") != null) { 
+      String inputXML = parsedArguments.getString("ancora2treebank");
+      Convert converter = new Convert();
+      converter.ancora2treebank(inputXML);
     }
     
     

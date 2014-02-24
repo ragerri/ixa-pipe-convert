@@ -18,6 +18,7 @@ package ixa.pipe.converter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.parser.Parse;
@@ -34,6 +35,18 @@ import org.apache.commons.io.FilenameUtils;
  * 
  */
 public class Convert {
+  
+  
+  public void ancora2treebank(String inXML) throws IOException { 
+    if (!inXML.isEmpty()) { 
+      AncoraTreebank ancoraParser = new AncoraTreebank();
+      ancoraParser.readAncoraConstituents(inXML);
+    }
+    else { 
+      System.out.println("Please choose a valid file as input");
+    }
+  }
+  
   
   /**
    * Takes a file containing Penn Treebank oneline annotation and creates 
