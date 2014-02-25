@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Rodrigo Agerri
+ * Copyright 2014 Rodrigo Agerri
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package ixa.pipe.converter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,12 +29,9 @@ import opennlp.tools.parser.Parse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * 
- * Class to provide parsing annotation in various forms: KAF, Penn style, and
- * with headWords marked. It also loads the right model for each language.
  * 
  * @author ragerri
  * 
@@ -43,15 +39,30 @@ import org.xml.sax.XMLReader;
 public class Convert {
   
   
-  public void ancora2treebank(File inXML) throws IOException, ParserConfigurationException, SAXException { 
+  /**
+   * @param inXML
+   * @throws IOException
+   */
+  public void ancora2treebank(File inXML) throws IOException { 
     
     if (inXML.isFile()) {  
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-      SAXParser saxParser = saxParserFactory.newSAXParser();
-      XMLReader xmlReader = saxParser.getXMLReader();
-      AncoraTreebank ancoraParser = new AncoraTreebank(xmlReader);
-      saxParser.parse(inXML,ancoraParser);
-      ancoraParser.printTree();
+      SAXParser saxParser;
+      try {
+        saxParser = saxParserFactory.newSAXParser();
+        AncoraTreebank ancoraParser = new AncoraTreebank();
+        saxParser.parse(inXML,ancoraParser);
+        String trees = ancoraParser.getTrees();
+        // remove empty trees created by "missing" and "elliptic" attributes
+        String filteredTrees = trees.replaceAll("\\(\\S+\\)","");
+        System.out.print(filteredTrees);
+      } catch (ParserConfigurationException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (SAXException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
     else { 
       System.out.println("Please choose a valid file as input");
