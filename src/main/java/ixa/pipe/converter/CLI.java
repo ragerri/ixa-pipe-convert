@@ -20,12 +20,14 @@ package ixa.pipe.converter;
 import java.io.File;
 import java.io.IOException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-import org.jdom2.JDOMException;
+import org.xml.sax.SAXException;
 
 /**
  * ixa-pie-converter
@@ -41,10 +43,11 @@ public class CLI {
    * 
    * @param args
    * @throws IOException
-   * @throws JDOMException
+   * @throws SAXException 
+   * @throws ParserConfigurationException 
    */
 
-  public static void main(String[] args) throws IOException, JDOMException {
+  public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
     Namespace parsedArguments = null;
 
@@ -79,7 +82,7 @@ public class CLI {
     }
     
     else if (parsedArguments.get("ancora2treebank") != null) { 
-      String inputXML = parsedArguments.getString("ancora2treebank");
+      File inputXML = new File(parsedArguments.getString("ancora2treebank"));
       Convert converter = new Convert();
       converter.ancora2treebank(inputXML);
     }

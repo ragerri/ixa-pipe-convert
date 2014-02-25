@@ -21,10 +21,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import opennlp.tools.parser.Parse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * 
@@ -37,10 +43,15 @@ import org.apache.commons.io.FilenameUtils;
 public class Convert {
   
   
-  public void ancora2treebank(String inXML) throws IOException { 
-    if (!inXML.isEmpty()) { 
-      AncoraTreebank ancoraParser = new AncoraTreebank();
-      ancoraParser.readAncoraConstituents(inXML);
+  public void ancora2treebank(File inXML) throws IOException, ParserConfigurationException, SAXException { 
+    
+    if (inXML.isFile()) {  
+      SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+      SAXParser saxParser = saxParserFactory.newSAXParser();
+      XMLReader xmlReader = saxParser.getXMLReader();
+      AncoraTreebank ancoraParser = new AncoraTreebank(xmlReader);
+      saxParser.parse(inXML,ancoraParser);
+      ancoraParser.printTree();
     }
     else { 
       System.out.println("Please choose a valid file as input");
