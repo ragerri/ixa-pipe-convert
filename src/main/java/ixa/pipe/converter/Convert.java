@@ -17,6 +17,7 @@
 package ixa.pipe.converter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -43,9 +44,10 @@ public class Convert {
    * @param inXML
    * @throws IOException
    */
-  public void ancora2treebank(File inXML) throws IOException { 
-    
-    if (inXML.isFile()) {  
+  public String ancora2treebank(File inXML) throws IOException { 
+    String filteredTrees = null;
+    if (inXML.isFile()) {
+      
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       SAXParser saxParser;
       try {
@@ -54,8 +56,11 @@ public class Convert {
         saxParser.parse(inXML,ancoraParser);
         String trees = ancoraParser.getTrees();
         // remove empty trees created by "missing" and "elliptic" attributes
-        String filteredTrees = trees.replaceAll("\\(\\S+\\)","");
-        System.out.print(filteredTrees);
+        filteredTrees = trees.replaceAll("\\(\\SN\\)","");
+        // format correctly closing brackets
+        filteredTrees = filteredTrees.replace(") )","))");
+        // remove double spaces
+        filteredTrees = filteredTrees.replaceAll("  "," ");
       } catch (ParserConfigurationException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -66,6 +71,37 @@ public class Convert {
     }
     else { 
       System.out.println("Please choose a valid file as input");
+    }
+    return filteredTrees;
+  }
+  
+  public void processAncoraConstituentXMLCorpus(File dir)
+      throws IOException {
+    // process one file
+    if (dir.isFile()) {
+      File outfile = new File(FilenameUtils.removeExtension(dir.getPath())+ ".th");
+      String outTree = ancora2treebank(dir);
+      FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
+      System.err.println(">> Wrote XML ancora file to Penn Treebank in " + outfile);
+    } else {
+      // recursively process directories
+      File listFile[] = dir.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            processAncoraConstituentXMLCorpus(listFile[i]);
+          } else {
+            try {
+              File outfile = new File(FilenameUtils.removeExtension(listFile[i].getPath()) + ".th");
+              String outTree = ancora2treebank(listFile[i]);
+              FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
+              System.err.println(">> Wrote XML Ancora file Penn treebank format in " + outfile);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
     }
   }
   

@@ -37,10 +37,12 @@ import org.xml.sax.helpers.DefaultHandler;
  *      IMPORTANT: these trees will contain ancora elements with "elliptic" and "missing"
  *      attributes (in ancora 2.0 they are all SN) which in Penn Treebank format create
  *      empty parse trees such as (SN). These elements need to be removed from the output
- *      of getTrees() with a regexp such as "\\(\\S+\\)".  
+ *      of getTrees() with a regexp such as "\\(\\SN\\)". Also remove doubles spaces to 
+ *      make sure the tree is correctly formatted.
  * <li> the endElement adds a closing bracket ) for each constituent used in startElement
  *      except for SENTENCE, which being the last bracket of the tree, is added a \n to separate
  *      full sentence trees.
+ * <li> Corpus typos: 3LB-CAST/a15-5.tbf.xml, line 1015 pos=fpa missing.
  * </ol>
  *       
  * @author ragerri
@@ -49,7 +51,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AncoraTreebank extends DefaultHandler {
 
   List<String> constituents = new ArrayList<String>();
-  
   
   /**
    * Prints the trees. Note there are "elliptic" and 
@@ -77,8 +78,8 @@ public class AncoraTreebank extends DefaultHandler {
         if (attributes.getValue("wd").equalsIgnoreCase("(") || attributes.getValue("wd").equalsIgnoreCase(")")) {
           
           // normalize ( and ) with -LRB- and -RRB- following Penn Treebank conventions  
-          String wordForm = attributes.getValue("wd").replace("(", "-LRB-").replace(")", "-RRB");
-          constituents.add(" (" + wordForm + " " + attributes.getValue("wd"));
+          String wordForm = attributes.getValue("wd").replace("(", "-LRB-").replace(")", "-RRB-");
+          constituents.add(" (" + attributes.getValue("pos").toUpperCase() + " " + wordForm);
         } 
         else {
           constituents.add(" (" + attributes.getValue("pos").toUpperCase() + " " + attributes.getValue("wd"));

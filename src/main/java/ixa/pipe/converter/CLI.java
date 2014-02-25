@@ -84,7 +84,7 @@ public class CLI {
     else if (parsedArguments.get("ancora2treebank") != null) { 
       File inputXML = new File(parsedArguments.getString("ancora2treebank"));
       Convert converter = new Convert();
-      converter.ancora2treebank(inputXML);
+      converter.processAncoraConstituentXMLCorpus(inputXML);
     }
     
     
