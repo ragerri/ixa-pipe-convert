@@ -61,6 +61,8 @@ public class Convert {
         filteredTrees = filteredTrees.replace(") )","))");
         // remove double spaces
         filteredTrees = filteredTrees.replaceAll("  "," ");
+        //remove empty sentences created by <sentence title="yes"> elements
+        filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n","");
       } catch (ParserConfigurationException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();

@@ -26,7 +26,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Converts Ancora XML constituent parsing document into a Penn Treebank
- * formatted document
+ * formatted document:
  * 
  * <ol>
  * <li> The first if statement in the startElement function filters the 
@@ -34,18 +34,29 @@ import org.xml.sax.helpers.DefaultHandler;
  * <li> The startElement function also normalizes ( and ) with -LRB- and -RRB- following
  *      Penn Treebank conventions. 
  * <li> The getTrees() function prints the Penn Treebank formatted Ancora trees. 
- *      IMPORTANT: these trees will contain ancora elements with "elliptic" and "missing"
+ *      IMPORTANT: 
+ *    <ol>
+ *      <li>these trees will contain ancora elements with "elliptic" and "missing"
  *      attributes (in ancora 2.0 they are all SN) which in Penn Treebank format create
  *      empty parse trees such as (SN). These elements need to be removed from the output
  *      of getTrees() with a regexp such as "\\(\\SN\\)". Also remove doubles spaces to 
  *      make sure the tree is correctly formatted.
+ *      <li>Thee trees also contain sentence title=yes elements, which create empty 
+ *          (SENTENCE ) parse trees. These are removed using the regexp "\\(SENTENCE \\)\n
+ *    </ol>
  * <li> the endElement adds a closing bracket ) for each constituent used in startElement
  *      except for SENTENCE, which being the last bracket of the tree, is added a \n to separate
  *      full sentence trees.
- * <li> Corpus typos: 3LB-CAST/a15-5.tbf.xml, line 1015 pos=fpa missing.
+ * <li> Corpus typos Ancora 2.0:
+ *     <ol>
+ *     <li>3LB-CAST/a15-5.tbf.xml, line 1015 pos=fpa added.
+ *     <li>CESS-CAST-A/12432_20000416.tbf.xml line 1631 pos=fpt added.
+ *     <ol>CESS-CAST-P/132_20010301.tbf.xml line 1748 pos=fpt added.
+ *     <ol>CESS-CAST-P/179_20010401.tbf.xml line 1069 pos=fpt added.
  * </ol>
  *       
  * @author ragerri
+ * @version 2014-02-25
  *
  */
 public class AncoraTreebank extends DefaultHandler {
