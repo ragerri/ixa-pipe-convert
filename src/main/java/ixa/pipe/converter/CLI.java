@@ -58,7 +58,11 @@ public class CLI {
     
     parser.addArgument("--ancora2treebank").help("Converts ancora constituent parsing annotation into Penn Treebank bracketing format");
 
-    parser.addArgument("--treebank2WordPos").help("Converts Treebank into Apache OpenNLP POS training format.\n");
+    parser.addArgument("--treebank2tokens").help("Converts treebank into tokenized oneline text\n.");
+    
+    parser.addArgument("--treebank2WordPos").help("Converts reebank into Apache OpenNLP POS training format.\n");
+    
+    
     
     /*
      * Parse the command line arguments
@@ -85,6 +89,12 @@ public class CLI {
       File inputXML = new File(parsedArguments.getString("ancora2treebank"));
       Convert converter = new Convert();
       converter.processAncoraConstituentXMLCorpus(inputXML);
+    }
+    
+    else if (parsedArguments.getString("treebank2tokens") != null) {
+      File inputTree = new File(parsedArguments.getString("treebank2tokens"));
+      Convert converter = new Convert();
+      converter.treebank2tokens(inputTree);
     }
     
     

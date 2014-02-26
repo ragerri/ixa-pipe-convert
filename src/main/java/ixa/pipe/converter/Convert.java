@@ -107,6 +107,71 @@ public class Convert {
     }
   }
   
+  /**
+   * Takes a file containing Penn Treebank oneline annotation and creates 
+   * tokenized sentences saving it to a file with the *.tok extension.
+   * 
+   * @param treebankFile the input file
+   * @throws IOException
+   */
+  public void treebank2tokens(File treebankFile)
+      throws IOException {
+    // process one file
+    if (treebankFile.isFile()) {
+      List<String> inputTrees = FileUtils.readLines(
+          new File(treebankFile.getCanonicalPath()), "UTF-8");
+      File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
+          + ".tok");
+      String outFile = getTokensFromTree(inputTrees);
+      FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
+      System.err.println(">> Wrote Apache OpenNLP POS training format to " + outfile);
+    } else {
+          System.out
+              .println("Please choose a valid file as input.");
+          System.exit(1);
+    }
+  }
+  
+  /**
+   * Reads a list of Parse trees and calls 
+   * {@code getTokens} to create tokenized oneline text
+   * 
+   * @param inputTrees
+   * @return the tokenized document
+   */
+  private String getTokensFromTree(List<String> inputTrees) {
+    
+    StringBuilder parsedDoc = new StringBuilder();
+    for (String parseSent : inputTrees) {
+      Parse parse = Parse.parseParse(parseSent);
+      StringBuilder sentBuilder = new StringBuilder();
+      getTokens(parse,sentBuilder);        
+      parsedDoc.append(sentBuilder.toString()).append("\n");  
+    }
+    return parsedDoc.toString();
+  }
+  
+  /**
+   * It converts a penn treebank constituent tree into 
+   * tokens oneline form
+   * 
+   * @param parse
+   * @param sb
+   */
+  private void getTokens(Parse parse, StringBuilder sb) {
+      if (parse.isPosTag()) {
+        if (!parse.getType().equals("-NONE-")) { 
+          sb.append(parse.getCoveredText()).append(" ");
+        }
+      }
+    else {
+      Parse children[] = parse.getChildren();
+      for (int i = 0; i < children.length; i++) {
+        getTokens(children[i],sb);
+      }
+    }
+  }
+  
   
   /**
    * Takes a file containing Penn Treebank oneline annotation and creates 
