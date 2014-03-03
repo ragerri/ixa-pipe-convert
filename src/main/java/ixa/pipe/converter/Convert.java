@@ -124,7 +124,7 @@ public class Convert {
           + ".tok");
       String outFile = getTokensFromTree(inputTrees);
       FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
-      System.err.println(">> Wrote Apache OpenNLP POS training format to " + outfile);
+      System.err.println(">> Wrote tokens to " + outfile);
     } else {
           System.out
               .println("Please choose a valid file as input.");
