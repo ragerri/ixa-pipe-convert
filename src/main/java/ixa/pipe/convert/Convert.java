@@ -264,7 +264,7 @@ public class Convert {
       List<String> inputTrees = FileUtils.readLines(
           new File(treebankFile.getCanonicalPath()), "UTF-8");
       File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
-          + ".treeNormalize");
+          + ".treeN");
       String outFile = normalizeParse(inputTrees);
       FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
       System.err.println(">> Wrote normalized parse to " + outfile);
