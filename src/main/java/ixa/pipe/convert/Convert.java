@@ -41,6 +41,9 @@ public class Convert {
   
   
   /**
+   * Process the ancora constituent XML annotation into 
+   * Penn Treebank bracketing style
+   * 
    * @param inXML
    * @throws IOException
    */
@@ -77,6 +80,14 @@ public class Convert {
     return filteredTrees;
   }
   
+  /**
+   * It call the ancorat2treebank function to generate 
+   * Penn Treebank trees from Ancora XML constituent parsing
+   * annotation
+   * 
+   * @param dir
+   * @throws IOException
+   */
   public void processAncoraConstituentXMLCorpus(File dir)
       throws IOException {
     // process one file
@@ -240,6 +251,14 @@ public class Convert {
     }
   }
   
+  /**
+   * It normalizes a oneline Penn treebank style tree removing 
+   * trace nodes (-NONE-) and pruning the empty trees created by 
+   * removing the trace nodes.
+   * 
+   * @param treebankFile
+   * @throws IOException
+   */
   public void getCleanPennTrees(File treebankFile) throws IOException { 
     if (treebankFile.isFile()) {
       List<String> inputTrees = FileUtils.readLines(
@@ -255,7 +274,6 @@ public class Convert {
           System.exit(1);
     }
   }
-  
   
   /**
    * It takes as input a semi-pruned penn treebank tree (e.g., with 
