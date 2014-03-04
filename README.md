@@ -1,11 +1,11 @@
 
-IXA-pipe-converter
+IXA-pipe-convert
 =================
 
 This module is part of IXA-Pipeline ("is a pipeline"), a multilingual NLP pipeline
 developed by the IXA NLP Group (ixa.si.ehu.es).
 
-ixa-pipe-converter is distributed under Apache License version 2.0 (see LICENSE.txt for details).
+ixa-pipe-convert is distributed under Apache License version 2.0 (see LICENSE.txt for details).
 
 Contents
 ========
@@ -55,7 +55,7 @@ mvn -version
 --------------------------
 
 
-7. USING ixa-pipe-converter
+7. USING ixa-pipe-convert
 ===========================
 
 

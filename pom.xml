@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ixa</groupId>
-	<artifactId>ixa-pipe-converter</artifactId>
+	<artifactId>ixa-pipe-convert</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0</version>
-	<name>ixa-pipe-converter</name>
-	<description>ixa-pipe-converter converts corpora from one format into another.
+	<name>ixa-pipe-convert</name>
+	<description>ixa-pipe-convert converts corpora from one format into another.
         </description>
 	<developers>
 		<developer>
@@ -81,7 +81,7 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Main-Class>ixa.pipe.converter.CLI</Main-Class>
+										<Main-Class>ixa.pipe.convert.CLI</Main-Class>
 									</manifestEntries>
 								</transformer>
 							</transformers>
@@ -98,7 +98,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.2.1</version>
 				<configuration>
-					<mainClass>ixa.pipe.converter.CLI</mainClass>
+					<mainClass>ixa.pipe.convert.CLI</mainClass>
 				</configuration>
 			</plugin>
 

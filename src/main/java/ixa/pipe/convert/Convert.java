@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package ixa.pipe.converter;
+package ixa.pipe.convert;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -239,5 +239,46 @@ public class Convert {
       }
     }
   }
+  
+  public void getCleanPennTrees(File treebankFile) throws IOException { 
+    if (treebankFile.isFile()) {
+      List<String> inputTrees = FileUtils.readLines(
+          new File(treebankFile.getCanonicalPath()), "UTF-8");
+      File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
+          + ".treeNormalize");
+      String outFile = normalizeParse(inputTrees);
+      FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
+      System.err.println(">> Wrote normalized parse to " + outfile);
+    } else {
+          System.out
+              .println("Please choose a valid file as input.");
+          System.exit(1);
+    }
+  }
+  
+  
+  /**
+   * It takes as input a semi-pruned penn treebank tree (e.g., with 
+   * -NONE- traces removed) via 
+   * sed 's/-NONE-\s[\*A-Za-z0-9]*[\*]*[\-]*[A-Za-z0-9]*'
+   * 
+   * and prunes the empty trees remaining from the sed operation
+   * 
+   * @param inputTrees
+   * @return
+   */
+  //TODO add the sed regexp to this function
+  private String normalizeParse(List<String> inputTrees) { 
+    StringBuilder parsedDoc = new StringBuilder();
+    for (String parseSent : inputTrees) {
+      Parse parse = Parse.parseParse(parseSent);
+      Parse.pruneParse(parse);
+      StringBuffer sentBuilder = new StringBuffer();  
+      parse.show(sentBuilder);
+      parsedDoc.append(sentBuilder.toString()).append("\n");  
+    }
+    return parsedDoc.toString();
+  }
+  
 
 }
