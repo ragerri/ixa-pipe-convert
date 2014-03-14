@@ -41,7 +41,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *      empty parse trees such as (SN). These elements need to be removed from the output
  *      of getTrees() with a regexp such as "\\(\\SN\\)". Also remove doubles spaces to 
  *      make sure the tree is correctly formatted.
- *      <li>Thee trees also contain sentence title=yes elements, which create empty 
+ *      <li>Thee trees also contain <sentence title=yes elements, which create empty 
  *          (SENTENCE ) parse trees. These are removed using the regexp "\\(SENTENCE \\)\n
  *    </ol>
  * <li> the endElement adds a closing bracket ) for each constituent used in startElement
