@@ -15,7 +15,7 @@
  */
 
 
-package ixa.pipe.converter;
+package ixa.pipe.convert;
 
 import java.util.ArrayList;
 import java.util.List;

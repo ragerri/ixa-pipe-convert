@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package ixa.pipe.converter;
+package ixa.pipe.convert;
 
 
 import java.io.File;
@@ -62,7 +62,7 @@ public class CLI {
     
     parser.addArgument("--treebank2WordPos").help("Converts reebank into Apache OpenNLP POS training format.\n");
     
-    
+    parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes and funcional tags.\n");
     
     /*
      * Parse the command line arguments
@@ -96,9 +96,11 @@ public class CLI {
       Convert converter = new Convert();
       converter.treebank2tokens(inputTree);
     }
-    
-    
-
+    else if (parsedArguments.get("normalizePennTreebank") != null) {
+      File inputTree = new File(parsedArguments.getString("normalizePennTreebank"));
+      Convert converter = new Convert();
+      converter.getCleanPennTrees(inputTree);
+    }
 
   }
 }
