@@ -30,7 +30,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.xml.sax.SAXException;
 
 /**
- * ixa-pie-converter
+ * ixa-pipe-converter
  * 
  * @author ragerri
  * @version 1.0
@@ -63,7 +63,8 @@ public class CLI {
     parser.addArgument("--treebank2WordPos").help("Converts reebank into Apache OpenNLP POS training format.\n");
     
     parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes and funcional tags.\n");
-    
+    parser.addArgument("--filterNameTypes").help("Filter Name Entity types\n.");
+    parser.addArgument("--neTypes");
     /*
      * Parse the command line arguments
      */
@@ -100,6 +101,13 @@ public class CLI {
       File inputTree = new File(parsedArguments.getString("normalizePennTreebank"));
       Convert converter = new Convert();
       converter.getCleanPennTrees(inputTree);
+    }
+    else if (parsedArguments.get("filterNameTypes") != null) {
+      String neTypes = parsedArguments.getString("neTypes");
+      String inputFile = parsedArguments.getString("filterNameTypes");
+      Convert converter = new Convert();
+      converter.filterNameTypes(inputFile, neTypes);
+
     }
 
   }

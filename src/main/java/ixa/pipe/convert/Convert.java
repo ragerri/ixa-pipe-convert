@@ -19,6 +19,7 @@ package ixa.pipe.convert;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -280,7 +281,8 @@ public class Convert {
    * -NONE- traces removed) via 
    * sed 's/-NONE-\s[\*A-Za-z0-9]*[\*]*[\-]*[A-Za-z0-9]*'
    * 
-   * and prunes the empty trees remaining from the sed operation
+   * and prunes the empty trees remaining from the sed operation.
+   * The parseParse function also removes function tags by default.
    * 
    * @param inputTrees
    * @return
@@ -298,5 +300,18 @@ public class Convert {
     return parsedDoc.toString();
   }
   
-
+  public void filterNameTypes(String infile, String neTypes) throws IOException {
+    FilterNameByType filter = null;
+    try {
+      filter = new FilterNameByType(infile, neTypes);
+    } catch (UnsupportedEncodingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    filter.getNamesByType();
+  }
+   
 }
