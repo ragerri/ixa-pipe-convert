@@ -58,13 +58,15 @@ public class CLI {
     
     parser.addArgument("--ancora2treebank").help("Converts ancora constituent parsing annotation into Penn Treebank bracketing format");
 
-    parser.addArgument("--treebank2tokens").help("Converts treebank into tokenized oneline text\n.");
+    parser.addArgument("--treebank2tokens").help("Converts Penn Treebank into tokenized oneline text\n.");
     
-    parser.addArgument("--treebank2WordPos").help("Converts reebank into Apache OpenNLP POS training format.\n");
+    parser.addArgument("--treebank2WordPos").help("Converts Penn Treebank into Apache OpenNLP POS training format.\n");
     
     parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes and funcional tags.\n");
+   
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types\n.");
     parser.addArgument("--neTypes");
+    parser.addArgument("--printNED").help("Prints named entity string if NED link available");
     /*
      * Parse the command line arguments
      */
@@ -107,7 +109,11 @@ public class CLI {
       String inputFile = parsedArguments.getString("filterNameTypes");
       Convert converter = new Convert();
       converter.filterNameTypes(inputFile, neTypes);
-
+    }
+    else if (parsedArguments.getString("printNED") != null) {
+      File inputDir = new File(parsedArguments.getString("printNED"));
+      Convert converter = new Convert();
+      converter.getNEDFromNAF(inputDir);
     }
 
   }
