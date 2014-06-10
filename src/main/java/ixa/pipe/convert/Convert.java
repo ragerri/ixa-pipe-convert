@@ -17,8 +17,9 @@
 package ixa.pipe.convert;
 
 import ixa.kaflib.Entity;
-import ixa.kaflib.ExternalRef;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.KAFDocument.Layer;
+import ixa.kaflib.WF;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -317,34 +318,32 @@ public class Convert {
     }
     filter.getNamesByType();
   }
-  
  
-  
   /**
    * 
    * @throws IOException
    */
-  public void createWFs(File dir)
+  public void removeEntities(File dir)
       throws IOException {
     // process one file
     if (dir.isFile()) {
       File outfile = new File(FilenameUtils.removeExtension(dir.getPath())+ ".kaf.tok");
-      String outTree = generateTokens(dir);
-      FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
-      System.err.println(">> Wrote XML ancora file to Penn Treebank in " + outfile);
+      String outKAF = removeEntityLayer(dir);
+      FileUtils.writeStringToFile(outfile, outKAF, "UTF-8");
+      System.err.println(">> Wrote KAF document without entities to " + outfile);
     } else {
       // recursively process directories
       File listFile[] = dir.listFiles();
       if (listFile != null) {
         for (int i = 0; i < listFile.length; i++) {
           if (listFile[i].isDirectory()) {
-            createWFs(listFile[i]);
+            removeEntities(listFile[i]);
           } else {
             try {
-              File outfile = new File(FilenameUtils.removeExtension(listFile[i].getPath()) + ".th");
-              String outTree = generateTokens(listFile[i]);
-              FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
-              System.err.println(">> Wrote XML Ancora file Penn treebank format in " + outfile);
+              File outfile = new File(FilenameUtils.removeExtension(listFile[i].getPath()) + ".kaf.tok");
+              String outKAF = removeEntityLayer(listFile[i]);
+              FileUtils.writeStringToFile(outfile, outKAF, "UTF-8");
+              System.err.println(">> Wrote KAF document without entities to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
             }
@@ -354,9 +353,12 @@ public class Convert {
     }
   }
   
-  private String generateTokens(File dir) {
-    
-    return null;
+  private String removeEntityLayer(File inFile) throws IOException {
+    KAFDocument kaf = KAFDocument.createFromFile(inFile);
+    kaf.removeLayer(Layer.entities);
+    kaf.removeLayer(Layer.constituency);
+    kaf.removeLayer(Layer.coreferences);
+    return kaf.toString();
   }
   
   public void getNEDFromNAF(File dir)
@@ -388,7 +390,7 @@ public class Convert {
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       if (entity.getExternalRefs().size() > 0)
-      System.out.println(entity.getStr());
+      System.out.println(entity.getExternalRefs().get(0).getReference());
     }
   }
    

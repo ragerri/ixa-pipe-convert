@@ -65,8 +65,11 @@ public class CLI {
     parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes and funcional tags.\n");
    
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types\n.");
-    parser.addArgument("--neTypes");
-    parser.addArgument("--printNED").help("Prints named entity string if NED link available");
+    parser.addArgument("--neTypes").help("Choose named entity type to use with the --filterNameTypes option.\n");
+    
+    parser.addArgument("--printNED").help("Prints named entity string if NED link available\n.");
+    parser.addArgument("--removeEntities").help("Removes entity layer");
+ 
     /*
      * Parse the command line arguments
      */
@@ -114,6 +117,11 @@ public class CLI {
       File inputDir = new File(parsedArguments.getString("printNED"));
       Convert converter = new Convert();
       converter.getNEDFromNAF(inputDir);
+    }
+    else if (parsedArguments.getString("removeEntities") != null) {
+      File inputDir = new File(parsedArguments.getString("removeEntities"));
+      Convert converter = new Convert();
+      converter.removeEntities(inputDir);
     }
 
   }
