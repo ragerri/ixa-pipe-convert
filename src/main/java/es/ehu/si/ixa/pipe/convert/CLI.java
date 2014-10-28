@@ -19,6 +19,7 @@ package es.ehu.si.ixa.pipe.convert;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -135,10 +136,11 @@ public class CLI {
       converter.convertLemmaToPOSDict(inputDir);
     }
     else if (parsedArguments.getString("addLemmaDict2POSDict") != null) {
-      File inputDir = new File((String) parsedArguments.getList("addLemmaDict2POSDict").get(0));
-      File xmlDict = new File((String) parsedArguments.getList("addLemmaDict2POSDict").get(1));
+      List<String> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
+      File lemmaDict = new File(fileArgs.get(0));
+      File xmlDict = new File(fileArgs.get(1));
       Convert converter = new Convert();
-      converter.addLemmaToPOSDict(inputDir, xmlDict);
+      converter.addLemmaToPOSDict(lemmaDict, xmlDict);
     }
 
   }
