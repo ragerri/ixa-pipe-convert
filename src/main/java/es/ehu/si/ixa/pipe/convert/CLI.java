@@ -70,6 +70,9 @@ public class CLI {
     
     parser.addArgument("--printNED").help("Prints named entity string if NED link available in NAF.\n");
     parser.addArgument("--removeEntities").help("Removes the entity NAF layer.\n");
+    
+    parser.addArgument("--lemmaDict2POSTaggerDict").help("Create POSTagger OpenNLP dictionary from " +
+    		"lematizer dictionary.\n");
  
     /*
      * Parse the command line arguments
@@ -123,6 +126,11 @@ public class CLI {
       File inputDir = new File(parsedArguments.getString("removeEntities"));
       Convert converter = new Convert();
       converter.removeEntities(inputDir);
+    }
+    else if (parsedArguments.getString("lemmaDict2POSTaggerDict") != null) {
+      File inputDir = new File(parsedArguments.getString("lemmaDict2POSTaggerDict"));
+      Convert converter = new Convert();
+      converter.convertLemmaToPOSDict(inputDir);
     }
 
   }

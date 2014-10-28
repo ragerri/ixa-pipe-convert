@@ -22,8 +22,11 @@ import ixa.kaflib.KAFDocument.Layer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,10 +34,17 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import opennlp.tools.parser.Parse;
+import opennlp.tools.postag.POSDictionary;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.xml.sax.SAXException;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
 
 /**
  * Convert functions.
@@ -414,6 +424,52 @@ public class Convert {
       if (entity.getExternalRefs().size() > 0)
       System.out.println(entity.getExternalRefs().get(0).getReference());
     }
+  }
+  
+  /**
+   * Convert a lemma dictionary (word lemma postag) into a {@code POSTaggerDictionary}.
+   * It saves the resulting file with the name of the original dictionary changing
+   * the extension to .xml.
+   * @param lemmaDict the input file
+   * @throws IOException if io problems
+   */
+  public void convertLemmaToPOSDict(File lemmaDict)
+      throws IOException {
+    // process one file
+    if (lemmaDict.isFile()) {
+      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
+      File outFile = new File(Files.getNameWithoutExtension(lemmaDict.getCanonicalPath()) + ".xml");
+      POSDictionary posTagDict = getPOSTaggerDict(inputLines);
+      OutputStream outputStream = new FileOutputStream(outFile);
+      posTagDict.serialize(outputStream);
+      outputStream.close();
+      System.err.println(">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
+    } else {
+          System.out
+              .println("Please choose a valid file as input.");
+          System.exit(1);
+    }
+  }
+  
+  /**
+   * Generates {@code POSDictionary} from a list of words and its postag.
+   * @param inputLines the list of words and postag per line
+   * @return the POSDictionary
+   */
+  public POSDictionary getPOSTaggerDict(List<String> inputLines) {
+    POSDictionary posTaggerDict = new POSDictionary();
+    ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
+    for (String line : inputLines) {
+      String[] lineArray = line.split(" ");
+      if (lineArray.length == 2) {
+        dictMultiMap.put(lineArray[0], lineArray[1]);
+      }
+    }
+    for (String token : dictMultiMap.keySet()) {
+      List<String> tags = dictMultiMap.get(token);
+      posTaggerDict.put(token, tags.toArray(new String[tags.size()]));
+    }
+   return posTaggerDict;
   }
    
 }
