@@ -135,10 +135,10 @@ public class CLI {
       Convert converter = new Convert();
       converter.convertLemmaToPOSDict(inputDir);
     }
-    else if (parsedArguments.getString("addLemmaDict2POSDict") != null) {
-      List<String> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
-      File lemmaDict = new File(fileArgs.get(0));
-      File xmlDict = new File(fileArgs.get(1));
+    else if (!parsedArguments.getList("addLemmaDict2POSDict").isEmpty()) {
+      List<Object> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
+      File lemmaDict = new File((String) fileArgs.get(0));
+      File xmlDict = new File((String) fileArgs.get(1));
       Convert converter = new Convert();
       converter.addLemmaToPOSDict(lemmaDict, xmlDict);
     }
