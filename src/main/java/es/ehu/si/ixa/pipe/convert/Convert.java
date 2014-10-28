@@ -21,9 +21,11 @@ import ixa.kaflib.KAFDocument;
 import ixa.kaflib.KAFDocument.Layer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
@@ -474,6 +476,56 @@ public class Convert {
       }
     }
     return posTaggerDict;
+  }
+  
+  /**
+   * Aggregates a lemma dictionary (word lemma postag) into a {@code POSTaggerDictionary}.
+   * It saves the resulting file with the name of the original lemma dictionary changing
+   * the extension to .xml.
+   * @param lemmaDict the input file
+   * @throws IOException if io problems
+   */
+  public void addLemmaToPOSDict(File lemmaDict, File posTaggerDict)
+      throws IOException {
+    // process one file
+    if (lemmaDict.isFile() && posTaggerDict.isFile()) {
+      InputStream posDictInputStream = new FileInputStream(posTaggerDict);
+      POSDictionary posDict = POSDictionary.create(posDictInputStream);
+      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
+      File outFile = new File(Files.getNameWithoutExtension(lemmaDict.getCanonicalPath()) + ".xml");
+      addPOSTaggerDict(inputLines, posDict);
+      OutputStream outputStream = new FileOutputStream(outFile);
+      posDict.serialize(outputStream);
+      outputStream.close();
+      System.err.println(">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
+    } else {
+          System.out
+              .println("Please choose a valid files as input.");
+          System.exit(1);
+    }
+  }
+
+  /**
+   * Aggregates {@code POSDictionary} from a list of words and its postag.
+   * 
+   * @param inputLines
+   *          the list of words and postag per line
+   * @param tagDict the POSDictionary to which the lemma dictionary will be added
+   */
+  public void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
+    ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
+    for (String line : inputLines) {
+      String[] lineArray = line.split(" ");
+      if (lineArray.length == 2) {
+        dictMultiMap.put(lineArray[0], lineArray[1]);
+      }
+    }
+    for (String token : dictMultiMap.keySet()) {
+      List<String> tags = dictMultiMap.get(token);
+      if (tags.size() == 1) {
+        tagDict.put(token, tags.toArray(new String[tags.size()]));
+      }
+    }
   }
    
 }

@@ -71,8 +71,10 @@ public class CLI {
     parser.addArgument("--printNED").help("Prints named entity string if NED link available in NAF.\n");
     parser.addArgument("--removeEntities").help("Removes the entity NAF layer.\n");
     
-    parser.addArgument("--lemmaDict2POSTaggerDict").help("Create POSTagger OpenNLP dictionary from " +
-    		"lematizer dictionary.\n");
+    parser.addArgument("--lemmaDict2POSDict").help("Create POSTagger OpenNLP dictionary from " +
+    		"lemmatizer dictionary.\n");
+    parser.addArgument("--addLemmaDict2POSDict").nargs(2).help("Aggregate a lemmatizer dictionary to a POSTagger OpenNLP " +
+    		"dictionary: first input is lemmatizer dictionary and second output the XML dictionary to be expanded.\n");
  
     /*
      * Parse the command line arguments
@@ -127,10 +129,16 @@ public class CLI {
       Convert converter = new Convert();
       converter.removeEntities(inputDir);
     }
-    else if (parsedArguments.getString("lemmaDict2POSTaggerDict") != null) {
+    else if (parsedArguments.getString("lemmaDict2POSDict") != null) {
       File inputDir = new File(parsedArguments.getString("lemmaDict2POSTaggerDict"));
       Convert converter = new Convert();
       converter.convertLemmaToPOSDict(inputDir);
+    }
+    else if (parsedArguments.getString("addLemmaDict2POSDict") != null) {
+      File inputDir = new File((String) parsedArguments.getList("addLemmaDict2POSDict").get(0));
+      File xmlDict = new File((String) parsedArguments.getList("addLemmaDict2POSDict").get(1));
+      Convert converter = new Convert();
+      converter.addLemmaToPOSDict(inputDir, xmlDict);
     }
 
   }
