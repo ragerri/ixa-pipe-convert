@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>ixa</groupId>
+  <groupId>es.ehu.si</groupId>
   <artifactId>ixa-pipe-convert</artifactId>
   <name>ixa-pipe-convert</name>
-  <version>1.0</version>
-  <description>ixa-pipe-convert converts corpora from one format into another.</description>
-  <url>http://maven.apache.org</url>
+  <version>0.1.0</version>
+  <description>ixa-pipe-convert converts corpora formats for training with ixa pipes tools.</description>
+  <url>http://ixa2.si.ehu.es/ixa-pipes</url>
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
@@ -17,6 +17,14 @@
       <email>rodrigo.agerri@ehu.es</email>
     </developer>
   </developers>
+  <scm>
+    <developerConnection>ragerri</developerConnection>
+    <url>https://github.com/ragerri/ixa-pipe-convert</url>
+  </scm>
+  <organization>
+    <name>IXA pipes</name>
+    <url>ixa2.si.ehu.es/ixa-pipes</url>
+  </organization>
   <build>
     <plugins>
       <plugin>
@@ -32,7 +40,10 @@
               <transformers>
                 <transformer>
                   <manifestEntries>
-                    <Main-Class>ixa.pipe.convert.CLI</Main-Class>
+                    <Main-Class>es.ehu.si.ixa.pipe.convert.CLI</Main-Class>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>${project.artifactId}</artifactId>
+                    <Implementation-Version>${project.version}</Implementation-Version>
                   </manifestEntries>
                 </transformer>
               </transformers>
@@ -48,7 +59,15 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.2.1</version>
         <configuration>
-          <mainClass>ixa.pipe.convert.CLI</mainClass>
+          <mainClass>es.ehu.si.ixa.pipe.convert.CLI</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
       <plugin>
