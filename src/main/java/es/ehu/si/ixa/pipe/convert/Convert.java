@@ -450,10 +450,12 @@ public class Convert {
           System.exit(1);
     }
   }
-  
+
   /**
    * Generates {@code POSDictionary} from a list of words and its postag.
-   * @param inputLines the list of words and postag per line
+   * 
+   * @param inputLines
+   *          the list of words and postag per line
    * @return the POSDictionary
    */
   public POSDictionary getPOSTaggerDict(List<String> inputLines) {
@@ -467,9 +469,11 @@ public class Convert {
     }
     for (String token : dictMultiMap.keySet()) {
       List<String> tags = dictMultiMap.get(token);
-      posTaggerDict.put(token, tags.toArray(new String[tags.size()]));
+      if (tags.size() == 1) {
+        posTaggerDict.put(token, tags.toArray(new String[tags.size()]));
+      }
     }
-   return posTaggerDict;
+    return posTaggerDict;
   }
    
 }
