@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,14 +37,11 @@ import javax.xml.parsers.SAXParserFactory;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSDictionary;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
 /**
@@ -110,9 +106,9 @@ public class Convert {
       throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(FilenameUtils.removeExtension(dir.getPath())+ ".th");
+      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())+ ".th");
       String outTree = ancora2treebank(dir);
-      FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
+      Files.write(outTree, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote XML ancora file to Penn Treebank in " + outfile);
     } else {
       // recursively process directories
@@ -123,9 +119,9 @@ public class Convert {
             processAncoraConstituentXMLCorpus(listFile[i]);
           } else {
             try {
-              File outfile = new File(FilenameUtils.removeExtension(listFile[i].getPath()) + ".th");
+              File outfile = new File(Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
               String outTree = ancora2treebank(listFile[i]);
-              FileUtils.writeStringToFile(outfile, outTree, "UTF-8");
+              Files.write(outTree, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote XML Ancora file Penn treebank format in " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
@@ -147,12 +143,11 @@ public class Convert {
       throws IOException {
     // process one file
     if (treebankFile.isFile()) {
-      List<String> inputTrees = FileUtils.readLines(
-          new File(treebankFile.getCanonicalPath()), "UTF-8");
-      File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
-          + ".tok");
+      List<String> inputTrees = Files.readLines(
+          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath() + ".tok"));
       String outFile = getTokensFromTree(inputTrees);
-      FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
+      Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote tokens to " + outfile);
     } else {
           System.out
@@ -214,12 +209,12 @@ public class Convert {
       throws IOException {
     // process one file
     if (treebankFile.isFile()) {
-      List<String> inputTrees = FileUtils.readLines(
-          new File(treebankFile.getCanonicalPath()), "UTF-8");
-      File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
+      List<String> inputTrees = Files.readLines(
+          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath())
           + ".pos");
       String outFile = getPreTerminals(inputTrees);
-      FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
+      Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote Apache OpenNLP POS training format to " + outfile);
     } else {
           System.out
@@ -279,12 +274,12 @@ public class Convert {
    */
   public void getCleanPennTrees(File treebankFile) throws IOException { 
     if (treebankFile.isFile()) {
-      List<String> inputTrees = FileUtils.readLines(
-          new File(treebankFile.getCanonicalPath()), "UTF-8");
-      File outfile = new File(FilenameUtils.removeExtension(treebankFile.getPath())
+      List<String> inputTrees = Files.readLines(
+          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath())
           + ".treeN");
       String outFile = normalizeParse(inputTrees);
-      FileUtils.writeStringToFile(outfile, outFile, "UTF-8");
+      Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote normalized parse to " + outfile);
     } else {
           System.out
@@ -345,9 +340,9 @@ public class Convert {
       throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(FilenameUtils.removeExtension(dir.getPath())+ ".kaf.tok");
+      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())+ ".kaf.tok");
       String outKAF = removeEntityLayer(dir);
-      FileUtils.writeStringToFile(outfile, outKAF, "UTF-8");
+      Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote KAF document without entities to " + outfile);
     } else {
       // recursively process directories
@@ -358,9 +353,9 @@ public class Convert {
             removeEntities(listFile[i]);
           } else {
             try {
-              File outfile = new File(FilenameUtils.removeExtension(listFile[i].getPath()) + ".kaf.tok");
+              File outfile = new File(Files.getNameWithoutExtension(listFile[i].getPath()) + ".kaf.tok");
               String outKAF = removeEntityLayer(listFile[i]);
-              FileUtils.writeStringToFile(outfile, outKAF, "UTF-8");
+              Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote KAF document without entities to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
