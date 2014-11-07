@@ -80,7 +80,11 @@ public class CLI {
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     parser.addArgument("--getXMLTextElem").help("Get the text of the <review_text> elemens in multi-domain sentiment corpus.\n");
  
-    parser.addArgument("--nafToCoNLL").help("Convert NAF to CoNLL format; currently only until NER");
+    parser.addArgument("--nafToCoNLL").help("Convert NAF to CoNLL format; currently only until NER.\n");
+    
+    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval Aspect Term Extraction to OpenNLP NER annotation.\n");
+    
+    parser.addArgument("--absaSemEvalText").help("Extract text sentences from ABSA SemEval corpora.\n");
     /*
      * Parse the command line arguments
      */
@@ -160,6 +164,16 @@ public class CLI {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL"));
       Convert converter = new Convert();
       converter.nafToCoNLL(inputDir);
+    }
+    else if (parsedArguments.get("absaSemEvalATE") != null) {
+      String inputFile = parsedArguments.getString("absaSemEvalATE");
+      Convert converter = new Convert();
+      converter.absaSemEvalToNER(inputFile);
+    }
+    else if (parsedArguments.get("absaSemEvalText") != null) {
+      String inputFile = parsedArguments.getString("absaSemEvalText");
+      Convert converter = new Convert();
+      converter.absaSemEvalText(inputFile);
     }
   }
 }

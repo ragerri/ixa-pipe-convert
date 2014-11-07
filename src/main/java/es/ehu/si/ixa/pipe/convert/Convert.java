@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.json.simple.JSONObject;
@@ -68,35 +71,36 @@ import com.google.common.io.Files;
  * 
  */
 public class Convert {
-  
-  
+
   /**
-   * Process the ancora constituent XML annotation into
-   * Penn Treebank bracketing style.
+   * Process the ancora constituent XML annotation into Penn Treebank bracketing
+   * style.
    * 
-   * @param inXML the ancora xml constituent document
+   * @param inXML
+   *          the ancora xml constituent document
    * @return the ancora trees in penn treebank one line format
-   * @throws IOException if io exception
+   * @throws IOException
+   *           if io exception
    */
-  public String ancora2treebank(File inXML) throws IOException { 
+  public String ancora2treebank(File inXML) throws IOException {
     String filteredTrees = null;
     if (inXML.isFile()) {
-      
+
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       SAXParser saxParser;
       try {
         saxParser = saxParserFactory.newSAXParser();
         AncoraTreebank ancoraParser = new AncoraTreebank();
-        saxParser.parse(inXML,ancoraParser);
+        saxParser.parse(inXML, ancoraParser);
         String trees = ancoraParser.getTrees();
         // remove empty trees created by "missing" and "elliptic" attributes
-        filteredTrees = trees.replaceAll("\\(\\SN\\)","");
+        filteredTrees = trees.replaceAll("\\(\\SN\\)", "");
         // format correctly closing brackets
-        filteredTrees = filteredTrees.replace(") )","))");
+        filteredTrees = filteredTrees.replace(") )", "))");
         // remove double spaces
-        filteredTrees = filteredTrees.replaceAll("  "," ");
-        //remove empty sentences created by <sentence title="yes"> elements
-        filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n","");
+        filteredTrees = filteredTrees.replaceAll("  ", " ");
+        // remove empty sentences created by <sentence title="yes"> elements
+        filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n", "");
       } catch (ParserConfigurationException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -104,28 +108,30 @@ public class Convert {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-    }
-    else { 
+    } else {
       System.out.println("Please choose a valid file as input");
     }
     return filteredTrees;
   }
-  
+
   /**
-   * Calls the ancorat2treebank function to generate
-   * Penn Treebank trees from Ancora XML constituent parsing.
+   * Calls the ancorat2treebank function to generate Penn Treebank trees from
+   * Ancora XML constituent parsing.
    * 
-   * @param dir the directory containing the documents
-   * @throws IOException if io problems
+   * @param dir
+   *          the directory containing the documents
+   * @throws IOException
+   *           if io problems
    */
-  public void processAncoraConstituentXMLCorpus(File dir)
-      throws IOException {
+  public void processAncoraConstituentXMLCorpus(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())+ ".th");
+      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
+          + ".th");
       String outTree = ancora2treebank(dir);
       Files.write(outTree, outfile, Charsets.UTF_8);
-      System.err.println(">> Wrote XML ancora file to Penn Treebank in " + outfile);
+      System.err.println(">> Wrote XML ancora file to Penn Treebank in "
+          + outfile);
     } else {
       // recursively process directories
       File listFile[] = dir.listFiles();
@@ -135,10 +141,13 @@ public class Convert {
             processAncoraConstituentXMLCorpus(listFile[i]);
           } else {
             try {
-              File outfile = new File(Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
+              File outfile = new File(
+                  Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
               String outTree = ancora2treebank(listFile[i]);
               Files.write(outTree, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote XML Ancora file Penn treebank format in " + outfile);
+              System.err
+                  .println(">> Wrote XML Ancora file Penn treebank format in "
+                      + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
             }
@@ -147,192 +156,191 @@ public class Convert {
       }
     }
   }
-  
+
   /**
-   * Takes a file containing Penn Treebank oneline annotation and creates 
+   * Takes a file containing Penn Treebank oneline annotation and creates
    * tokenized sentences saving it to a file with the *.tok extension.
    * 
-   * @param treebankFile the input file
+   * @param treebankFile
+   *          the input file
    * @throws IOException
    */
-  public void treebank2tokens(File treebankFile)
-      throws IOException {
+  public void treebank2tokens(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath() + ".tok"));
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+          .getPath() + ".tok"));
       String outFile = getTokensFromTree(inputTrees);
       Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote tokens to " + outfile);
     } else {
-          System.out
-              .println("Please choose a valid file as input.");
-          System.exit(1);
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
     }
   }
-  
+
   /**
-   * Reads a list of Parse trees and calls {@code getTokens}
-   * to create tokenized oneline text.
+   * Reads a list of Parse trees and calls {@code getTokens} to create tokenized
+   * oneline text.
    * 
-   * @param inputTrees the list of trees in penn treebank format
+   * @param inputTrees
+   *          the list of trees in penn treebank format
    * @return the tokenized document the document tokens
    */
   private String getTokensFromTree(List<String> inputTrees) {
-    
+
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
       Parse parse = Parse.parseParse(parseSent);
       StringBuilder sentBuilder = new StringBuilder();
-      getTokens(parse,sentBuilder);        
-      parsedDoc.append(sentBuilder.toString()).append("\n");  
+      getTokens(parse, sentBuilder);
+      parsedDoc.append(sentBuilder.toString()).append("\n");
     }
     return parsedDoc.toString();
   }
-  
+
   /**
-   * It converts a penn treebank constituent tree into
-   * tokens oneline form.
+   * It converts a penn treebank constituent tree into tokens oneline form.
    * 
-   * @param parse the parse tree
-   * @param sb the stringbuilder to add the trees
+   * @param parse
+   *          the parse tree
+   * @param sb
+   *          the stringbuilder to add the trees
    */
   private void getTokens(Parse parse, StringBuilder sb) {
-      if (parse.isPosTag()) {
-        if (!parse.getType().equals("-NONE-")) { 
-          sb.append(parse.getCoveredText()).append(" ");
-        }
+    if (parse.isPosTag()) {
+      if (!parse.getType().equals("-NONE-")) {
+        sb.append(parse.getCoveredText()).append(" ");
       }
-    else {
+    } else {
       Parse children[] = parse.getChildren();
       for (int i = 0; i < children.length; i++) {
-        getTokens(children[i],sb);
+        getTokens(children[i], sb);
       }
     }
   }
-  
-  
+
   /**
-   * Takes a file containing Penn Treebank oneline annotation and creates 
-   * Word_POS sentences for POS tagger training, saving it to a file 
-   * with the *.pos extension.
+   * Takes a file containing Penn Treebank oneline annotation and creates
+   * Word_POS sentences for POS tagger training, saving it to a file with the
+   * *.pos extension.
    * 
-   * @param treebankFile the input file
+   * @param treebankFile
+   *          the input file
    * @throws IOException
    */
-  public void treebank2WordPos(File treebankFile)
-      throws IOException {
+  public void treebank2WordPos(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath())
-          + ".pos");
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+          .getPath()) + ".pos");
       String outFile = getPreTerminals(inputTrees);
       Files.write(outFile, outfile, Charsets.UTF_8);
-      System.err.println(">> Wrote Apache OpenNLP POS training format to " + outfile);
+      System.err.println(">> Wrote Apache OpenNLP POS training format to "
+          + outfile);
     } else {
-          System.out
-              .println("Please choose a valid file as input.");
-          System.exit(1);
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
     }
   }
-  
+
   /**
-   * Reads a list of Parse trees and calls 
-   * {@code getWordType} to create POS training data
-   * in Word_POS form 
+   * Reads a list of Parse trees and calls {@code getWordType} to create POS
+   * training data in Word_POS form
    * 
    * @param inputTrees
    * @return the document with Word_POS sentences
    */
   private String getPreTerminals(List<String> inputTrees) {
-    
+
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
       Parse parse = Parse.parseParse(parseSent);
       StringBuilder sentBuilder = new StringBuilder();
-      getWordType(parse,sentBuilder);        
-      parsedDoc.append(sentBuilder.toString()).append("\n");  
+      getWordType(parse, sentBuilder);
+      parsedDoc.append(sentBuilder.toString()).append("\n");
     }
     return parsedDoc.toString();
   }
-  
+
   /**
-   * It converts a penn treebank constituent tree into 
-   * Word_POS form
+   * It converts a penn treebank constituent tree into Word_POS form
    * 
    * @param parse
    * @param sb
    */
   private void getWordType(Parse parse, StringBuilder sb) {
-      if (parse.isPosTag()) {
-        if (!parse.getType().equals("-NONE-")) { 
-          sb.append(parse.getCoveredText()).append("_").append(parse.getType()).append(" ");
-        }
+    if (parse.isPosTag()) {
+      if (!parse.getType().equals("-NONE-")) {
+        sb.append(parse.getCoveredText()).append("_").append(parse.getType())
+            .append(" ");
       }
-    else {
+    } else {
       Parse children[] = parse.getChildren();
       for (int i = 0; i < children.length; i++) {
-        getWordType(children[i],sb);
+        getWordType(children[i], sb);
       }
     }
   }
-  
+
   /**
-   * It normalizes a oneline Penn treebank style tree removing 
-   * trace nodes (-NONE-) and pruning the empty trees created by 
-   * removing the trace nodes.
+   * It normalizes a oneline Penn treebank style tree removing trace nodes
+   * (-NONE-) and pruning the empty trees created by removing the trace nodes.
    * 
    * @param treebankFile
    * @throws IOException
    */
-  public void getCleanPennTrees(File treebankFile) throws IOException { 
+  public void getCleanPennTrees(File treebankFile) throws IOException {
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile.getPath())
-          + ".treeN");
+      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+          .getPath()) + ".treeN");
       String outFile = normalizeParse(inputTrees);
       Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote normalized parse to " + outfile);
     } else {
-          System.out
-              .println("Please choose a valid file as input.");
-          System.exit(1);
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
     }
   }
-  
+
   /**
-   * It takes as input a semi-pruned penn treebank tree (e.g., with 
-   * -NONE- traces removed) via 
-   * sed 's/-NONE-\s[\*A-Za-z0-9]*[\*]*[\-]*[A-Za-z0-9]*'
+   * It takes as input a semi-pruned penn treebank tree (e.g., with -NONE-
+   * traces removed) via sed 's/-NONE-\s[\*A-Za-z0-9]*[\*]*[\-]*[A-Za-z0-9]*'
    * 
-   * and prunes the empty trees remaining from the sed operation.
-   * The parseParse function also removes function tags by default.
+   * and prunes the empty trees remaining from the sed operation. The parseParse
+   * function also removes function tags by default.
    * 
    * @param inputTrees
    * @return
    */
-  //TODO add the sed regexp to this function
-  private String normalizeParse(List<String> inputTrees) { 
+  // TODO add the sed regexp to this function
+  private String normalizeParse(List<String> inputTrees) {
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
       Parse parse = Parse.parseParse(parseSent);
       Parse.pruneParse(parse);
-      StringBuffer sentBuilder = new StringBuffer();  
+      StringBuffer sentBuilder = new StringBuffer();
       parse.show(sentBuilder);
-      parsedDoc.append(sentBuilder.toString()).append("\n");  
+      parsedDoc.append(sentBuilder.toString()).append("\n");
     }
     return parsedDoc.toString();
   }
-  
+
   /**
    * Extract only some name entities types in opennlp format.
-   * @param infile the document in opennlp format for named entities
-   * @param neTypes the types to be extracted, separated by a comma
-   * @throws IOException if io problems
+   * 
+   * @param infile
+   *          the document in opennlp format for named entities
+   * @param neTypes
+   *          the types to be extracted, separated by a comma
+   * @throws IOException
+   *           if io problems
    */
   public void filterNameTypes(String infile, String neTypes) throws IOException {
     FilterNameByType filter = null;
@@ -345,21 +353,24 @@ public class Convert {
     }
     filter.getNamesByType();
   }
- 
- 
+
   /**
    * Remove named entity related layers in NAF.
-   * @param dir the directory containing the documents
-   * @throws IOException if io problems
+   * 
+   * @param dir
+   *          the directory containing the documents
+   * @throws IOException
+   *           if io problems
    */
-  public void removeEntities(File dir)
-      throws IOException {
+  public void removeEntities(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())+ ".kaf.tok");
+      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
+          + ".kaf.tok");
       String outKAF = removeEntityLayer(dir);
       Files.write(outKAF, outfile, Charsets.UTF_8);
-      System.err.println(">> Wrote KAF document without entities to " + outfile);
+      System.err
+          .println(">> Wrote KAF document without entities to " + outfile);
     } else {
       // recursively process directories
       File listFile[] = dir.listFiles();
@@ -369,10 +380,12 @@ public class Convert {
             removeEntities(listFile[i]);
           } else {
             try {
-              File outfile = new File(Files.getNameWithoutExtension(listFile[i].getPath()) + ".kaf.tok");
+              File outfile = new File(Files.getNameWithoutExtension(listFile[i]
+                  .getPath()) + ".kaf.tok");
               String outKAF = removeEntityLayer(listFile[i]);
               Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote KAF document without entities to " + outfile);
+              System.err.println(">> Wrote KAF document without entities to "
+                  + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
             }
@@ -381,12 +394,15 @@ public class Convert {
       }
     }
   }
-  
+
   /**
    * Remove the specified NAF layers.
-   * @param inFile the NAF document
+   * 
+   * @param inFile
+   *          the NAF document
    * @return the NAF document without the removed layers
-   * @throws IOException if io problems
+   * @throws IOException
+   *           if io problems
    */
   private String removeEntityLayer(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
@@ -395,14 +411,16 @@ public class Convert {
     kaf.removeLayer(Layer.coreferences);
     return kaf.toString();
   }
-  
+
   /**
    * Extract entities that contain a link to an external resource in NAF.
-   * @param dir the directory containing the NAF documents
-   * @throws IOException if io problems
+   * 
+   * @param dir
+   *          the directory containing the NAF documents
+   * @throws IOException
+   *           if io problems
    */
-  public void getNEDFromNAF(File dir)
-      throws IOException {
+  public void getNEDFromNAF(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       printEntities(dir);
@@ -424,43 +442,50 @@ public class Convert {
       }
     }
   }
-  
+
   /**
    * Print entities that contain an external resource link in NAF.
-   * @param inFile the NAF document
-   * @throws IOException if io problems
+   * 
+   * @param inFile
+   *          the NAF document
+   * @throws IOException
+   *           if io problems
    */
   public void printEntities(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       if (entity.getExternalRefs().size() > 0)
-      System.out.println(entity.getExternalRefs().get(0).getReference());
+        System.out.println(entity.getExternalRefs().get(0).getReference());
     }
   }
-  
+
   /**
-   * Convert a lemma dictionary (word lemma postag) into a {@code POSTaggerDictionary}.
-   * It saves the resulting file with the name of the original dictionary changing
-   * the extension to .xml.
-   * @param lemmaDict the input file
-   * @throws IOException if io problems
+   * Convert a lemma dictionary (word lemma postag) into a
+   * {@code POSTaggerDictionary}. It saves the resulting file with the name of
+   * the original dictionary changing the extension to .xml.
+   * 
+   * @param lemmaDict
+   *          the input file
+   * @throws IOException
+   *           if io problems
    */
-  public void convertLemmaToPOSDict(File lemmaDict)
-      throws IOException {
+  public void convertLemmaToPOSDict(File lemmaDict) throws IOException {
     // process one file
     if (lemmaDict.isFile()) {
       List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(Files.getNameWithoutExtension(lemmaDict.getCanonicalPath()) + ".xml");
+      File outFile = new File(Files.getNameWithoutExtension(lemmaDict
+          .getCanonicalPath()) + ".xml");
       POSDictionary posTagDict = getPOSTaggerDict(inputLines);
       OutputStream outputStream = new FileOutputStream(outFile);
       posTagDict.serialize(outputStream);
       outputStream.close();
-      System.err.println(">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
+      System.err
+          .println(">> Serialized Apache OpenNLP POSDictionary format to "
+              + outFile);
     } else {
-          System.out
-              .println("Please choose a valid file as input.");
-          System.exit(1);
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
     }
   }
 
@@ -488,13 +513,16 @@ public class Convert {
     }
     return posTaggerDict;
   }
-  
+
   /**
-   * Aggregates a lemma dictionary (word lemma postag) into a {@code POSTaggerDictionary}.
-   * It saves the resulting file with the name of the original lemma dictionary changing
-   * the extension to .xml.
-   * @param lemmaDict the input file
-   * @throws IOException if io problems
+   * Aggregates a lemma dictionary (word lemma postag) into a
+   * {@code POSTaggerDictionary}. It saves the resulting file with the name of
+   * the original lemma dictionary changing the extension to .xml.
+   * 
+   * @param lemmaDict
+   *          the input file
+   * @throws IOException
+   *           if io problems
    */
   public void addLemmaToPOSDict(File lemmaDict, File posTaggerDict)
       throws IOException {
@@ -503,16 +531,18 @@ public class Convert {
       InputStream posDictInputStream = new FileInputStream(posTaggerDict);
       POSDictionary posDict = POSDictionary.create(posDictInputStream);
       List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(Files.getNameWithoutExtension(lemmaDict.getCanonicalPath()) + ".xml");
+      File outFile = new File(Files.getNameWithoutExtension(lemmaDict
+          .getCanonicalPath()) + ".xml");
       addPOSTaggerDict(inputLines, posDict);
       OutputStream outputStream = new FileOutputStream(outFile);
       posDict.serialize(outputStream);
       outputStream.close();
-      System.err.println(">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
+      System.err
+          .println(">> Serialized Apache OpenNLP POSDictionary format to "
+              + outFile);
     } else {
-          System.out
-              .println("Please choose a valid files as input.");
-          System.exit(1);
+      System.out.println("Please choose a valid files as input.");
+      System.exit(1);
     }
   }
 
@@ -521,7 +551,8 @@ public class Convert {
    * 
    * @param inputLines
    *          the list of words and postag per line
-   * @param tagDict the POSDictionary to which the lemma dictionary will be added
+   * @param tagDict
+   *          the POSDictionary to which the lemma dictionary will be added
    */
   public void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
@@ -538,7 +569,7 @@ public class Convert {
       }
     }
   }
-  
+
   public void getYelpText(String fileName) throws IOException {
     JSONParser parser = new JSONParser();
     BufferedReader breader = new BufferedReader(new FileReader(fileName));
@@ -555,13 +586,14 @@ public class Convert {
     }
     breader.close();
   }
-  
+
   public void getXMLTextElement(String fileName) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
       Document doc = sax.build(fileName);
-      XPathExpression<Element> expr = xFactory.compile("//review_text", Filters.element());
+      XPathExpression<Element> expr = xFactory.compile("//review_text",
+          Filters.element());
       List<Element> reviewTexts = expr.evaluate(doc);
       for (Element reviewText : reviewTexts) {
         System.out.println(reviewText.getText());
@@ -570,14 +602,16 @@ public class Convert {
       e.printStackTrace();
     }
   }
-  
+
   /**
    * Remove named entity related layers in NAF.
-   * @param dir the directory containing the documents
-   * @throws IOException if io problems
+   * 
+   * @param dir
+   *          the directory containing the documents
+   * @throws IOException
+   *           if io problems
    */
-  public void nafToCoNLL(File dir)
-      throws IOException {
+  public void nafToCoNLL(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
@@ -607,7 +641,7 @@ public class Convert {
       }
     }
   }
-  
+
   /**
    * Output Conll2003 format.
    * 
@@ -695,7 +729,7 @@ public class Convert {
     }
     return sb.toString();
   }
-  
+
   /**
    * Convert Entity class annotation to CoNLL formats.
    * 
@@ -713,7 +747,7 @@ public class Convert {
     }
     return conllType;
   }
-  
+
   /**
    * Enumeration class for CoNLL 2003 BIO format
    */
@@ -729,5 +763,76 @@ public class Convert {
       return this.tag;
     }
   }
-   
+
+  public void absaSemEvalToNER(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      for (Element sent : sentences) {
+
+        StringBuilder sb = new StringBuilder();
+        String sentString = sent.getChildText("text");
+        sb = sb.append(sentString);
+        Element aspectTerms = sent.getChild("aspectTerms");
+        if (aspectTerms != null) {
+          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
+          List<Integer> offsets = new ArrayList<Integer>();
+          List<Element> aspectTermList = aspectTerms.getChildren();
+          if (!aspectTermList.isEmpty()) {
+            for (Element aspectElem : aspectTermList) {
+              Integer offsetFrom = Integer.parseInt(aspectElem
+                  .getAttributeValue("from"));
+              Integer offsetTo = Integer.parseInt(aspectElem
+                  .getAttributeValue("to"));
+              offsets.add(offsetFrom);
+              offsets.add(offsetTo);
+            }
+          }
+          Collections.sort(offsets);
+          for (int i = 0; i < offsets.size(); i++) {
+            List<Integer> offsetArray = new ArrayList<Integer>();
+            offsetArray.add(offsets.get(i++));
+            if (offsets.size() > i) {
+              offsetArray.add(offsets.get(i));
+            }
+            offsetList.add(offsetArray);
+          }
+          int counter = 0;
+          for (List<Integer> offsetSent : offsetList) {
+            Integer offsetFrom = offsetSent.get(0);
+            Integer offsetTo = offsetSent.get(1);
+            String aspectString = sentString.substring(offsetFrom, offsetTo);
+            sb.replace(offsetFrom + counter, offsetTo + counter,
+                "<START:term> " + aspectString + " <END>");
+            counter += 19;
+          }
+          System.out.println(sb.toString());
+        }
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public void absaSemEvalText(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      for (Element sent : sentences) {
+        String sentString = sent.getChildText("text");
+        System.out.println(sentString);
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+
 }
