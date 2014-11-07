@@ -159,7 +159,7 @@ public class CLI {
     else if (parsedArguments.get("nafToCoNLL") != null) {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL"));
       Convert converter = new Convert();
-      //converter.nafToCoNLL(inputDir);
+      converter.nafToCoNLL(inputDir);
     }
   }
 }

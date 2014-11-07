@@ -18,6 +18,8 @@ package es.ehu.si.ixa.pipe.convert;
 
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.Term;
+import ixa.kaflib.WF;
 import ixa.kaflib.KAFDocument.Layer;
 
 import java.io.BufferedReader;
@@ -30,7 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -564,6 +568,165 @@ public class Convert {
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
+    }
+  }
+  
+  /**
+   * Remove named entity related layers in NAF.
+   * @param dir the directory containing the documents
+   * @throws IOException if io problems
+   */
+  public void nafToCoNLL(File dir)
+      throws IOException {
+    // process one file
+    if (dir.isFile()) {
+      KAFDocument kaf = KAFDocument.createFromFile(dir);
+      File outfile = new File(dir.getCanonicalFile() + ".conll");
+      String outKAF = nafToCoNLLConvert(kaf);
+      Files.write(outKAF, outfile, Charsets.UTF_8);
+      System.err.println(">> Wrote CoNLL document to " + outfile);
+    } else {
+      // recursively process directories
+      File listFile[] = dir.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            nafToCoNLL(listFile[i]);
+          } else {
+            try {
+              File outfile = new File(listFile[i].getCanonicalFile() + ".conll");
+              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
+              String outKAF = nafToCoNLLConvert(kaf);
+              Files.write(outKAF, outfile, Charsets.UTF_8);
+              System.err.println(">> Wrote CoNLL document to " + outfile);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Output Conll2003 format.
+   * 
+   * @param kaf
+   *          the kaf document
+   * @return the annotated named entities in conll03 format
+   */
+  public String nafToCoNLLConvert(KAFDocument kaf) {
+    List<Entity> namedEntityList = kaf.getEntities();
+    Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
+    Map<String, String> entityToType = new HashMap<String, String>();
+    for (Entity ne : namedEntityList) {
+      List<ixa.kaflib.Span<Term>> entitySpanList = ne.getSpans();
+      for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
+        Term neTerm = spanTerm.getFirstTarget();
+        // create map from term Id to Entity span size
+        entityToSpanSize.put(neTerm.getId(), spanTerm.size());
+        // create map from term Id to Entity type
+        entityToType.put(neTerm.getId(), ne.getType());
+      }
+    }
+
+    List<List<WF>> sentences = kaf.getSentences();
+    StringBuilder sb = new StringBuilder();
+    for (List<WF> sentence : sentences) {
+      int sentNumber = sentence.get(0).getSent();
+      List<Term> sentenceTerms = kaf.getSentenceTerms(sentNumber);
+      boolean previousIsEntity = false;
+
+      for (int i = 0; i < sentenceTerms.size(); i++) {
+        Term thisTerm = sentenceTerms.get(i);
+        // if term is inside an entity span then annotate B-I entities
+        if (entityToSpanSize.get(thisTerm.getId()) != null) {
+          int neSpanSize = entityToSpanSize.get(thisTerm.getId());
+          String neClass = entityToType.get(thisTerm.getId());
+          String neType = this.convertToConLLTypes(neClass);
+          // if Entity span is multi token
+          if (neSpanSize > 1) {
+            for (int j = 0; j < neSpanSize; j++) {
+              thisTerm = sentenceTerms.get(i + j);
+              sb.append(thisTerm.getForm());
+              sb.append("\t");
+              sb.append(thisTerm.getLemma());
+              sb.append("\t");
+              sb.append(thisTerm.getMorphofeat());
+              sb.append("\t");
+              if (j == 0 && previousIsEntity) {
+                sb.append(BIO.BEGIN.toString());
+              } else {
+                sb.append(BIO.IN.toString());
+              }
+              sb.append(neType);
+              sb.append("\n");
+            }
+          } else {
+            sb.append(thisTerm.getForm());
+            sb.append("\t");
+            sb.append(thisTerm.getLemma());
+            sb.append("\t");
+            sb.append(thisTerm.getMorphofeat());
+            sb.append("\t");
+            if (previousIsEntity) {
+              sb.append(BIO.BEGIN.toString());
+            } else {
+              sb.append(BIO.IN.toString());
+            }
+            sb.append(neType);
+            sb.append("\n");
+          }
+          previousIsEntity = true;
+          i += neSpanSize - 1;
+        } else {
+          sb.append(thisTerm.getForm());
+          sb.append("\t");
+          sb.append(thisTerm.getLemma());
+          sb.append("\t");
+          sb.append(thisTerm.getMorphofeat());
+          sb.append("\t");
+          sb.append(BIO.OUT);
+          sb.append("\n");
+          previousIsEntity = false;
+        }
+      }
+      sb.append("\n");// end of sentence
+    }
+    return sb.toString();
+  }
+  
+  /**
+   * Convert Entity class annotation to CoNLL formats.
+   * 
+   * @param neType
+   *          named entity class
+   * @return the converted string
+   */
+  public String convertToConLLTypes(String neType) {
+    String conllType = null;
+    if (neType.startsWith("PER") || neType.startsWith("ORG")
+        || neType.startsWith("LOC") || neType.startsWith("GPE")) {
+      conllType = neType.substring(0, 3);
+    } else if (neType.equalsIgnoreCase("MISC")) {
+      conllType = neType;
+    }
+    return conllType;
+  }
+  
+  /**
+   * Enumeration class for CoNLL 2003 BIO format
+   */
+  private static enum BIO {
+    BEGIN("B-"), IN("I-"), OUT("O");
+    String tag;
+
+    BIO(String tag) {
+      this.tag = tag;
+    }
+
+    public String toString() {
+      return this.tag;
     }
   }
    
