@@ -80,6 +80,7 @@ public class CLI {
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     parser.addArgument("--getXMLTextElem").help("Get the text of the <review_text> elemens in multi-domain sentiment corpus.\n");
  
+    parser.addArgument("--nafToCoNLL").help("Convert NAF to CoNLL format; currently only until NER");
     /*
      * Parse the command line arguments
      */
@@ -154,6 +155,11 @@ public class CLI {
       String inputFile = parsedArguments.getString("getXMLTextElem");
       Convert converter = new Convert();
       converter.getXMLTextElement(inputFile);
+    }
+    else if (parsedArguments.get("nafToCoNLL") != null) {
+      File inputDir = new File(parsedArguments.getString("nafToCoNLL"));
+      Convert converter = new Convert();
+      //converter.nafToCoNLL(inputDir);
     }
   }
 }
