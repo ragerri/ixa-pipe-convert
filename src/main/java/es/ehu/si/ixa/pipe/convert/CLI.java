@@ -76,6 +76,9 @@ public class CLI {
     		"lemmatizer dictionary.\n");
     parser.addArgument("--addLemmaDict2POSDict").nargs(2).help("Aggregate a lemmatizer dictionary to a POSTagger OpenNLP " +
     		"dictionary: first input is lemmatizer dictionary and second output the XML dictionary to be expanded.\n");
+    
+    parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
+    parser.addArgument("--getXMLTextElem").help("Get the text of the <review_text> elemens in multi-domain sentiment corpus.\n");
  
     /*
      * Parse the command line arguments
@@ -135,13 +138,22 @@ public class CLI {
       Convert converter = new Convert();
       converter.convertLemmaToPOSDict(inputDir);
     }
-    else if (!parsedArguments.getList("addLemmaDict2POSDict").isEmpty()) {
+    else if (parsedArguments.getList("addLemmaDict2POSDict") != null) {
       List<Object> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
       File lemmaDict = new File((String) fileArgs.get(0));
       File xmlDict = new File((String) fileArgs.get(1));
       Convert converter = new Convert();
       converter.addLemmaToPOSDict(lemmaDict, xmlDict);
     }
-
+    else if (parsedArguments.get("yelpGetText") != null) {
+      String inputFile = parsedArguments.getString("yelpGetText");
+      Convert converter = new Convert();
+      converter.getYelpText(inputFile);
+    }
+    else if (parsedArguments.get("getXMLTextElem") != null) {
+      String inputFile = parsedArguments.getString("getXMLTextElem");
+      Convert converter = new Convert();
+      converter.getXMLTextElement(inputFile);
+    }
   }
 }

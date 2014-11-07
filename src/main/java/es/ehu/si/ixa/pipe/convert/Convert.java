@@ -20,10 +20,12 @@ import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.KAFDocument.Layer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +39,16 @@ import javax.xml.parsers.SAXParserFactory;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSDictionary;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.Filters;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -520,6 +532,38 @@ public class Convert {
       if (tags.size() == 1) {
         tagDict.put(token, tags.toArray(new String[tags.size()]));
       }
+    }
+  }
+  
+  public void getYelpText(String fileName) throws IOException {
+    JSONParser parser = new JSONParser();
+    BufferedReader breader = new BufferedReader(new FileReader(fileName));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      try {
+        Object obj = parser.parse(line);
+        JSONObject jsonObject = (JSONObject) obj;
+        String text = (String) jsonObject.get("text");
+        System.out.println(text);
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+    }
+    breader.close();
+  }
+  
+  public void getXMLTextElement(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//review_text", Filters.element());
+      List<Element> reviewTexts = expr.evaluate(doc);
+      for (Element reviewText : reviewTexts) {
+        System.out.println(reviewText.getText());
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
     }
   }
    
