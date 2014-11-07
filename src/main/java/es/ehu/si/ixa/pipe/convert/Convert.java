@@ -20,10 +20,12 @@ import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.KAFDocument.Layer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +42,9 @@ import opennlp.tools.postag.POSDictionary;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -526,6 +531,23 @@ public class Convert {
         tagDict.put(token, tags.toArray(new String[tags.size()]));
       }
     }
+  }
+  
+  public void getYelpText(String fileName) throws IOException {
+    JSONParser parser = new JSONParser();
+    BufferedReader breader = new BufferedReader(new FileReader(fileName));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      try {
+        Object obj = parser.parse(line);
+        JSONObject jsonObject = (JSONObject) obj;
+        String text = (String) jsonObject.get("text");
+        System.out.println(text);
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+    }
+    breader.close();
   }
    
 }
