@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -42,6 +41,14 @@ import opennlp.tools.postag.POSDictionary;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.Filters;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -50,7 +57,6 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
 /**
@@ -548,6 +554,21 @@ public class Convert {
       }
     }
     breader.close();
+  }
+  
+  public void getXMLTextElement(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//review_text", Filters.element());
+      List<Element> reviewTexts = expr.evaluate(doc);
+      for (Element reviewText : reviewTexts) {
+        System.out.println(reviewText.getText());
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
   }
    
 }
