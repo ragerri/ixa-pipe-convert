@@ -587,22 +587,6 @@ public class Convert {
     breader.close();
   }
 
-  public void getXMLTextElement(String fileName) {
-    SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
-    try {
-      Document doc = sax.build(fileName);
-      XPathExpression<Element> expr = xFactory.compile("//review_text",
-          Filters.element());
-      List<Element> reviewTexts = expr.evaluate(doc);
-      for (Element reviewText : reviewTexts) {
-        System.out.println(reviewText.getText());
-      }
-    } catch (JDOMException | IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   /**
    * Remove named entity related layers in NAF.
    * 

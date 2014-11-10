@@ -78,7 +78,6 @@ public class CLI {
     		"dictionary: first input is lemmatizer dictionary and second output the XML dictionary to be expanded.\n");
     
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
-    parser.addArgument("--getXMLTextElem").help("Get the text of the <review_text> elemens in multi-domain sentiment corpus.\n");
  
     parser.addArgument("--nafToCoNLL").help("Convert NAF to CoNLL format; currently only until NER.\n");
     
@@ -154,11 +153,6 @@ public class CLI {
       String inputFile = parsedArguments.getString("yelpGetText");
       Convert converter = new Convert();
       converter.getYelpText(inputFile);
-    }
-    else if (parsedArguments.get("getXMLTextElem") != null) {
-      String inputFile = parsedArguments.getString("getXMLTextElem");
-      Convert converter = new Convert();
-      converter.getXMLTextElement(inputFile);
     }
     else if (parsedArguments.get("nafToCoNLL") != null) {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL"));
