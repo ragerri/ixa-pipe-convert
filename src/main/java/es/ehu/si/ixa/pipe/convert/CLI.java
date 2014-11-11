@@ -79,9 +79,11 @@ public class CLI {
     
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
  
-    parser.addArgument("--nafToCoNLL").help("Convert NAF to CoNLL format; currently only until NER.\n");
+    parser.addArgument("--nafToCoNLL02").help("Convert NAF to CoNLL02 format.\n");
+    parser.addArgument("--nafToCoNLL03").help("Convert NAF to CoNLL03 format.\n");
     
-    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval Aspect Term Extraction to OpenNLP NER annotation.\n");
+    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
+    parser.addArgument("--absaSemEvalATE2015").help("Convert ABSA SemEval 2015 Aspect Term Extraction to OpenNLP NER annotation.\n");
     
     parser.addArgument("--absaSemEvalText").help("Extract text sentences from ABSA SemEval corpora.\n");
     /*
@@ -154,15 +156,25 @@ public class CLI {
       Convert converter = new Convert();
       converter.getYelpText(inputFile);
     }
-    else if (parsedArguments.get("nafToCoNLL") != null) {
-      File inputDir = new File(parsedArguments.getString("nafToCoNLL"));
+    else if (parsedArguments.get("nafToCoNLL02") != null) {
+      File inputDir = new File(parsedArguments.getString("nafToCoNLL02"));
       Convert converter = new Convert();
-      converter.nafToCoNLL(inputDir);
+      converter.nafToCoNLL02(inputDir);
+    }
+    else if (parsedArguments.get("nafToCoNLL03") != null) {
+      File inputDir = new File(parsedArguments.getString("nafToCoNLL03"));
+      Convert converter = new Convert();
+      converter.nafToCoNLL03(inputDir);
     }
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
       Convert converter = new Convert();
       converter.absaSemEvalToNER(inputFile);
+    }
+    else if (parsedArguments.get("absaSemEvalATE2015") != null) {
+      String inputFile = parsedArguments.getString("absaSemEvalATE2015");
+      Convert converter = new Convert();
+      converter.absaSemEvalToNER2015(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalText");

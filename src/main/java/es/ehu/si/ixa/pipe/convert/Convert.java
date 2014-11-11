@@ -587,20 +587,12 @@ public class Convert {
     breader.close();
   }
 
-  /**
-   * Remove named entity related layers in NAF.
-   * 
-   * @param dir
-   *          the directory containing the documents
-   * @throws IOException
-   *           if io problems
-   */
-  public void nafToCoNLL(File dir) throws IOException {
+  public void nafToCoNLL02(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
-      File outfile = new File(dir.getCanonicalFile() + ".conll");
-      String outKAF = nafToCoNLLConvert(kaf);
+      File outfile = new File(dir.getCanonicalFile() + ".conll02");
+      String outKAF = nafToCoNLLConvert02(kaf);
       Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
@@ -609,14 +601,127 @@ public class Convert {
       if (listFile != null) {
         for (int i = 0; i < listFile.length; i++) {
           if (listFile[i].isDirectory()) {
-            nafToCoNLL(listFile[i]);
+            nafToCoNLL02(listFile[i]);
           } else {
             try {
-              File outfile = new File(listFile[i].getCanonicalFile() + ".conll");
+              File outfile = new File(listFile[i].getCanonicalFile() + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = nafToCoNLLConvert(kaf);
+              String outKAF = nafToCoNLLConvert02(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote CoNLL document to " + outfile);
+              System.err.println(">> Wrote CoNLL02 document to " + outfile);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Output Conll2002 format.
+   * 
+   * @param kaf
+   *          the kaf document
+   * @return the annotated named entities in conll03 format
+   */
+  public String nafToCoNLLConvert02(KAFDocument kaf) {
+    List<Entity> namedEntityList = kaf.getEntities();
+    Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
+    Map<String, String> entityToType = new HashMap<String, String>();
+    for (Entity ne : namedEntityList) {
+      List<ixa.kaflib.Span<Term>> entitySpanList = ne.getSpans();
+      for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
+        Term neTerm = spanTerm.getFirstTarget();
+        entityToSpanSize.put(neTerm.getId(), spanTerm.size());
+        entityToType.put(neTerm.getId(), ne.getType());
+      }
+    }
+
+    List<List<WF>> sentences = kaf.getSentences();
+    StringBuilder sb = new StringBuilder();
+    for (List<WF> sentence : sentences) {
+      int sentNumber = sentence.get(0).getSent();
+      List<Term> sentenceTerms = kaf.getSentenceTerms(sentNumber);
+      boolean previousIsEntity = false;
+
+      for (int i = 0; i < sentenceTerms.size(); i++) {
+        Term thisTerm = sentenceTerms.get(i);
+
+        if (entityToSpanSize.get(thisTerm.getId()) != null) {
+          int neSpanSize = entityToSpanSize.get(thisTerm.getId());
+          String neClass = entityToType.get(thisTerm.getId());
+          String neType = convertToConLLTypes(neClass);
+          if (neSpanSize > 1) {
+            for (int j = 0; j < neSpanSize; j++) {
+              thisTerm = sentenceTerms.get(i + j);
+              sb.append(thisTerm.getForm());
+              sb.append("\t");
+              sb.append(thisTerm.getLemma());
+              sb.append("\t");
+              sb.append(thisTerm.getMorphofeat());
+              sb.append("\t");
+              if (j == 0 || previousIsEntity) {
+                sb.append(BIO.BEGIN.toString());
+              } else {
+                sb.append(BIO.IN.toString());
+              }
+              sb.append(neType);
+              sb.append("\n");
+            }
+          } else {
+            sb.append(thisTerm.getForm());
+            sb.append("\t");
+            sb.append(thisTerm.getLemma());
+            sb.append("\t");
+            sb.append(thisTerm.getMorphofeat());
+            sb.append("\t");
+            sb.append(BIO.BEGIN.toString());
+            sb.append(neType);
+            sb.append("\n");
+          }
+          previousIsEntity = true;
+          i += neSpanSize - 1;
+        } else {
+          sb.append(thisTerm.getForm());
+          sb.append("\t");
+          sb.append(thisTerm.getLemma());
+          sb.append("\t");
+          sb.append(thisTerm.getMorphofeat());
+          sb.append("\t");
+          sb.append(BIO.OUT);
+          sb.append("\n");
+          previousIsEntity = false;
+        }
+      }
+      sb.append("\n");// end of sentence
+    }
+    return sb.toString();
+  }
+  
+ 
+  public void nafToCoNLL03(File dir) throws IOException {
+    // process one file
+    if (dir.isFile()) {
+      KAFDocument kaf = KAFDocument.createFromFile(dir);
+      File outfile = new File(dir.getCanonicalFile() + ".conll03");
+      String outKAF = nafToCoNLLConvert03(kaf);
+      Files.write(outKAF, outfile, Charsets.UTF_8);
+      System.err.println(">> Wrote CoNLL document to " + outfile);
+    } else {
+      // recursively process directories
+      File listFile[] = dir.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            nafToCoNLL03(listFile[i]);
+          } else {
+            try {
+              File outfile = new File(listFile[i].getCanonicalFile() + ".conll03");
+              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
+              String outKAF = nafToCoNLLConvert03(kaf);
+              Files.write(outKAF, outfile, Charsets.UTF_8);
+              System.err.println(">> Wrote CoNLL03 document to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
             }
@@ -633,7 +738,7 @@ public class Convert {
    *          the kaf document
    * @return the annotated named entities in conll03 format
    */
-  public String nafToCoNLLConvert(KAFDocument kaf) {
+  public String nafToCoNLLConvert03(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
     Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
     Map<String, String> entityToType = new HashMap<String, String>();
@@ -768,6 +873,60 @@ public class Convert {
           List<Element> aspectTermList = aspectTerms.getChildren();
           if (!aspectTermList.isEmpty()) {
             for (Element aspectElem : aspectTermList) {
+              Integer offsetFrom = Integer.parseInt(aspectElem
+                  .getAttributeValue("from"));
+              Integer offsetTo = Integer.parseInt(aspectElem
+                  .getAttributeValue("to"));
+              offsets.add(offsetFrom);
+              offsets.add(offsetTo);
+            }
+          }
+          Collections.sort(offsets);
+          for (int i = 0; i < offsets.size(); i++) {
+            List<Integer> offsetArray = new ArrayList<Integer>();
+            offsetArray.add(offsets.get(i++));
+            if (offsets.size() > i) {
+              offsetArray.add(offsets.get(i));
+            }
+            offsetList.add(offsetArray);
+          }
+          int counter = 0;
+          for (List<Integer> offsetSent : offsetList) {
+            Integer offsetFrom = offsetSent.get(0);
+            Integer offsetTo = offsetSent.get(1);
+            String aspectString = sentString.substring(offsetFrom, offsetTo);
+            sb.replace(offsetFrom + counter, offsetTo + counter,
+                "<START:term> " + aspectString + " <END>");
+            counter += 19;
+          }
+          System.out.println(sb.toString());
+        }
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public void absaSemEvalToNER2015(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      for (Element sent : sentences) {
+
+        StringBuilder sb = new StringBuilder();
+        String sentString = sent.getChildText("text");
+        sb = sb.append(sentString);
+        Element aspectTerms = sent.getChild("Opinions");
+        if (aspectTerms != null) {
+          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
+          List<Integer> offsets = new ArrayList<Integer>();
+          List<Element> aspectTermList = aspectTerms.getChildren();
+          for (Element aspectElem : aspectTermList) {
+            if (!aspectElem.getAttributeValue("target").equals("NULL")) {
               Integer offsetFrom = Integer.parseInt(aspectElem
                   .getAttributeValue("from"));
               Integer offsetTo = Integer.parseInt(aspectElem
