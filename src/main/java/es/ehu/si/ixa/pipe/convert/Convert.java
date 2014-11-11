@@ -35,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -935,12 +936,14 @@ public class Convert {
               offsets.add(offsetTo);
             }
           }
-          Collections.sort(offsets);
-          for (int i = 0; i < offsets.size(); i++) {
+          List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(new HashSet<Integer>(offsets));
+          Collections.sort(offsetsWithoutDuplicates);
+          
+          for (int i = 0; i < offsetsWithoutDuplicates.size(); i++) {
             List<Integer> offsetArray = new ArrayList<Integer>();
-            offsetArray.add(offsets.get(i++));
-            if (offsets.size() > i) {
-              offsetArray.add(offsets.get(i));
+            offsetArray.add(offsetsWithoutDuplicates.get(i++));
+            if (offsetsWithoutDuplicates.size() > i) {
+              offsetArray.add(offsetsWithoutDuplicates.get(i));
             }
             offsetList.add(offsetArray);
           }
@@ -950,7 +953,7 @@ public class Convert {
             Integer offsetTo = offsetSent.get(1);
             String aspectString = sentString.substring(offsetFrom, offsetTo);
             sb.replace(offsetFrom + counter, offsetTo + counter,
-                "<START:term> " + aspectString + " <END>");
+                "<START:target> " + aspectString + " <END>");
             counter += 19;
           }
           System.out.println(sb.toString());
