@@ -1038,7 +1038,7 @@ public class Convert {
           lowercaseCounter++;
         }
       }
-      double percent = lowercaseCounter / (double) line.length();
+      double percent = lowercaseCounter / (double) lineCharArray.length;
       if (percent > 0.9) {
        precleantext.append(line).append("\n");
       }
