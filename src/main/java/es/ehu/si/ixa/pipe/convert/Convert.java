@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -75,6 +77,7 @@ import com.google.common.io.Files;
  */
 public class Convert {
 
+  Pattern lowerCaseLetter = Pattern.compile("[a-z]");
   /**
    * Process the ancora constituent XML annotation into Penn Treebank bracketing
    * style.
@@ -1035,7 +1038,8 @@ public class Convert {
       }
       char[] lineCharArray = sb.toString().toCharArray();
       for (char lineArr : lineCharArray) {
-        if (Character.toString(lineArr).matches("[a-z]")) {
+        Matcher lowerCaseMatcher = lowerCaseLetter.matcher(Character.toString(lineArr));
+        if (lowerCaseMatcher.matches()) {
           lowercaseCounter++;
         }
       }
