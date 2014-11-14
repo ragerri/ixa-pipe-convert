@@ -86,6 +86,8 @@ public class CLI {
     parser.addArgument("--absaSemEvalATE2015").help("Convert ABSA SemEval 2015 Aspect Term Extraction to OpenNLP NER annotation.\n");
     
     parser.addArgument("--absaSemEvalText").help("Extract text sentences from ABSA SemEval corpora.\n");
+    
+    parser.addArgument("--brownClean").help("Remove paragraph if 90% of its characters are not lowercase.\n");
     /*
      * Parse the command line arguments
      */
@@ -180,6 +182,12 @@ public class CLI {
       String inputFile = parsedArguments.getString("absaSemEvalText");
       Convert converter = new Convert();
       converter.absaSemEvalText(inputFile);
+    }
+    else if (parsedArguments.get("brownClean") != null) {
+      File inputFile = new File(parsedArguments.getString("brownClean"));
+      Convert converter = new Convert();
+      converter.brownClusterClean(inputFile);
+      
     }
   }
 }

@@ -18,9 +18,9 @@ package es.ehu.si.ixa.pipe.convert;
 
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.KAFDocument.Layer;
 import ixa.kaflib.Term;
 import ixa.kaflib.WF;
-import ixa.kaflib.KAFDocument.Layer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,8 +30,10 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSDictionary;
 
@@ -51,7 +54,6 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.json.simple.JSONObject;
@@ -979,6 +981,71 @@ public class Convert {
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
+  }
+  
+
+  public void brownClusterClean(File dir) throws IOException {
+    // process one file
+    if (dir.isFile()) {
+      File outfile = new File(dir.getCanonicalFile() + ".clean");
+      String outKAF = brownCleanUpperCase(dir);
+      Files.write(outKAF, outfile, Charsets.UTF_8);
+      System.err.println(">> Wrote clean document to " + outfile);
+    } else {
+      // recursively process directories
+      File listFile[] = dir.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            brownClusterClean(listFile[i]);
+          } else {
+            try {
+              File outfile = new File(listFile[i].getCanonicalFile() + ".clean");
+              String outKAF = brownCleanUpperCase(listFile[i]);
+              Files.write(outKAF, outfile, Charsets.UTF_8);
+              System.err.println(">> Wrote pre-clean document to " + outfile);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Do not print a sentence if is less than 90% lowercase.
+   * @param sentences the list of sentences
+   * @return the list of sentences that contain more than 90% lowercase characters
+   * @throws IOException 
+   */
+  private String brownCleanUpperCase(File inFile) throws IOException {
+    InputStream inputStream = CmdLineUtil.openInFile(inFile);
+    StringBuilder precleantext = new StringBuilder();
+    BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      int lowercaseCounter = 0;
+      StringBuilder sb = new StringBuilder();
+      String[] lineArray = line.split(" ");
+      for (String word : lineArray) {
+        if (lineArray.length > 0) {
+          sb.append(word);
+        }
+      }
+      char[] lineCharArray = sb.toString().toCharArray();
+      for (char lineArr : lineCharArray) {
+        if (Character.isLowerCase(lineArr)) {
+          lowercaseCounter++;
+        }
+      }
+      double percent = lowercaseCounter / (double) lineCharArray.length;
+      System.err.println(percent);
+      if (percent > 0.9) {
+       precleantext.append(line).append("\n");
+      }
+    }
+    return precleantext.toString();
   }
 
 }
