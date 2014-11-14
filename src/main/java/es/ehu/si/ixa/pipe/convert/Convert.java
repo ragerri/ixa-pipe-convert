@@ -1035,7 +1035,7 @@ public class Convert {
       }
       char[] lineCharArray = sb.toString().toCharArray();
       for (char lineArr : lineCharArray) {
-        if (Character.isLowerCase(lineArr)) {
+        if (Character.toString(lineArr).matches("[a-z]")) {
           lowercaseCounter++;
         }
       }
