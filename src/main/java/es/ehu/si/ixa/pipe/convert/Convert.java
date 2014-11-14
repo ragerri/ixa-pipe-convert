@@ -1040,7 +1040,6 @@ public class Convert {
         }
       }
       double percent = lowercaseCounter / (double) lineCharArray.length;
-      System.err.println(percent);
       if (percent > 0.9) {
        precleantext.append(line).append("\n");
       }
