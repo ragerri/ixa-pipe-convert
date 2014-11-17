@@ -1025,7 +1025,7 @@ public class Convert {
     BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
-      int lowercaseCounter = 0;
+      double lowercaseCounter = 0;
       StringBuilder sb = new StringBuilder();
       String[] lineArray = line.split(" ");
       for (String word : lineArray) {
