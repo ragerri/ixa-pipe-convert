@@ -17,13 +17,20 @@
 package es.ehu.si.ixa.pipe.convert;
 
 
+import ixa.kaflib.KAFDocument;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -83,9 +90,11 @@ public class CLI {
     parser.addArgument("--nafToCoNLL03").help("Convert NAF to CoNLL03 format.\n");
     
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
-    parser.addArgument("--absaSemEvalATE2015").help("Convert ABSA SemEval 2015 Aspect Term Extraction to OpenNLP NER annotation.\n");
+    parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
     
-    parser.addArgument("--absaSemEvalText").help("Extract text sentences from ABSA SemEval corpora.\n");
+    parser.addArgument("--absaSemEvalText")
+        .action(Arguments.storeTrue())
+        .help("Extract text sentences from ABSA SemEval corpora.\n");
     
     parser.addArgument("--brownClean").help("Remove paragraph if 90% of its characters are not lowercase.\n");
     /*
@@ -99,7 +108,7 @@ public class CLI {
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       System.out
-          .println("Run java -jar target/ixa-pipe-converter-1.0.jar -help for details");
+          .println("Run java -jar target/ixa-pipe-converter-" + version + ".jar -help for details");
       System.exit(1);
     }
     
@@ -173,15 +182,16 @@ public class CLI {
       Convert converter = new Convert();
       converter.absaSemEvalToNER(inputFile);
     }
-    else if (parsedArguments.get("absaSemEvalATE2015") != null) {
-      String inputFile = parsedArguments.getString("absaSemEvalATE2015");
+    else if (parsedArguments.get("absaSemEvalOTE") != null) {
+      String inputFile = parsedArguments.getString("absaSemEvalOTE");
       Convert converter = new Convert();
       converter.absaSemEvalToNER2015(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText") != null) {
-      String inputFile = parsedArguments.getString("absaSemEvalText");
+      BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
       Convert converter = new Convert();
-      converter.absaSemEvalText(inputFile);
+      converter.absaSemEvalText(breader);
+      breader.close();
     }
     else if (parsedArguments.get("brownClean") != null) {
       File inputFile = new File(parsedArguments.getString("brownClean"));

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -965,11 +966,11 @@ public class Convert {
     }
   }
   
-  public void absaSemEvalText(String fileName) {
+  public void absaSemEvalText(Reader reader) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
-      Document doc = sax.build(fileName);
+      Document doc = sax.build(reader);
       XPathExpression<Element> expr = xFactory.compile("//sentence",
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
