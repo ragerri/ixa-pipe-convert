@@ -607,7 +607,8 @@ public class Convert {
             nafToCoNLL02(listFile[i]);
           } else {
             try {
-              File outfile = new File(listFile[i].getCanonicalFile() + ".conll02");
+              File outfile = new File(listFile[i].getCanonicalFile()
+                  + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
               String outKAF = nafToCoNLLConvert02(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
@@ -620,7 +621,7 @@ public class Convert {
       }
     }
   }
-  
+
   /**
    * Output Conll2002 format.
    * 
@@ -701,8 +702,7 @@ public class Convert {
     }
     return sb.toString();
   }
-  
- 
+
   public void nafToCoNLL03(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
@@ -720,7 +720,8 @@ public class Convert {
             nafToCoNLL03(listFile[i]);
           } else {
             try {
-              File outfile = new File(listFile[i].getCanonicalFile() + ".conll03");
+              File outfile = new File(listFile[i].getCanonicalFile()
+                  + ".conll03");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
               String outKAF = nafToCoNLLConvert03(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
@@ -902,14 +903,14 @@ public class Convert {
                 "<START:term> " + aspectString + " <END>");
             counter += 19;
           }
-          System.out.println(sb.toString());
         }
+        System.out.println(sb.toString());
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
   }
-  
+
   public void absaSemEvalToNER2015(String fileName) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -919,16 +920,16 @@ public class Convert {
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
       for (Element sent : sentences) {
-
-        StringBuilder sb = new StringBuilder();
+        
         String sentString = sent.getChildText("text");
+        StringBuilder sb = new StringBuilder();
         sb = sb.append(sentString);
-        Element aspectTerms = sent.getChild("Opinions");
-        if (aspectTerms != null) {
+        Element opinionsElement = sent.getChild("Opinions");
+        if (opinionsElement != null) {
           List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
           List<Integer> offsets = new ArrayList<Integer>();
-          List<Element> aspectTermList = aspectTerms.getChildren();
-          for (Element aspectElem : aspectTermList) {
+          List<Element> oteList = opinionsElement.getChildren();
+          for (Element aspectElem : oteList) {
             if (!aspectElem.getAttributeValue("target").equals("NULL")) {
               Integer offsetFrom = Integer.parseInt(aspectElem
                   .getAttributeValue("from"));
@@ -938,9 +939,10 @@ public class Convert {
               offsets.add(offsetTo);
             }
           }
-          List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(new HashSet<Integer>(offsets));
+          List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(
+              new HashSet<Integer>(offsets));
           Collections.sort(offsetsWithoutDuplicates);
-          
+
           for (int i = 0; i < offsetsWithoutDuplicates.size(); i++) {
             List<Integer> offsetArray = new ArrayList<Integer>();
             offsetArray.add(offsetsWithoutDuplicates.get(i++));
@@ -956,16 +958,16 @@ public class Convert {
             String aspectString = sentString.substring(offsetFrom, offsetTo);
             sb.replace(offsetFrom + counter, offsetTo + counter,
                 "<START:target> " + aspectString + " <END>");
-            counter += 19;
+            counter += 21;
           }
-          System.out.println(sb.toString());
         }
+        System.out.println(sb.toString());
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
   }
-  
+
   public void absaSemEvalText(Reader reader) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -982,7 +984,6 @@ public class Convert {
       e.printStackTrace();
     }
   }
-  
 
   public void brownClusterClean(File dir) throws IOException {
     // process one file
@@ -1012,17 +1013,21 @@ public class Convert {
       }
     }
   }
-  
+
   /**
    * Do not print a sentence if is less than 90% lowercase.
-   * @param sentences the list of sentences
-   * @return the list of sentences that contain more than 90% lowercase characters
-   * @throws IOException 
+   * 
+   * @param sentences
+   *          the list of sentences
+   * @return the list of sentences that contain more than 90% lowercase
+   *         characters
+   * @throws IOException
    */
   private String brownCleanUpperCase(File inFile) throws IOException {
     InputStream inputStream = CmdLineUtil.openInFile(inFile);
     StringBuilder precleantext = new StringBuilder();
-    BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
@@ -1041,7 +1046,7 @@ public class Convert {
       }
       double percent = lowercaseCounter / (double) lineCharArray.length;
       if (percent > 0.9) {
-       precleantext.append(line).append("\n");
+        precleantext.append(line).append("\n");
       }
     }
     breader.close();
