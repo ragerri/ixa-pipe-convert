@@ -187,7 +187,7 @@ public class CLI {
       Convert converter = new Convert();
       converter.absaSemEvalToNER2015(inputFile);
     }
-    else if (parsedArguments.get("absaSemEvalText") != null) {
+    else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
       Convert converter = new Convert();
       converter.absaSemEvalText(breader);

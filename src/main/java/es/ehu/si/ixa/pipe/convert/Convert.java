@@ -1044,6 +1044,7 @@ public class Convert {
        precleantext.append(line).append("\n");
       }
     }
+    breader.close();
     return precleantext.toString();
   }
 
