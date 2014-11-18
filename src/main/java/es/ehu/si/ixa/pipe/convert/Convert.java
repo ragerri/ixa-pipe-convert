@@ -960,8 +960,8 @@ public class Convert {
                 "<START:target> " + aspectString + " <END>");
             counter += 21;
           }
+          System.out.println(sb.toString());
         }
-        System.out.println(sb.toString());
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
@@ -1045,7 +1045,7 @@ public class Convert {
         }
       }
       double percent = lowercaseCounter / (double) lineCharArray.length;
-      if (percent >= 0.95) {
+      if (percent >= 0.90) {
         precleantext.append(line).append("\n");
       }
     }
