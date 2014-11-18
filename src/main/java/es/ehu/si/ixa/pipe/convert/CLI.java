@@ -185,7 +185,8 @@ public class CLI {
     else if (parsedArguments.get("absaSemEvalOTE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalOTE");
       Convert converter = new Convert();
-      converter.absaSemEvalToNER2015(inputFile);
+      //converter.absaSemEvalToNER2015(inputFile);
+      converter.absaSemEvalToMultiClassNER2015(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));

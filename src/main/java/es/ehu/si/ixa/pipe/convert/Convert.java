@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -959,6 +960,69 @@ public class Convert {
             sb.replace(offsetFrom + counter, offsetTo + counter,
                 "<START:target> " + aspectString + " <END>");
             counter += 21;
+          }
+          System.out.println(sb.toString());
+        }
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public void absaSemEvalToMultiClassNER2015(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      for (Element sent : sentences) {
+        
+        String sentString = sent.getChildText("text");
+        StringBuilder sb = new StringBuilder();
+        sb = sb.append(sentString);
+        Element opinionsElement = sent.getChild("Opinions");
+        if (opinionsElement != null) {
+          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
+          HashSet<String> targetClassSet = new LinkedHashSet<String>();
+          List<Integer> offsets = new ArrayList<Integer>();
+          List<Element> opinionList = opinionsElement.getChildren();
+          for (Element opinion : opinionList) {
+            if (!opinion.getAttributeValue("target").equals("NULL")) {
+              String className = opinion.getAttributeValue("category");
+              String targetString = opinion.getAttributeValue("target");
+              Integer offsetFrom = Integer.parseInt(opinion
+                  .getAttributeValue("from"));
+              Integer offsetTo = Integer.parseInt(opinion
+                  .getAttributeValue("to"));
+              offsets.add(offsetFrom);
+              offsets.add(offsetTo);
+              targetClassSet.add(targetString + "JAR!" + className + opinion.getAttributeValue("from") + opinion.getAttributeValue("to"));
+            }
+          }
+          List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(
+              new HashSet<Integer>(offsets));
+          Collections.sort(offsetsWithoutDuplicates);
+          List<String> targetClassList = new ArrayList<String>(targetClassSet);
+
+          for (int i = 0; i < offsetsWithoutDuplicates.size(); i++) {
+            List<Integer> offsetArray = new ArrayList<Integer>();
+            offsetArray.add(offsetsWithoutDuplicates.get(i++));
+            if (offsetsWithoutDuplicates.size() > i) {
+              offsetArray.add(offsetsWithoutDuplicates.get(i));
+            }
+            offsetList.add(offsetArray);
+          }
+          int counter = 0;
+          for (int i = 0; i < offsetList.size(); i++) {
+            Integer offsetFrom = offsetList.get(i).get(0);
+            Integer offsetTo = offsetList.get(i).get(1);
+            String className = targetClassList.get(i);
+            String aspectString = sentString.substring(offsetFrom, offsetTo);
+            sb.replace(offsetFrom + counter, offsetTo + counter,
+                "<START:"+ className.split("JAR!")[1].substring(0, 3) + "> " + aspectString + " <END>");
+            counter += 18;
           }
           System.out.println(sb.toString());
         }
