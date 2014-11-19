@@ -91,6 +91,7 @@ public class CLI {
     
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
+    parser.addArgument("--absaSemEvalOTEMulti").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP Multiclass NER annotation.\n");
     
     parser.addArgument("--absaSemEvalText")
         .action(Arguments.storeTrue())
@@ -185,7 +186,11 @@ public class CLI {
     else if (parsedArguments.get("absaSemEvalOTE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalOTE");
       Convert converter = new Convert();
-      //converter.absaSemEvalToNER2015(inputFile);
+      converter.absaSemEvalToNER2015(inputFile);
+    }
+    else if (parsedArguments.get("absaSemEvalOTEMulti") != null) {
+      String inputFile = parsedArguments.getString("absaSemEvalOTEMulti");
+      Convert converter = new Convert();
       converter.absaSemEvalToMultiClassNER2015(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText")) {

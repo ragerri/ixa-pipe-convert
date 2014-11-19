@@ -583,7 +583,7 @@ public class Convert {
         Object obj = parser.parse(line);
         JSONObject jsonObject = (JSONObject) obj;
         String text = (String) jsonObject.get("text");
-        System.out.println(text);
+        System.out.println(text); 
       } catch (ParseException e) {
         e.printStackTrace();
       }
