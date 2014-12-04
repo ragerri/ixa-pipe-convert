@@ -494,23 +494,27 @@ public class Convert {
   }
 
   /**
-   * Generates {@code POSDictionary} from a list of words and its postag.
+   * Generates {@code POSDictionary} from a list of monosemic words and its postag.
+   * form\tab\lemma\tabpostag
    * 
    * @param inputLines
    *          the list of words and postag per line
    * @return the POSDictionary
    */
-  public POSDictionary getPOSTaggerDict(List<String> inputLines) {
+  private POSDictionary getPOSTaggerDict(List<String> inputLines) {
     POSDictionary posTaggerDict = new POSDictionary();
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
-      String[] lineArray = line.split(" ");
-      if (lineArray.length == 2) {
-        dictMultiMap.put(lineArray[0], lineArray[1]);
+      String[] lineArray = line.split("\t");
+      if (lineArray.length == 3) {
+        if (!lineArray[0].contains("<")) {
+        dictMultiMap.put(lineArray[0], lineArray[2]);
+        }
       }
     }
     for (String token : dictMultiMap.keySet()) {
       List<String> tags = dictMultiMap.get(token);
+      //add only monosemic words
       if (tags.size() == 1) {
         posTaggerDict.put(token, tags.toArray(new String[tags.size()]));
       }
@@ -558,7 +562,7 @@ public class Convert {
    * @param tagDict
    *          the POSDictionary to which the lemma dictionary will be added
    */
-  public void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
+  private void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
       String[] lineArray = line.split(" ");
