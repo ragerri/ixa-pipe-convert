@@ -463,6 +463,56 @@ public class Convert {
         System.out.println(entity.getExternalRefs().get(0).getReference());
     }
   }
+  
+  /**
+   * Convert a lemma dictionary (word lemma postag) into a
+   * {@code POSTaggerDictionary}. It saves the resulting file with the name of
+   * the original dictionary changing the extension to .xml.
+   * 
+   * @param lemmaDict
+   *          the input file
+   * @throws IOException
+   *           if io problems
+   */
+  public void createMonosemicDictionary(File lemmaDict) throws IOException {
+    // process one file
+    if (lemmaDict.isFile()) {
+      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
+      getMonosemicDict(inputLines);
+    } else {
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Generates {@code POSDictionary} from a list of monosemic words and its postag.
+   * form\tab\lemma\tabpostag
+   * 
+   * @param inputLines
+   *          the list of words and postag per line
+   * @return the POSDictionary
+   */
+  private void getMonosemicDict(List<String> inputLines) {
+    Map<String, String> monosemicMap = new HashMap<String, String>();
+    ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
+    for (String line : inputLines) {
+      String[] lineArray = line.split("\t");
+      if (lineArray.length == 3) {
+        if (!lineArray[0].contains("<")) {
+        dictMultiMap.put(lineArray[0], lineArray[2]);
+        monosemicMap.put(lineArray[0], lineArray[1] + "\t" + lineArray[2]);
+        }
+      }
+    }
+    for (String token : dictMultiMap.keySet()) {
+      List<String> tags = dictMultiMap.get(token);
+      //add only monosemic words
+      if (tags.size() == 1) {
+        System.out.println(token + "\t" + monosemicMap.get(token));
+      }
+    }
+  }
 
   /**
    * Convert a lemma dictionary (word lemma postag) into a

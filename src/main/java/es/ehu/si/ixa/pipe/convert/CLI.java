@@ -75,6 +75,7 @@ public class CLI {
     parser.addArgument("--printNED").help("Prints named entity string if NED link available in NAF.\n");
     parser.addArgument("--removeEntities").help("Removes the entity NAF layer.\n");
     
+    parser.addArgument("--createMonosemicDictionary").help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     parser.addArgument("--createPOSDictionary").help("Create POSTagger OpenNLP dictionary from " +
     		"lemmatizer dictionary.\n");
     parser.addArgument("--addLemmaDict2POSDict").nargs(2).help("Aggregate a lemmatizer dictionary to a POSTagger OpenNLP " +
@@ -146,6 +147,11 @@ public class CLI {
       File inputDir = new File(parsedArguments.getString("removeEntities"));
       Convert converter = new Convert();
       converter.removeEntities(inputDir);
+    }
+    else if (parsedArguments.getString("createMonosemicDictionary") != null) {
+      File inputDir = new File(parsedArguments.getString("createMonosemicDictionary"));
+      Convert converter = new Convert();
+      converter.createMonosemicDictionary(inputDir);
     }
     else if (parsedArguments.getString("createPOSDictionary") != null) {
       File inputDir = new File(parsedArguments.getString("createPOSDictionary"));
