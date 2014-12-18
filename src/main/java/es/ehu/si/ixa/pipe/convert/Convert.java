@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -67,6 +69,11 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
+
+import es.ehu.si.ixa.ixa.pipe.tok.IxaPipeTokenizer;
+import es.ehu.si.ixa.ixa.pipe.tok.Segmenter;
+import es.ehu.si.ixa.ixa.pipe.tok.Token;
+import es.ehu.si.ixa.ixa.pipe.tok.TokenFactory;
 
 /**
  * Convert functions.
@@ -1103,7 +1110,11 @@ public class Convert {
     }
   }
   
-  public void absa15testToNAF(String fileName) {
+  public String absa15testToNAF(String fileName) {
+    KAFDocument kaf = new KAFDocument("en","v1.naf");
+    Segmenter segmenter = new Segmenter();
+    TokenFactory tokenFactory = new TokenFactory();
+    Properties properties = setAnnotateProperties(); 
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -1112,14 +1123,36 @@ public class Convert {
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
       
-      for (Element sent : sentences) {  
+      int counter = 1;
+      for (Element sent : sentences) {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        Files.write(sentString, new File(sentId + ".txt"), Charsets.UTF_8);
+        StringReader stringReader = new StringReader(sentString);
+        BufferedReader breader = new BufferedReader(stringReader);
+        IxaPipeTokenizer<Token> tokenizer = new IxaPipeTokenizer<Token>(breader, tokenFactory, properties);
+        List<Token> tokens = tokenizer.tokenize();
+        List<List<Token>> segmentedSentences = segmenter.segment(tokens);
+        for (List<Token> sentence : segmentedSentences) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.value(), token.startOffset(), counter);
+            wf.setXpath(sentId);
+          }
+        }
+        counter++;
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
+    return kaf.toString();
+  }
+  
+  private Properties setAnnotateProperties() {
+    Properties annotateProperties = new Properties();
+    annotateProperties.setProperty("language", "en");
+    annotateProperties.setProperty("tokenizer", "ixa");
+    annotateProperties.setProperty("normalize", "default");
+    annotateProperties.setProperty("paragraphs", "yes");
+    return annotateProperties;
   }
 
   public void brownClusterClean(File dir) throws IOException {

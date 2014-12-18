@@ -199,7 +199,8 @@ public class CLI {
     else if (parsedArguments.get("absa15testToNAF") != null) {
       String inputFile = parsedArguments.getString("absa15testToNAF");
       Convert converter = new Convert();
-      converter.absa15testToNAF(inputFile);
+      String kafString = converter.absa15testToNAF(inputFile);
+      System.out.print(kafString);
     }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
