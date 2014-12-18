@@ -1102,6 +1102,25 @@ public class Convert {
       e.printStackTrace();
     }
   }
+  
+  public void absa15testToNAF(String fileName) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      
+      for (Element sent : sentences) {  
+        String sentId = sent.getAttributeValue("id");
+        String sentString = sent.getChildText("text");
+        Files.write(sentString, new File(sentId + ".txt"), Charsets.UTF_8);
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   public void brownClusterClean(File dir) throws IOException {
     // process one file
