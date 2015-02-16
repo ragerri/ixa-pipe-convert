@@ -822,6 +822,7 @@ public class Convert {
       int sentNumber = sentence.get(0).getSent();
       List<Term> sentenceTerms = kaf.getSentenceTerms(sentNumber);
       boolean previousIsEntity = false;
+      String previousType = null;
 
       for (int i = 0; i < sentenceTerms.size(); i++) {
         Term thisTerm = sentenceTerms.get(i);
@@ -840,7 +841,7 @@ public class Convert {
               sb.append("\t");
               sb.append(thisTerm.getMorphofeat());
               sb.append("\t");
-              if (j == 0 && previousIsEntity) {
+              if (j == 0 && previousIsEntity && previousType.equalsIgnoreCase(neType)) {
                 sb.append(BIO.BEGIN.toString());
               } else {
                 sb.append(BIO.IN.toString());
@@ -848,6 +849,7 @@ public class Convert {
               sb.append(neType);
               sb.append("\n");
             }
+            previousType = neType;
           } else {
             sb.append(thisTerm.getForm());
             sb.append("\t");
@@ -855,7 +857,7 @@ public class Convert {
             sb.append("\t");
             sb.append(thisTerm.getMorphofeat());
             sb.append("\t");
-            if (previousIsEntity) {
+            if (previousIsEntity && previousType.equalsIgnoreCase(neType)) {
               sb.append(BIO.BEGIN.toString());
             } else {
               sb.append(BIO.IN.toString());
@@ -864,6 +866,7 @@ public class Convert {
             sb.append("\n");
           }
           previousIsEntity = true;
+          previousType = neType;
           i += neSpanSize - 1;
         } else {
           sb.append(thisTerm.getForm());
@@ -875,6 +878,7 @@ public class Convert {
           sb.append(BIO.OUT);
           sb.append("\n");
           previousIsEntity = false;
+          previousType = BIO.OUT.toString();
         }
       }
       sb.append("\n");// end of sentence
