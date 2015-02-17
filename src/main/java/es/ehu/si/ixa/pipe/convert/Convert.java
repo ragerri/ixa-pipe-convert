@@ -70,7 +70,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 
-import es.ehu.si.ixa.ixa.pipe.tok.IxaPipeTokenizer;
+import es.ehu.si.ixa.ixa.pipe.tok.EnglishTokenizer;
 import es.ehu.si.ixa.ixa.pipe.tok.Segmenter;
 import es.ehu.si.ixa.ixa.pipe.tok.Token;
 import es.ehu.si.ixa.ixa.pipe.tok.TokenFactory;
@@ -1129,7 +1129,7 @@ public class Convert {
         String sentString = sent.getChildText("text");
         StringReader stringReader = new StringReader(sentString);
         BufferedReader breader = new BufferedReader(stringReader);
-        IxaPipeTokenizer<Token> tokenizer = new IxaPipeTokenizer<Token>(breader, tokenFactory, properties);
+        EnglishTokenizer<Token> tokenizer = new EnglishTokenizer<Token>(breader, tokenFactory, properties);
         List<Token> tokens = tokenizer.tokenize();
         List<List<Token>> segmentedSentences = segmenter.segment(tokens);
         for (List<Token> sentence : segmentedSentences) {

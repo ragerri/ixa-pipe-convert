@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>es.ehu.si.ixa</groupId>
 			<artifactId>ixa-pipe-tok</artifactId>
-			<version>1.6.6</version>
+			<version>1.7.0</version>
 		</dependency>
 	</dependencies>
 
