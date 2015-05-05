@@ -392,7 +392,7 @@ public class Convert {
           } else {
             try {
               File outfile = new File(Files.getNameWithoutExtension(listFile[i]
-                  .getPath()) + ".kaf.tok");
+                  .getPath()) + ".naf");
               String outKAF = removeEntityLayer(listFile[i]);
               Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote KAF document without entities to "
@@ -420,6 +420,8 @@ public class Convert {
     kaf.removeLayer(Layer.entities);
     kaf.removeLayer(Layer.constituency);
     kaf.removeLayer(Layer.coreferences);
+    kaf.removeLayer(Layer.chunks);
+    kaf.removeLayer(Layer.deps);
     return kaf.toString();
   }
 
