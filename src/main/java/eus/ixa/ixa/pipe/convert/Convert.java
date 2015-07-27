@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package es.ehu.si.ixa.pipe.convert;
+package eus.ixa.ixa.pipe.convert;
 
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -69,11 +68,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
-
-import es.ehu.si.ixa.ixa.pipe.tok.EnglishTokenizer;
-import es.ehu.si.ixa.ixa.pipe.tok.Segmenter;
-import es.ehu.si.ixa.ixa.pipe.tok.Token;
-import es.ehu.si.ixa.ixa.pipe.tok.TokenFactory;
 
 /**
  * Convert functions.
@@ -417,11 +411,11 @@ public class Convert {
    */
   private String removeEntityLayer(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
-    kaf.removeLayer(Layer.entities);
+    /*kaf.removeLayer(Layer.entities);
     kaf.removeLayer(Layer.constituency);
     kaf.removeLayer(Layer.coreferences);
     kaf.removeLayer(Layer.chunks);
-    kaf.removeLayer(Layer.deps);
+    kaf.removeLayer(Layer.deps);*/
     return kaf.toString();
   }
 
@@ -1113,7 +1107,7 @@ public class Convert {
     }
   }
   
-  public String absa15testToNAF(String fileName) {
+  /*public String absa15testToNAF(String fileName) {
     KAFDocument kaf = new KAFDocument("en","v1.naf");
     Segmenter segmenter = new Segmenter();
     TokenFactory tokenFactory = new TokenFactory();
@@ -1147,9 +1141,9 @@ public class Convert {
       e.printStackTrace();
     }
     return kaf.toString();
-  }
+  }*/
   
-  private Properties setAnnotateProperties() {
+  private Properties setTokenizeProperties() {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", "en");
     annotateProperties.setProperty("tokenizer", "ixa");

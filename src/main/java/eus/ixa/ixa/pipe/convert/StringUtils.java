@@ -1,4 +1,4 @@
-package es.ehu.si.ixa.pipe.convert;
+package eus.ixa.ixa.pipe.convert;
 
 /*
  *Copyright 2014 Rodrigo Agerri

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>es.ehu.si</groupId>
+  <groupId>eus.ixa</groupId>
   <artifactId>ixa-pipe-convert</artifactId>
   <name>ixa-pipe-convert</name>
-  <version>0.1.0</version>
-  <description>ixa-pipe-convert converts corpora formats for training with ixa pipes tools.</description>
+  <version>0.2.0</version>
+  <description>It converts corpora formats.</description>
   <url>http://ixa2.si.ehu.es/ixa-pipes</url>
   <prerequisites>
     <maven>3.0</maven>
@@ -14,7 +14,7 @@
     <developer>
       <id>ragerri</id>
       <name>Rodrigo Agerri</name>
-      <email>rodrigo.agerri@ehu.es</email>
+      <email>rodrigo.agerri@ehu.eus</email>
     </developer>
   </developers>
   <scm>
@@ -40,7 +40,7 @@
               <transformers>
                 <transformer>
                   <manifestEntries>
-                    <Main-Class>es.ehu.si.ixa.pipe.convert.CLI</Main-Class>
+                    <Main-Class>eus.ixa.ixa.pipe.convert.CLI</Main-Class>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>${project.artifactId}</artifactId>
                     <Implementation-Version>${project.version}</Implementation-Version>
@@ -59,7 +59,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.2.1</version>
         <configuration>
-          <mainClass>es.ehu.si.ixa.pipe.convert.CLI</mainClass>
+          <mainClass>eus.ixa.ixa.pipe.convert.CLI</mainClass>
         </configuration>
       </plugin>
       <plugin>

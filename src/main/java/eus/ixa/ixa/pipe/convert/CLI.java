@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package es.ehu.si.ixa.pipe.convert;
+package eus.ixa.ixa.pipe.convert;
 
 
 import java.io.BufferedReader;
@@ -197,10 +197,11 @@ public class CLI {
       converter.absaSemEvalToMultiClassNER2015(inputFile);
     }
     else if (parsedArguments.get("absa15testToNAF") != null) {
-      String inputFile = parsedArguments.getString("absa15testToNAF");
+      /*String inputFile = parsedArguments.getString("absa15testToNAF");
       Convert converter = new Convert();
       String kafString = converter.absa15testToNAF(inputFile);
-      System.out.print(kafString);
+      System.out.print(kafString);*/
+      System.out.println("Not active!!");
     }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
