@@ -89,11 +89,10 @@ public class CLI {
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--absaSemEvalOTEMulti").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP Multiclass NER annotation.\n");
-    parser.addArgument("--absa15testToNAF").help("Convert ABSA SemEval 2015 Opinion Target Extraction to one document per sentence.\n");
-    
     parser.addArgument("--absaSemEvalText")
         .action(Arguments.storeTrue())
         .help("Extract text sentences from ABSA SemEval corpora.\n");
+    parser.addArgument("--absa15testToNAFWFs").help("Convert ABSA SemEval 2015 test to NAF WFs for annotation and evaluation.\n");
     
     parser.addArgument("--brownClean").help("Remove paragraph if 90% of its characters are not lowercase.\n");
     /*
@@ -196,18 +195,17 @@ public class CLI {
       Convert converter = new Convert();
       converter.absaSemEvalToMultiClassNER2015(inputFile);
     }
-    else if (parsedArguments.get("absa15testToNAF") != null) {
-      /*String inputFile = parsedArguments.getString("absa15testToNAF");
-      Convert converter = new Convert();
-      String kafString = converter.absa15testToNAF(inputFile);
-      System.out.print(kafString);*/
-      System.out.println("Not active!!");
-    }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
       Convert converter = new Convert();
       converter.absaSemEvalText(breader);
       breader.close();
+    }
+    else if (parsedArguments.get("absa15testToNAFWFs") != null) {
+      String inputFile = parsedArguments.getString("absa15testToNAFWFs");
+      Convert converter = new Convert();
+      String kafString = converter.absa15testToNAFWFs(inputFile);
+      System.out.print(kafString);
     }
     else if (parsedArguments.get("brownClean") != null) {
       File inputFile = new File(parsedArguments.getString("brownClean"));

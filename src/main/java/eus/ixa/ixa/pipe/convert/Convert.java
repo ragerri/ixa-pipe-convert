@@ -18,7 +18,6 @@ package eus.ixa.ixa.pipe.convert;
 
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
-import ixa.kaflib.KAFDocument.Layer;
 import ixa.kaflib.Term;
 import ixa.kaflib.WF;
 
@@ -43,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -69,6 +69,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 
+import eus.ixa.ixa.pipe.seg.RuleBasedSegmenter;
+import eus.ixa.ixa.pipe.seg.SentenceSegmenter;
+import eus.ixa.ixa.pipe.tok.RuleBasedTokenizer;
+import eus.ixa.ixa.pipe.tok.Token;
+
 /**
  * Convert functions.
  * 
@@ -77,6 +82,10 @@ import com.google.common.io.Files;
  * 
  */
 public class Convert {
+  
+  public static Pattern detokenizeTargets = Pattern.compile("<\\s+START\\s+:\\s+target\\s+>", Pattern.UNICODE_CHARACTER_CLASS);
+  public static Pattern detokenizeEnds = Pattern.compile("<\\s+END\\s+>");
+  
   /**
    * Process the ancora constituent XML annotation into Penn Treebank bracketing
    * style.
@@ -1019,8 +1028,13 @@ public class Convert {
                 "<START:target> " + aspectString + " <END>");
             counter += 21;
           }
-          System.out.println(sb.toString());
+          //System.out.print(sb.toString());
         }
+        //TODO make public getTokens() method in RuleBasedTokenizer!!
+        String tokenizedSentence = getStringFromTokens(sb.toString());
+        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+START\\s+:\\s+target\\s+>", "<START:target>");
+        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>", "<END>");
+        System.out.println(tokenizedSentence);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
@@ -1107,11 +1121,29 @@ public class Convert {
     }
   }
   
-  /*public String absa15testToNAF(String fileName) {
+  private String getStringFromTokens(String sentString) {
+    
+    StringBuilder sb = new StringBuilder();
+    List<List<Token>> tokens = tokenizeSentence(sentString);
+    for (List<Token> sentence : tokens) {
+      for (Token tok : sentence) {
+        sb.append(tok.getTokenValue()).append(" ");
+      }
+    }
+    return sb.toString();
+  }
+  
+  private List<List<Token>> tokenizeSentence(String sentString) {
+    RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString, setTokenizeProperties());
+    List<String> sentenceList = new ArrayList<String>();
+    sentenceList.add(sentString);
+    String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
+    List<List<Token>> tokens = tokenizer.tokenize(sentences);
+    return tokens;
+  }
+  
+  public String absa15testToNAFWFs(String fileName) {
     KAFDocument kaf = new KAFDocument("en","v1.naf");
-    Segmenter segmenter = new Segmenter();
-    TokenFactory tokenFactory = new TokenFactory();
-    Properties properties = setAnnotateProperties(); 
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -1124,14 +1156,10 @@ public class Convert {
       for (Element sent : sentences) {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        StringReader stringReader = new StringReader(sentString);
-        BufferedReader breader = new BufferedReader(stringReader);
-        EnglishTokenizer<Token> tokenizer = new EnglishTokenizer<Token>(breader, tokenFactory, properties);
-        List<Token> tokens = tokenizer.tokenize();
-        List<List<Token>> segmentedSentences = segmenter.segment(tokens);
+        List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
         for (List<Token> sentence : segmentedSentences) {
           for (Token token : sentence) {
-            WF wf = kaf.newWF(token.value(), token.startOffset(), counter);
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(), counter);
             wf.setXpath(sentId);
           }
         }
@@ -1141,14 +1169,14 @@ public class Convert {
       e.printStackTrace();
     }
     return kaf.toString();
-  }*/
+  }
   
   private Properties setTokenizeProperties() {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", "en");
-    annotateProperties.setProperty("tokenizer", "ixa");
     annotateProperties.setProperty("normalize", "default");
-    annotateProperties.setProperty("paragraphs", "yes");
+    annotateProperties.setProperty("untokenizable", "no");
+    annotateProperties.setProperty("hardParagraph", "no");
     return annotateProperties;
   }
 
