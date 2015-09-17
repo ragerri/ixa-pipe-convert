@@ -93,6 +93,7 @@ public class CLI {
         .action(Arguments.storeTrue())
         .help("Extract text sentences from ABSA SemEval corpora.\n");
     parser.addArgument("--absa15testToNAFWFs").help("Convert ABSA SemEval 2015 test to NAF WFs for annotation and evaluation.\n");
+    parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
     
     parser.addArgument("--brownClean").help("Remove paragraph if 90% of its characters are not lowercase.\n");
     /*
@@ -183,7 +184,7 @@ public class CLI {
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
       Convert converter = new Convert();
-      converter.absaSemEvalToNER(inputFile);
+      converter.absaSemEvalToNER2014(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalOTE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalOTE");
@@ -206,6 +207,11 @@ public class CLI {
       Convert converter = new Convert();
       String kafString = converter.absa15testToNAFWFs(inputFile);
       System.out.print(kafString);
+    }
+    else if (parsedArguments.get("nafToATE") != null) {
+      String inputFile = parsedArguments.getString("nafToATE");
+      Convert converter = new Convert();
+      System.out.print(converter.nafToATE(inputFile));
     }
     else if (parsedArguments.get("brownClean") != null) {
       File inputFile = new File(parsedArguments.getString("brownClean"));

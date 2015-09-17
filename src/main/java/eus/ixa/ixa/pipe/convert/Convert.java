@@ -57,6 +57,8 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.json.simple.JSONObject;
@@ -82,10 +84,11 @@ import eus.ixa.ixa.pipe.tok.Token;
  * 
  */
 public class Convert {
-  
-  public static Pattern detokenizeTargets = Pattern.compile("<\\s+START\\s+:\\s+target\\s+>", Pattern.UNICODE_CHARACTER_CLASS);
+
+  public static Pattern detokenizeTargets = Pattern.compile(
+      "<\\s+START\\s+:\\s+target\\s+>", Pattern.UNICODE_CHARACTER_CLASS);
   public static Pattern detokenizeEnds = Pattern.compile("<\\s+END\\s+>");
-  
+
   /**
    * Process the ancora constituent XML annotation into Penn Treebank bracketing
    * style.
@@ -420,11 +423,11 @@ public class Convert {
    */
   private String removeEntityLayer(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
-    /*kaf.removeLayer(Layer.entities);
-    kaf.removeLayer(Layer.constituency);
-    kaf.removeLayer(Layer.coreferences);
-    kaf.removeLayer(Layer.chunks);
-    kaf.removeLayer(Layer.deps);*/
+    /*
+     * kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
+     * kaf.removeLayer(Layer.coreferences); kaf.removeLayer(Layer.chunks);
+     * kaf.removeLayer(Layer.deps);
+     */
     return kaf.toString();
   }
 
@@ -475,7 +478,7 @@ public class Convert {
         System.out.println(entity.getExternalRefs().get(0).getReference());
     }
   }
-  
+
   /**
    * Convert a lemma dictionary (word lemma postag) into a
    * {@code POSTaggerDictionary}. It saves the resulting file with the name of
@@ -498,8 +501,8 @@ public class Convert {
   }
 
   /**
-   * Generates {@code POSDictionary} from a list of monosemic words and its postag.
-   * form\tab\lemma\tabpostag
+   * Generates {@code POSDictionary} from a list of monosemic words and its
+   * postag. form\tab\lemma\tabpostag
    * 
    * @param inputLines
    *          the list of words and postag per line
@@ -512,14 +515,14 @@ public class Convert {
       String[] lineArray = line.split("\t");
       if (lineArray.length == 3) {
         if (!lineArray[0].contains("<")) {
-        dictMultiMap.put(lineArray[0], lineArray[2]);
-        monosemicMap.put(lineArray[0], lineArray[1] + "\t" + lineArray[2]);
+          dictMultiMap.put(lineArray[0], lineArray[2]);
+          monosemicMap.put(lineArray[0], lineArray[1] + "\t" + lineArray[2]);
         }
       }
     }
     for (String token : dictMultiMap.keySet()) {
       List<String> tags = dictMultiMap.get(token);
-      //add only monosemic words
+      // add only monosemic words
       if (tags.size() == 1) {
         System.out.println(token + "\t" + monosemicMap.get(token));
       }
@@ -556,8 +559,8 @@ public class Convert {
   }
 
   /**
-   * Generates {@code POSDictionary} from a list of monosemic words and its postag.
-   * form\tab\lemma\tabpostag
+   * Generates {@code POSDictionary} from a list of monosemic words and its
+   * postag. form\tab\lemma\tabpostag
    * 
    * @param inputLines
    *          the list of words and postag per line
@@ -570,13 +573,13 @@ public class Convert {
       String[] lineArray = line.split("\t");
       if (lineArray.length == 3) {
         if (!lineArray[0].contains("<")) {
-        dictMultiMap.put(lineArray[0], lineArray[2]);
+          dictMultiMap.put(lineArray[0], lineArray[2]);
         }
       }
     }
     for (String token : dictMultiMap.keySet()) {
       List<String> tags = dictMultiMap.get(token);
-      //add only monosemic words
+      // add only monosemic words
       if (tags.size() == 1) {
         posTaggerDict.put(token, tags.toArray(new String[tags.size()]));
       }
@@ -649,7 +652,7 @@ public class Convert {
         Object obj = parser.parse(line);
         JSONObject jsonObject = (JSONObject) obj;
         String text = (String) jsonObject.get("text");
-        System.out.println(text); 
+        System.out.println(text);
       } catch (ParseException e) {
         e.printStackTrace();
       }
@@ -846,7 +849,8 @@ public class Convert {
               sb.append("\t");
               sb.append(thisTerm.getMorphofeat());
               sb.append("\t");
-              if (j == 0 && previousIsEntity && previousType.equalsIgnoreCase(neType)) {
+              if (j == 0 && previousIsEntity
+                  && previousType.equalsIgnoreCase(neType)) {
                 sb.append(BIO.BEGIN.toString());
               } else {
                 sb.append(BIO.IN.toString());
@@ -925,7 +929,7 @@ public class Convert {
     }
   }
 
-  public void absaSemEvalToNER(String fileName) {
+  public void absaSemEvalToNER2014(String fileName) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -972,7 +976,13 @@ public class Convert {
             counter += 19;
           }
         }
-        System.out.println(sb.toString());
+        // TODO make public getTokens() method in RuleBasedTokenizer!!
+        String tokenizedSentence = getStringFromTokens(sb.toString());
+        tokenizedSentence = tokenizedSentence.replaceAll(
+            "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
+        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
+            "<END>");
+        System.out.println(tokenizedSentence);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
@@ -988,7 +998,7 @@ public class Convert {
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
       for (Element sent : sentences) {
-        
+
         String sentString = sent.getChildText("text");
         StringBuilder sb = new StringBuilder();
         sb = sb.append(sentString);
@@ -1028,19 +1038,21 @@ public class Convert {
                 "<START:target> " + aspectString + " <END>");
             counter += 21;
           }
-          //System.out.print(sb.toString());
+          // System.out.print(sb.toString());
         }
-        //TODO make public getTokens() method in RuleBasedTokenizer!!
+        // TODO make public getTokens() method in RuleBasedTokenizer!!
         String tokenizedSentence = getStringFromTokens(sb.toString());
-        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+START\\s+:\\s+target\\s+>", "<START:target>");
-        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>", "<END>");
+        tokenizedSentence = tokenizedSentence.replaceAll(
+            "<\\s+START\\s+:\\s+target\\s+>", "<START:target>");
+        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
+            "<END>");
         System.out.println(tokenizedSentence);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
   }
-  
+
   public void absaSemEvalToMultiClassNER2015(String fileName) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -1050,7 +1062,7 @@ public class Convert {
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
       for (Element sent : sentences) {
-        
+
         String sentString = sent.getChildText("text");
         StringBuilder sb = new StringBuilder();
         sb = sb.append(sentString);
@@ -1070,7 +1082,9 @@ public class Convert {
                   .getAttributeValue("to"));
               offsets.add(offsetFrom);
               offsets.add(offsetTo);
-              targetClassSet.add(targetString + "JAR!" + className + opinion.getAttributeValue("from") + opinion.getAttributeValue("to"));
+              targetClassSet.add(targetString + "JAR!" + className
+                  + opinion.getAttributeValue("from")
+                  + opinion.getAttributeValue("to"));
             }
           }
           List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(
@@ -1092,8 +1106,9 @@ public class Convert {
             Integer offsetTo = offsetList.get(i).get(1);
             String className = targetClassList.get(i);
             String aspectString = sentString.substring(offsetFrom, offsetTo);
-            sb.replace(offsetFrom + counter, offsetTo + counter,
-                "<START:"+ className.split("JAR!")[1].substring(0, 3) + "> " + aspectString + " <END>");
+            sb.replace(offsetFrom + counter, offsetTo + counter, "<START:"
+                + className.split("JAR!")[1].substring(0, 3) + "> "
+                + aspectString + " <END>");
             counter += 18;
           }
           System.out.println(sb.toString());
@@ -1120,9 +1135,9 @@ public class Convert {
       e.printStackTrace();
     }
   }
-  
+
   private String getStringFromTokens(String sentString) {
-    
+
     StringBuilder sb = new StringBuilder();
     List<List<Token>> tokens = tokenizeSentence(sentString);
     for (List<Token> sentence : tokens) {
@@ -1132,18 +1147,19 @@ public class Convert {
     }
     return sb.toString();
   }
-  
+
   private List<List<Token>> tokenizeSentence(String sentString) {
-    RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString, setTokenizeProperties());
+    RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
+        setTokenizeProperties());
     List<String> sentenceList = new ArrayList<String>();
     sentenceList.add(sentString);
     String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
     List<List<Token>> tokens = tokenizer.tokenize(sentences);
     return tokens;
   }
-  
+
   public String absa15testToNAFWFs(String fileName) {
-    KAFDocument kaf = new KAFDocument("en","v1.naf");
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -1151,7 +1167,7 @@ public class Convert {
       XPathExpression<Element> expr = xFactory.compile("//sentence",
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
-      
+
       int counter = 1;
       for (Element sent : sentences) {
         String sentId = sent.getAttributeValue("id");
@@ -1159,7 +1175,8 @@ public class Convert {
         List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
         for (List<Token> sentence : segmentedSentences) {
           for (Token token : sentence) {
-            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(), counter);
+            WF wf = kaf.newWF(token.getTokenValue(), token.startOffset(),
+                counter);
             wf.setXpath(sentId);
           }
         }
@@ -1170,7 +1187,60 @@ public class Convert {
     }
     return kaf.toString();
   }
-  
+
+  public String nafToATE(String kafDocument) {
+
+    KAFDocument kaf = null;
+    try {
+      kaf = KAFDocument.createFromFile(new File(kafDocument));
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    Element sentencesElem = new Element("sentences");
+    Document doc = new Document(sentencesElem);
+
+    for (List<WF> sent : kaf.getSentences()) {
+      StringBuilder sb = new StringBuilder();
+      String sentId = sent.get(0).getXpath();
+      for (int i = 0; i < sent.size(); i++) {
+        sb = sb.append(sent.get(i).getForm()).append(" ");
+      }
+      Element sentenceElem = new Element("sentence");
+      sentenceElem.setAttribute("id", sentId);
+      Element textElem = new Element("text");
+      textElem.setText(sb.toString().trim());
+      sentenceElem.addContent(textElem);
+      List<Entity> sentEntities = kaf.getEntitiesBySent(sent.get(0).getSent());
+
+      if (!sentEntities.isEmpty()) {
+        Element aspectTerms = new Element("aspectTerms");
+        for (Entity entity : sentEntities) {
+          // create and add opinion to the structure
+          String polarity = "";
+          String targetString = entity.getStr();
+          int offsetFrom = entity.getTerms().get(0).getWFs().get(0).getOffset();
+          List<WF> entWFs = entity.getTerms().get(entity.getTerms().size() - 1)
+              .getWFs();
+          int offsetTo = entWFs.get(entWFs.size() - 1).getOffset()
+              + entWFs.get(entWFs.size() - 1).getLength();
+          Element aspectTerm = new Element("aspectTerm");
+          aspectTerm.setAttribute("term", targetString);
+          aspectTerm.setAttribute("polarity", polarity);
+          aspectTerm.setAttribute("from", Integer.toString(offsetFrom));
+          aspectTerm.setAttribute("to", Integer.toString(offsetTo));
+          aspectTerms.addContent(aspectTerm);
+        }
+        sentenceElem.addContent(aspectTerms);
+      }
+      sentencesElem.addContent(sentenceElem);
+    }
+    XMLOutputter xmlOutput = new XMLOutputter();
+    Format format = Format.getPrettyFormat();
+    xmlOutput.setFormat(format);
+    return xmlOutput.outputString(doc);
+  }
+ 
   private Properties setTokenizeProperties() {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", "en");
