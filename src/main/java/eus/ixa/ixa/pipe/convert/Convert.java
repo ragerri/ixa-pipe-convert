@@ -905,9 +905,9 @@ public class Convert {
   public String convertToConLLTypes(String neType) {
     String conllType = null;
     if (neType.startsWith("PER") || neType.startsWith("ORG")
-        || neType.startsWith("LOC") || neType.startsWith("GPE")) {
+        || neType.startsWith("LOC") || neType.startsWith("GPE") || neType.length() == 3) {
       conllType = neType.substring(0, 3);
-    } else if (neType.equalsIgnoreCase("MISC")) {
+    } else {
       conllType = neType;
     }
     return conllType;
