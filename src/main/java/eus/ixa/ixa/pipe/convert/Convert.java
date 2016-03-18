@@ -943,6 +943,7 @@ public class Convert {
         String sentString = sent.getChildText("text");
         sb = sb.append(sentString);
         Element aspectTerms = sent.getChild("aspectTerms");
+        String tokenizedSentence = null;
         if (aspectTerms != null) {
           List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
           List<Integer> offsets = new ArrayList<Integer>();
@@ -975,14 +976,20 @@ public class Convert {
                 "<START:term> " + aspectString + " <END>");
             counter += 19;
           }
+          tokenizedSentence = getStringFromTokens(sb.toString());
+          tokenizedSentence = tokenizedSentence.replaceAll(
+              "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
+          tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
+              "<END>");
+          System.out.println(tokenizedSentence);
         }
         // TODO make public getTokens() method in RuleBasedTokenizer!!
-        String tokenizedSentence = getStringFromTokens(sb.toString());
-        tokenizedSentence = tokenizedSentence.replaceAll(
-            "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
-        tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
-            "<END>");
-        System.out.println(tokenizedSentence);
+        //String tokenizedSentence = getStringFromTokens(sb.toString());
+        //tokenizedSentence = tokenizedSentence.replaceAll(
+        //    "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
+        //tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
+        //    "<END>");
+        //System.out.println(tokenizedSentence);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
