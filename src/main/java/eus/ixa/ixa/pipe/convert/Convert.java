@@ -944,8 +944,13 @@ public class Convert {
       for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
         List<Term> neTerms = spanTerm.getTargets();
         for (Term neTerm: neTerms) {
-          entityToSpanSize.put(neTerm.getId(), spanTerm.size());
-          entityToType.put(neTerm.getId(), ne.getType());
+          Integer neTermId = entityToSpanSize.get(neTerm.getId());
+          if (neTermId == null) {
+            entityToSpanSize.put(neTerm.getId(), spanTerm.size());
+            entityToType.put(neTerm.getId(), ne.getType());
+          } else {
+            continue;
+          }
         }
       }
     }
