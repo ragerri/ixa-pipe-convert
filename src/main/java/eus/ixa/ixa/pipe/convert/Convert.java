@@ -900,6 +900,7 @@ public class Convert {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
+      System.err.println(">> Processing " + dir.getName());
       File outfile = new File(dir.getCanonicalFile() + ".conll02");
       String outKAF = this.trivagoAspectsToCoNLLConvert02(kaf);
       Files.write(outKAF, outfile, Charsets.UTF_8);
@@ -913,6 +914,7 @@ public class Convert {
             trivagoAspectsToCoNLL02(listFile[i]);
           } else {
             try {
+              System.err.println(">> Processing " + listFile[i].getName());
               File outfile = new File(listFile[i].getCanonicalFile()
                   + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
