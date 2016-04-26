@@ -71,8 +71,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 
-import eus.ixa.ixa.pipe.seg.RuleBasedSegmenter;
-import eus.ixa.ixa.pipe.seg.SentenceSegmenter;
 import eus.ixa.ixa.pipe.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.tok.Token;
 
@@ -946,12 +944,12 @@ public class Convert {
       for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
         List<Term> neTerms = spanTerm.getTargets();
         for (Term neTerm: neTerms) {
-          Integer neTermId = entityToSpanSize.get(neTerm.getId());
-          if (neTermId == null) {
+          if (!entityToSpanSize.containsKey(neTerm.getId())) {
             entityToSpanSize.put(neTerm.getId(), spanTerm.size());
             entityToType.put(neTerm.getId(), ne.getType());
           } else {
-            continue;
+            //TODO this is not ideal, but these overlappings spans here are a mess
+            break;
           }
         }
       }
