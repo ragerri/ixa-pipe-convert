@@ -62,9 +62,9 @@ public class ConvertChunks {
         for (int i = 0; i < preds.size(); i++) {
           sb.append(toks.get(i)).append("\t").append(tags.get(i)).append("\t")
               .append(preds.get(i)).append("\n");
-        }
-        sb.append("\n");
+        } 
       }
+      sb.append("\n");
     }
 
     return sb.toString();
