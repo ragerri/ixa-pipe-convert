@@ -23,6 +23,11 @@
 	<url>http://ixa2.si.ehu.es/ixa-pipes</url>
 
 	<dependencies>
+	<dependency>
+			<groupId>com.github.ixa-ehu</groupId>
+			<artifactId>kaflib-naf</artifactId>
+			<version>1.1.14</version>
+		</dependency>
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
@@ -48,8 +53,8 @@
 		</dependency>
 		<dependency>
 			<groupId>eus.ixa</groupId>
-			<artifactId>ixa-pipe-tok</artifactId>
-			<version>1.8.2</version>
+			<artifactId>ixa-pipe-ml</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 

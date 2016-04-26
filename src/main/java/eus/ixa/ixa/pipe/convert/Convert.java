@@ -71,8 +71,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 
-import eus.ixa.ixa.pipe.tok.RuleBasedTokenizer;
-import eus.ixa.ixa.pipe.tok.Token;
+import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
+import eus.ixa.ixa.pipe.ml.tok.Token;
 
 /**
  * Convert functions.
@@ -1300,7 +1300,7 @@ public class Convert {
         List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
         for (List<Token> sentence : segmentedSentences) {
           for (Token token : sentence) {
-            WF wf = kaf.newWF(token.getTokenValue(), token.startOffset(),
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
                 counter);
             wf.setXpath(sentId);
           }

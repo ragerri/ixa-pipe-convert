@@ -68,6 +68,8 @@ public class CLI {
     
     parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes " +
     		"and funcional tags.\n");
+    
+    parser.addArgument("--parseToChunks").help("Extracts chunks from Penn Treebank constituent trees.\n");
    
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types.\n");
     parser.addArgument("--neTypes").help("Choose named entity type to use with the --filterNameTypes option.\n");
@@ -133,6 +135,10 @@ public class CLI {
       File inputTree = new File(parsedArguments.getString("normalizePennTreebank"));
       Convert converter = new Convert();
       converter.getCleanPennTrees(inputTree);
+    }
+    else if (parsedArguments.get("parseToChunks") != null) {
+      File inputTree = new File(parsedArguments.getString("parseToChunks"));
+      ConvertChunks.parseToChunks(inputTree);
     }
     else if (parsedArguments.get("filterNameTypes") != null) {
       String neTypes = parsedArguments.getString("neTypes");
