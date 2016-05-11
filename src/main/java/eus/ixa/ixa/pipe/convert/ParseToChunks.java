@@ -10,9 +10,9 @@ import com.google.common.io.Files;
 
 import opennlp.tools.parser.Parse;
 
-public class ConvertChunks {
+public class ParseToChunks {
 
-  private ConvertChunks() {
+  private ParseToChunks() {
   }
 
   public static void parseToChunks(File inFile) throws IOException {

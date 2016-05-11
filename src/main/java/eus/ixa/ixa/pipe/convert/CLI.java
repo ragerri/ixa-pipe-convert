@@ -70,6 +70,7 @@ public class CLI {
     		"and funcional tags.\n");
     
     parser.addArgument("--parseToChunks").help("Extracts chunks from Penn Treebank constituent trees.\n");
+    parser.addArgument("--parseToTabulated").help("Extracts POS tagging tabulated format from Penn Treebank constituent trees.\n");
    
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types.\n");
     parser.addArgument("--neTypes").help("Choose named entity type to use with the --filterNameTypes option.\n");
@@ -138,7 +139,11 @@ public class CLI {
     }
     else if (parsedArguments.get("parseToChunks") != null) {
       File inputTree = new File(parsedArguments.getString("parseToChunks"));
-      ConvertChunks.parseToChunks(inputTree);
+      ParseToChunks.parseToChunks(inputTree);
+    }
+    else if (parsedArguments.get("parseToTabulated") != null) {
+      File inputTree = new File(parsedArguments.getString("parseToTabulated"));
+      ParseToTabulated.parseToTabulated(inputTree);
     }
     else if (parsedArguments.get("filterNameTypes") != null) {
       String neTypes = parsedArguments.getString("neTypes");
