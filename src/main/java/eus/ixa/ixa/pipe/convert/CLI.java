@@ -68,6 +68,9 @@ public class CLI {
     
     parser.addArgument("--normalizePennTreebank").help("Normalizes Penn Treebank removing -NONE- nodes " +
     		"and funcional tags.\n");
+    
+    parser.addArgument("--parseToChunks").help("Extracts chunks from Penn Treebank constituent trees.\n");
+    parser.addArgument("--parseToTabulated").help("Extracts POS tagging tabulated format from Penn Treebank constituent trees.\n");
    
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types.\n");
     parser.addArgument("--neTypes").help("Choose named entity type to use with the --filterNameTypes option.\n");
@@ -85,6 +88,7 @@ public class CLI {
  
     parser.addArgument("--nafToCoNLL02").help("Convert NAF to CoNLL02 format.\n");
     parser.addArgument("--nafToCoNLL03").help("Convert NAF to CoNLL03 format.\n");
+    parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
     
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
@@ -133,6 +137,14 @@ public class CLI {
       Convert converter = new Convert();
       converter.getCleanPennTrees(inputTree);
     }
+    else if (parsedArguments.get("parseToChunks") != null) {
+      File inputTree = new File(parsedArguments.getString("parseToChunks"));
+      ParseToChunks.parseToChunks(inputTree);
+    }
+    else if (parsedArguments.get("parseToTabulated") != null) {
+      File inputTree = new File(parsedArguments.getString("parseToTabulated"));
+      ParseToTabulated.parseToTabulated(inputTree);
+    }
     else if (parsedArguments.get("filterNameTypes") != null) {
       String neTypes = parsedArguments.getString("neTypes");
       String inputFile = parsedArguments.getString("filterNameTypes");
@@ -180,6 +192,11 @@ public class CLI {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL03"));
       Convert converter = new Convert();
       converter.nafToCoNLL03(inputDir);
+    }
+    else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
+      File inputDir = new File(parsedArguments.getString("trivagoAspectsToCoNLL02"));
+      Convert converter = new Convert();
+      converter.trivagoAspectsToCoNLL02(inputDir);
     }
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
