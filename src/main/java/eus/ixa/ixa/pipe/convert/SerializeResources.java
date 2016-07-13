@@ -119,7 +119,7 @@ public class SerializeResources {
         System.err.println(lineArray[0] + " is not well formed!");
       }
     }
-    String outputFile = dictionaryFile.getName() + "ser.gz";
+    String outputFile = dictionaryFile.getName() + ".ser.gz";
     IOUtils.writeObjectToFile(dictionary, outputFile);
     breader.close();
   }
@@ -136,7 +136,7 @@ public class SerializeResources {
           System.err.println(elems[0] + " is not well formed!");
         }
       }
-      String outputFile = mfsResource.getName() + "ser.gz";
+      String outputFile = mfsResource.getName() + ".ser.gz";
       IOUtils.writeObjectToFile(multiMap, outputFile);
       breader.close();
   }
@@ -149,7 +149,7 @@ public class SerializeResources {
       String[] lineArray = tabPattern.split(line);
       populatePOSMap(lineArray, newEntries);
     }
-    String outputFile = posFile.getName() + "ser.gz";
+    String outputFile = posFile.getName() + ".ser.gz";
     IOUtils.writeObjectToFile(newEntries, outputFile);
     breader.close();
   }
