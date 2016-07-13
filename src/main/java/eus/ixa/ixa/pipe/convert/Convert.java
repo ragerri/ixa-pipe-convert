@@ -130,7 +130,7 @@ public class Convert {
   }
 
   /**
-   * Calls the ancorat2treebank function to generate Penn Treebank trees from
+   * Calls the ancora2treebank function to generate Penn Treebank trees from
    * Ancora XML constituent parsing.
    * 
    * @param dir
@@ -479,8 +479,7 @@ public class Convert {
 
   /**
    * Convert a lemma dictionary (word lemma postag) into a
-   * {@code POSTaggerDictionary}. It saves the resulting file with the name of
-   * the original dictionary changing the extension to .xml.
+   * {@code POSTaggerDictionary}.
    * 
    * @param lemmaDict
    *          the input file
@@ -498,14 +497,6 @@ public class Convert {
     }
   }
 
-  /**
-   * Generates {@code POSDictionary} from a list of monosemic words and its
-   * postag. form\tab\lemma\tabpostag
-   * 
-   * @param inputLines
-   *          the list of words and postag per line
-   * @return the POSDictionary
-   */
   private void getMonosemicDict(List<String> inputLines) {
     Map<String, String> monosemicMap = new HashMap<String, String>();
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
