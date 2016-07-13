@@ -648,6 +648,117 @@ public class Convert {
     }
     breader.close();
   }
+  
+  public void kafAspectsToCoNLL02(File dir) throws IOException {
+	    // process one file
+	    if (dir.isFile()) {
+	      KAFDocument kaf = KAFDocument.createFromFile(dir);
+	      File outfile = new File(dir.getCanonicalFile() + ".conll02");
+	      String outKAF = nafToCoNLLConvert02(kaf);
+	      Files.write(outKAF, outfile, Charsets.UTF_8);
+	      System.err.println(">> Wrote CoNLL document to " + outfile);
+	    } else {
+	      // recursively process directories
+	      File listFile[] = dir.listFiles();
+	      if (listFile != null) {
+	        for (int i = 0; i < listFile.length; i++) {
+	          if (listFile[i].isDirectory()) {
+	            nafToCoNLL02(listFile[i]);
+	          } else {
+	            try {
+	              File outfile = new File(listFile[i].getCanonicalFile()
+	                  + ".conll02");
+	              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
+	              String outKAF = kafAspectsToCoNLLConvert02(kaf);
+	              Files.write(outKAF, outfile, Charsets.UTF_8);
+	              System.err.println(">> Wrote CoNLL02 document to " + outfile);
+	            } catch (FileNotFoundException noFile) {
+	              continue;
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
+  
+  /**
+   * Output Conll2002 format.
+   * 
+   * @param kaf
+   *          the kaf document
+   * @return the annotated named entities in conll03 format
+   */
+  public String kafAspectsToCoNLLConvert02(KAFDocument kaf) {
+    List<Entity> namedEntityList = kaf.getEntities();
+    Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
+    Map<String, String> entityToType = new HashMap<String, String>();
+    for (Entity ne : namedEntityList) {
+      List<ixa.kaflib.Span<Term>> entitySpanList = ne.getSpans();
+      for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
+        Term neTerm = spanTerm.getFirstTarget();
+        entityToSpanSize.put(neTerm.getId(), spanTerm.size());
+        entityToType.put(neTerm.getId(), ne.getType());
+      }
+    }
+
+    List<List<WF>> sentences = kaf.getSentences();
+    StringBuilder sb = new StringBuilder();
+    for (List<WF> sentence : sentences) {
+      int sentNumber = sentence.get(0).getSent();
+      List<Term> sentenceTerms = kaf.getSentenceTerms(sentNumber);
+
+      for (int i = 0; i < sentenceTerms.size(); i++) {
+        Term thisTerm = sentenceTerms.get(i);
+
+        if (entityToSpanSize.get(thisTerm.getId()) != null) {
+          int neSpanSize = entityToSpanSize.get(thisTerm.getId());
+          String neClass = entityToType.get(thisTerm.getId());
+          String neType = convertToConLLTypes(neClass);
+          if (neSpanSize > 1) {
+            for (int j = 0; j < neSpanSize; j++) {
+              thisTerm = sentenceTerms.get(i + j);
+              sb.append(thisTerm.getForm());
+              sb.append("\t");
+              sb.append(thisTerm.getLemma());
+              sb.append("\t");
+              sb.append(thisTerm.getMorphofeat());
+              sb.append("\t");
+              if (j == 0) {
+                sb.append(BIO.BEGIN.toString());
+              } else {
+                sb.append(BIO.IN.toString());
+              }
+              sb.append(neType);
+              sb.append("\n");
+            }
+          } else {
+            sb.append(thisTerm.getForm());
+            sb.append("\t");
+            sb.append(thisTerm.getLemma());
+            sb.append("\t");
+            sb.append(thisTerm.getMorphofeat());
+            sb.append("\t");
+            sb.append(BIO.BEGIN.toString());
+            sb.append(neType);
+            sb.append("\n");
+          }
+          i += neSpanSize - 1;
+        } else {
+          sb.append(thisTerm.getForm());
+          sb.append("\t");
+          sb.append(thisTerm.getLemma());
+          sb.append("\t");
+          sb.append(thisTerm.getMorphofeat());
+          sb.append("\t");
+          sb.append(BIO.OUT);
+          sb.append("\n");
+        }
+      }
+      sb.append("\n");// end of sentence
+    }
+    return sb.toString();
+  }
+
 
   public void nafToCoNLL02(File dir) throws IOException {
     // process one file
