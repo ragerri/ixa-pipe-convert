@@ -21,7 +21,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -54,6 +56,7 @@ public class SerializeResources {
    * Turkish capital letter I with dot.
    */
   public static final Pattern dotInsideI = Pattern.compile("\u0130", Pattern.UNICODE_CHARACTER_CLASS);
+  public static final String SER_GZ = ".ser.gz";
   
   private SerializeResources() {
   }
@@ -77,7 +80,7 @@ public class SerializeResources {
         tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
       }
     }
-    String outputFile = clusterFile.getName() + ".ser.gz";
+    String outputFile = clusterFile.getName() + SER_GZ;
     IOUtils.writeObjectToFile(tokenToClusterMap, outputFile);
     breader.close();
   }
@@ -101,7 +104,7 @@ public class SerializeResources {
         tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
       }
     }
-    String outputFile = clusterFile.getName() + ".ser.gz";
+    String outputFile = clusterFile.getName() + SER_GZ;
     IOUtils.writeObjectToFile(tokenToClusterMap, outputFile);
     breader.close();
   }
@@ -119,7 +122,7 @@ public class SerializeResources {
         System.err.println(lineArray[0] + " is not well formed!");
       }
     }
-    String outputFile = dictionaryFile.getName() + ".ser.gz";
+    String outputFile = dictionaryFile.getName() + SER_GZ;
     IOUtils.writeObjectToFile(dictionary, outputFile);
     breader.close();
   }
@@ -136,8 +139,27 @@ public class SerializeResources {
           System.err.println(elems[0] + " is not well formed!");
         }
       }
-      String outputFile = mfsResource.getName() + ".ser.gz";
+      String outputFile = mfsResource.getName() + SER_GZ;
       IOUtils.writeObjectToFile(multiMap, outputFile);
+      breader.close();
+  }
+
+  public static void serializeLemmaDictionary(File lemmaDict) throws IOException {
+    Map<List<String>, String> dictMap = new HashMap<List<String>, String>();
+    final BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(
+        lemmaDict), Charset.forName("UTF-8")));
+    String line;
+      while ((line = breader.readLine()) != null) {
+        final String[] elems = tabPattern.split(line);
+        if (elems.length == 3) {
+          String normalizedToken = dotInsideI.matcher(elems[0]).replaceAll("I");
+          dictMap.put(Arrays.asList(normalizedToken, elems[2]), elems[1]);
+        } else {
+          System.err.println(elems[0] + " is not well formed!");
+        }
+      }
+      String outputFile = lemmaDict.getName() + SER_GZ;
+      IOUtils.writeObjectToFile(dictMap, outputFile);
       breader.close();
   }
   
@@ -149,11 +171,11 @@ public class SerializeResources {
       String[] lineArray = tabPattern.split(line);
       populatePOSMap(lineArray, newEntries);
     }
-    String outputFile = posFile.getName() + ".ser.gz";
+    String outputFile = posFile.getName() + SER_GZ;
     IOUtils.writeObjectToFile(newEntries, outputFile);
     breader.close();
   }
-  
+
   private static void populatePOSMap(String[] lineArray, Map<String, Map<String, AtomicInteger>> newEntries) {
     if (lineArray.length == 2) {
       String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
@@ -172,8 +194,5 @@ public class SerializeResources {
       }
     }
   }
-  
-  
-
 }
 
