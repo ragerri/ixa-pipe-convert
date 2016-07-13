@@ -1,3 +1,18 @@
+/*
+ *  Copyright 2016 Rodrigo Agerri
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
@@ -14,7 +29,7 @@ import eus.ixa.ixa.pipe.ml.resources.ClarkCluster;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 
 /**
-* Class to load and serialize as objects:
+* Class to load and serialize java objects:
 * <li>
 * <ol> Brown cluster documents: word\tword_class\tprob http://metaoptimize.com/projects/wordreprs/ </ol>
 * <ol> Clark cluster documents: word\\s+word_class\\s+prob https://github.com/ninjin/clark_pos_induction </ol>
@@ -24,7 +39,7 @@ import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 * @author ragerri
 * @version 2016-07-11
 */
-public class SerializeClusters {
+public class SerializeResources {
   
   private static final Pattern spacePattern = Pattern.compile(" ");
   private static final Pattern tabPattern = Pattern.compile("\t");
@@ -33,7 +48,7 @@ public class SerializeClusters {
    */
   public static final Pattern dotInsideI = Pattern.compile("\u0130", Pattern.UNICODE_CHARACTER_CLASS);
   
-  private SerializeClusters() {
+  private SerializeResources() {
   }
   
   public static void serializeClusterFiles(File clusterFile) throws IOException {
@@ -83,6 +98,26 @@ public class SerializeClusters {
     IOUtils.writeObjectToFile(tokenToClusterMap, outputFile);
     breader.close();
   }
+  
+  public static void serializeEntityGazetteers(File dictionaryFile) throws IOException {
+    Map<String, String> dictionary = new HashMap<String, String>();
+    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(dictionaryFile), Charset.forName("UTF-8")));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      String[] lineArray = tabPattern.split(line);
+      if (lineArray.length == 2) {
+        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
+        dictionary.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+      } else {
+        System.err.println(lineArray[0] + " is not well formed!");
+      }
+    }
+    String outputFile = dictionaryFile.getName() + "ser.gz";
+    IOUtils.writeObjectToFile(dictionary, outputFile);
+    breader.close();
+  }
+  
+  
 
 }
 

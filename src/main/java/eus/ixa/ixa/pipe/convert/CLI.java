@@ -63,6 +63,7 @@ public class CLI {
     parser.addArgument("--brownClean").help("Remove paragraph if 90% of its characters are not lowercase.\n");
     parser.addArgument("--serializeBrownCluster").help("Serialize Brown cluster lexicons to an object.\n");
     parser.addArgument("--serializeClarkCluster").help("Serialize Clark cluster lexicons and alike to an object.\n");
+    parser.addArgument("--serializeEntityDictionary").help("Serialize ixa-pipe-nerc entity gazetteers to an object.\n");
     //pos tagging functions
     parser.addArgument("--createMonosemicDictionary").help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     parser.addArgument("--createPOSDictionary").help("Create POSTagger OpenNLP dictionary from " +
@@ -125,11 +126,15 @@ public class CLI {
     }
     else if (parsedArguments.getString("serializeBrownCluster") != null) {
       File clusterFile = new File(parsedArguments.getString("serializeBrownCluster"));
-      SerializeClusters.serializeBrownClusterFiles(clusterFile);
+      SerializeResources.serializeBrownClusterFiles(clusterFile);
     }
     else if (parsedArguments.getString("serializeClarkCluster") != null) {
       File clusterFile = new File(parsedArguments.getString("serializeClarkCluster"));
-      SerializeClusters.serializeClusterFiles(clusterFile);
+      SerializeResources.serializeClusterFiles(clusterFile);
+    }
+    else if (parsedArguments.getString("serializeEntityDictionary") != null) {
+      File dictionaryFile = new File(parsedArguments.getString("serializeEntityDictionary"));
+      SerializeResources.serializeEntityGazetteers(dictionaryFile);
     }
     // pos taggging functions
     else if (parsedArguments.getString("createMonosemicDictionary") != null) {
