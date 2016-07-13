@@ -23,7 +23,14 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+
+import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.featuregen.StringPattern;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 import eus.ixa.ixa.pipe.ml.resources.ClarkCluster;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
@@ -115,6 +122,55 @@ public class SerializeResources {
     String outputFile = dictionaryFile.getName() + "ser.gz";
     IOUtils.writeObjectToFile(dictionary, outputFile);
     breader.close();
+  }
+  
+  public static void serializeMFSResource(File mfsResource) throws IOException {
+    ListMultimap<String, String> multiMap = ArrayListMultimap.create();
+    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(mfsResource), Charset.forName("UTF-8")));
+    String line;
+      while ((line = breader.readLine()) != null) {
+        String[] elems = tabPattern.split(line);
+        if (elems.length == 2) {
+          multiMap.put(elems[0], elems[1]);
+        } else {
+          System.err.println(elems[0] + " is not well formed!");
+        }
+      }
+      String outputFile = mfsResource.getName() + "ser.gz";
+      IOUtils.writeObjectToFile(multiMap, outputFile);
+      breader.close();
+  }
+  
+  public static void serializePOSDictionary(File posFile) throws IOException {
+    Map<String, Map<String, AtomicInteger>> newEntries = new HashMap<String, Map<String, AtomicInteger>>();
+    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(posFile), Charset.forName("UTF-8")));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      String[] lineArray = tabPattern.split(line);
+      populatePOSMap(lineArray, newEntries);
+    }
+    String outputFile = posFile.getName() + "ser.gz";
+    IOUtils.writeObjectToFile(newEntries, outputFile);
+    breader.close();
+  }
+  
+  private static void populatePOSMap(String[] lineArray, Map<String, Map<String, AtomicInteger>> newEntries) {
+    if (lineArray.length == 2) {
+      String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
+      // only store words
+      if (!StringPattern.recognize(normalizedToken).containsDigit()) {
+        
+        String word = StringUtil.toLowerCase(normalizedToken);
+        if (!newEntries.containsKey(word)) {
+          newEntries.put(word, new HashMap<String, AtomicInteger>());
+        }
+        if (!newEntries.get(word).containsKey(lineArray[1])) {
+          newEntries.get(word).put(lineArray[1], new AtomicInteger(1));
+        } else {
+          newEntries.get(word).get(lineArray[1]).incrementAndGet();
+        }
+      }
+    }
   }
   
   
