@@ -28,14 +28,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.StringUtil;
-import opennlp.tools.util.featuregen.StringPattern;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
-import eus.ixa.ixa.pipe.ml.resources.ClarkCluster;
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
+import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.featuregen.StringPattern;
 
 /**
 * Class to load and serialize java objects:
@@ -56,7 +54,7 @@ public class SerializeResources {
    * Turkish capital letter I with dot.
    */
   public static final Pattern dotInsideI = Pattern.compile("\u0130", Pattern.UNICODE_CHARACTER_CLASS);
-  public static final String SER_GZ = ".ser.gz";
+  public static final String SER_GZ = ".gz";
   
   private SerializeResources() {
   }
@@ -81,7 +79,7 @@ public class SerializeResources {
       }
     }
     String outputFile = clusterFile.getName() + SER_GZ;
-    IOUtils.writeObjectToFile(tokenToClusterMap, outputFile);
+    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
     breader.close();
   }
   
@@ -95,17 +93,17 @@ public class SerializeResources {
       if (lineArray.length == 3) {
         int freq = Integer.parseInt(lineArray[2]);
           if (freq > 5 ) {
-            String normalizedToken = ClarkCluster.dotInsideI.matcher(lineArray[1]).replaceAll("I");
+            String normalizedToken = dotInsideI.matcher(lineArray[1]).replaceAll("I");
             tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
         }
       }
       else if (lineArray.length == 2) {
-        String normalizedToken = ClarkCluster.dotInsideI.matcher(lineArray[0]).replaceAll("I");
+        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("I");
         tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
       }
     }
     String outputFile = clusterFile.getName() + SER_GZ;
-    IOUtils.writeObjectToFile(tokenToClusterMap, outputFile);
+    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
     breader.close();
   }
   
@@ -123,7 +121,7 @@ public class SerializeResources {
       }
     }
     String outputFile = dictionaryFile.getName() + SER_GZ;
-    IOUtils.writeObjectToFile(dictionary, outputFile);
+    IOUtils.writeClusterToFile(dictionary, outputFile, IOUtils.TAB_DELIMITER);
     breader.close();
   }
   
