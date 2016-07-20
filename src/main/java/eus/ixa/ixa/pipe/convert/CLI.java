@@ -64,9 +64,7 @@ public class CLI {
     parser.addArgument("--serializeBrownCluster").help("Serialize Brown cluster lexicons to an object.\n");
     parser.addArgument("--serializeClarkCluster").help("Serialize Clark cluster lexicons and alike to an object.\n");
     parser.addArgument("--serializeEntityDictionary").help("Serialize ixa-pipe-nerc entity gazetteers to an object.\n");
-    parser.addArgument("--serializeMFSResource").help("Serialize ixa-pipe-sst MFS lexicons to an object.\n");
     parser.addArgument("--serializeLemmaDictionary").help("Serialize DictionaryLemmatizer files to an object.\n");
-    parser.addArgument("--serializePOSDictionary").help("Serialize ixa-pipe-pos dictionary to an object.\n");
     //pos tagging functions
     parser.addArgument("--createMonosemicDictionary").help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     parser.addArgument("--createPOSDictionary").help("Create POSTagger OpenNLP dictionary from " +
@@ -139,17 +137,9 @@ public class CLI {
       File dictionaryFile = new File(parsedArguments.getString("serializeEntityDictionary"));
       SerializeResources.serializeEntityGazetteers(dictionaryFile);
     }
-    else if (parsedArguments.getString("serializeMFSResource") != null) {
-      File mfsResource = new File(parsedArguments.getString("serializeMFSResource"));
-      SerializeResources.serializeMFSResource(mfsResource);
-    }
     else if (parsedArguments.getString("serializeLemmaDictionary") != null) {
       File lemmaDict = new File(parsedArguments.getString("serializeLemmaDictionary"));
       SerializeResources.serializeLemmaDictionary(lemmaDict);
-    }
-    else if (parsedArguments.getString("serializePOSDictionary") != null) {
-      File posFile = new File(parsedArguments.getString("serializePOSDictionary"));
-      SerializeResources.serializePOSDictionary(posFile);
     }
     // pos taggging functions
     else if (parsedArguments.getString("createMonosemicDictionary") != null) {
