@@ -53,23 +53,29 @@ public class SerializeResources {
   private SerializeResources() {
   }
   
-  public static void serializeClusterFiles(File clusterFile) throws IOException {
+  public static void serializeClusterFiles(File clusterFile, boolean lowercase) throws IOException {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
     
-    //TODO parametrize lower and uppercase
-    //read Clark or  Word2vec cluster lexicon files
     BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(clusterFile), Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = spacePattern.split(line);
       if (lineArray.length == 3) {
         String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
-        tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+        if (lowercase) {
+          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+        } else {
+          tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
+        }
       }
       else if (lineArray.length == 2) {
         String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
-        tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+        if (lowercase) {
+          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+        } else {
+          tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
+        }
       }
     }
     String outputFile = clusterFile.getName() + SER_GZ;
@@ -77,7 +83,7 @@ public class SerializeResources {
     breader.close();
   }
   
-  public static void serializeBrownClusterFiles(File clusterFile) throws NumberFormatException, IOException {
+  public static void serializeBrownClusterFiles(File clusterFile, boolean lowercase) throws NumberFormatException, IOException {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
     BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(clusterFile), Charset.forName("UTF-8")));
@@ -88,12 +94,20 @@ public class SerializeResources {
         int freq = Integer.parseInt(lineArray[2]);
           if (freq > 5 ) {
             String normalizedToken = dotInsideI.matcher(lineArray[1]).replaceAll("I");
-            tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
+            if (lowercase) {
+              tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[0].intern());
+            } else {
+              tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
+            }
         }
       }
       else if (lineArray.length == 2) {
         String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("I");
-        tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
+        if (lowercase) {
+          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[0].intern());
+        } else {
+          tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
+        }
       }
     }
     String outputFile = clusterFile.getName() + SER_GZ;

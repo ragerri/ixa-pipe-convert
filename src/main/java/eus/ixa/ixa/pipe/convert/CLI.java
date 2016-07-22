@@ -49,6 +49,7 @@ public class CLI {
    */
   private final static String version = CLI.class.getPackage()
       .getImplementationVersion();
+  
 
   public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
@@ -104,6 +105,11 @@ public class CLI {
     parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     
+    //utils
+    parser.addArgument("--lowercase")
+        .action(Arguments.storeTrue())
+        .help("Lowercase input text.\n");
+    
     /*
      * Parse the command line arguments
      */
@@ -127,11 +133,13 @@ public class CLI {
     }
     else if (parsedArguments.getString("serializeBrownCluster") != null) {
       File clusterFile = new File(parsedArguments.getString("serializeBrownCluster"));
-      SerializeResources.serializeBrownClusterFiles(clusterFile);
+      boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
+      SerializeResources.serializeBrownClusterFiles(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeClarkCluster") != null) {
       File clusterFile = new File(parsedArguments.getString("serializeClarkCluster"));
-      SerializeResources.serializeClusterFiles(clusterFile);
+      boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
+      SerializeResources.serializeClusterFiles(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeEntityDictionary") != null) {
       File dictionaryFile = new File(parsedArguments.getString("serializeEntityDictionary"));
