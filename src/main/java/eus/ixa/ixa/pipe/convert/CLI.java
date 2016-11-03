@@ -87,6 +87,7 @@ public class CLI {
     parser.addArgument("--filterNameTypes").help("Filter Name Entity types.\n");
     parser.addArgument("--neTypes").help("Choose named entity type to use with the --filterNameTypes option.\n");
     
+    parser.addArgument("--printNER").help("Prints named entity string if NER available in NAF.\n");
     parser.addArgument("--printNED").help("Prints named entity string if NED link available in NAF.\n");
     parser.addArgument("--removeEntities").help("Removes the entity NAF layer.\n");
  
@@ -204,6 +205,11 @@ public class CLI {
       String inputFile = parsedArguments.getString("filterNameTypes");
       Convert converter = new Convert();
       converter.filterNameTypes(inputFile, neTypes);
+    }
+    else if (parsedArguments.getString("printNER") != null) {
+      File inputDir = new File(parsedArguments.getString("printNER"));
+      Convert converter = new Convert();
+      converter.getNERFromNAF(inputDir);
     }
     else if (parsedArguments.getString("printNED") != null) {
       File inputDir = new File(parsedArguments.getString("printNED"));

@@ -428,6 +428,53 @@ public class Convert {
      */
     return kaf.toString();
   }
+  
+  /**
+   * Extract entities that contain a link to an external resource in NAF.
+   * 
+   * @param dir
+   *          the directory containing the NAF documents
+   * @throws IOException
+   *           if io problems
+   */
+  public void getNERFromNAF(File dir) throws IOException {
+    // process one file
+    if (dir.isFile()) {
+      printEntities(dir);
+    } else {
+      // recursively process directories
+      File listFile[] = dir.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            getNERFromNAF(listFile[i]);
+          } else {
+            try {
+              printEntities(listFile[i]);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Print entities that contain an external resource link in NAF.
+   * 
+   * @param inFile
+   *          the NAF document
+   * @throws IOException
+   *           if io problems
+   */
+  public void printEntities(File inFile) throws IOException {
+    KAFDocument kaf = KAFDocument.createFromFile(inFile);
+    List<Entity> entityList = kaf.getEntities();
+    for (Entity entity : entityList) {
+      System.out.println(entity.getStr() + " " + entity.getType());        
+    }
+  }
 
   /**
    * Extract entities that contain a link to an external resource in NAF.
@@ -450,7 +497,7 @@ public class Convert {
             getNEDFromNAF(listFile[i]);
           } else {
             try {
-              printEntities(listFile[i]);
+              printNEDEntities(listFile[i]);
             } catch (FileNotFoundException noFile) {
               continue;
             }
@@ -468,7 +515,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void printEntities(File inFile) throws IOException {
+  public void printNEDEntities(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
