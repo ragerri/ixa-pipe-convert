@@ -472,7 +472,7 @@ public class Convert {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
-      System.out.println(entity.getStr() + " " + entity.getType());        
+      System.out.println(entity.getStr() + "\t" + entity.getType());        
     }
   }
 
