@@ -16,11 +16,6 @@
 
 package eus.ixa.ixa.pipe.convert;
 
-import ixa.kaflib.Entity;
-import ixa.kaflib.KAFDocument;
-import ixa.kaflib.Term;
-import ixa.kaflib.WF;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +27,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +41,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.parser.Parse;
-import opennlp.tools.postag.POSDictionary;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -73,6 +63,13 @@ import com.google.common.io.Files;
 
 import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.ml.tok.Token;
+import ixa.kaflib.Entity;
+import ixa.kaflib.KAFDocument;
+import ixa.kaflib.Term;
+import ixa.kaflib.WF;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.parser.Parse;
+import opennlp.tools.postag.POSDictionary;
 
 /**
  * Convert functions.
@@ -345,28 +342,6 @@ public class Convert {
       parsedDoc.append(sentBuilder.toString()).append("\n");
     }
     return parsedDoc.toString();
-  }
-
-  /**
-   * Extract only some name entities types in opennlp format.
-   * 
-   * @param infile
-   *          the document in opennlp format for named entities
-   * @param neTypes
-   *          the types to be extracted, separated by a comma
-   * @throws IOException
-   *           if io problems
-   */
-  public void filterNameTypes(String infile, String neTypes) throws IOException {
-    FilterNameByType filter = null;
-    try {
-      filter = new FilterNameByType(infile, neTypes);
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-    filter.getNamesByType();
   }
 
   /**

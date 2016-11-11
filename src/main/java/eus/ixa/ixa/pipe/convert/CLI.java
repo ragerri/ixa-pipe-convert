@@ -200,12 +200,6 @@ public class CLI {
       ParseToTabulated.parseToTabulated(inputTree);
     }
     // sequence labelling functions
-    else if (parsedArguments.get("filterNameTypes") != null) {
-      String neTypes = parsedArguments.getString("neTypes");
-      String inputFile = parsedArguments.getString("filterNameTypes");
-      Convert converter = new Convert();
-      converter.filterNameTypes(inputFile, neTypes);
-    }
     else if (parsedArguments.getString("printNER") != null) {
       File inputDir = new File(parsedArguments.getString("printNER"));
       Convert converter = new Convert();
