@@ -236,7 +236,7 @@ public class CLI {
     }
     else if (parsedArguments.get("absaSemEvalOTE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalOTE");
-      AbsaSemEval.absaSemEvalToMultiClassNER2015(inputFile);
+      AbsaSemEval.absaSemEval2015ToNAF(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));

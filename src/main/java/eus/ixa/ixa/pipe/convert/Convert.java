@@ -26,11 +26,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,8 +42,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Files;
 
-import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
-import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.Term;

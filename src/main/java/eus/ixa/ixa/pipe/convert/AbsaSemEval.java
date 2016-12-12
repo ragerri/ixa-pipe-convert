@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,6 +27,7 @@ import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.Term;
 import ixa.kaflib.WF;
 
 /**
@@ -113,7 +112,9 @@ public class AbsaSemEval {
    * Convert ABSA 2015-2016 format to NAF.
    * @param fileName
    */
-  public static void absaSemEvalToMultiClassNER2015(String fileName) {
+  public static void absaSemEval2015ToNAF(String fileName) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    //reading the ABSA xml file
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -121,60 +122,52 @@ public class AbsaSemEval {
       XPathExpression<Element> expr = xFactory.compile("//sentence",
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
-      //going through every sentence in the XML
+      
+      //naf sentence counter
+      int counter = 1;
       for (Element sent : sentences) {
-        //sentence, untokenized
+        //sentence id and original text
+        String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        StringBuilder sb = new StringBuilder();
-        sb = sb.append(sentString);
-        //going through every opinion element for each sentence
-        Element opinionsElement = sent.getChild("Opinions");
-        if (opinionsElement != null) {
-          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
-          HashSet<String> targetClassSet = new LinkedHashSet<String>();
-          List<Integer> offsets = new ArrayList<Integer>();
-          List<Element> opinionList = opinionsElement.getChildren();
-          for (Element opinion : opinionList) {
-            if (!opinion.getAttributeValue("target").equals("NULL")) {
-              String categoryAttribute = opinion.getAttributeValue("category");
-              Integer offsetFrom = Integer.parseInt(opinion
-                  .getAttributeValue("from"));
-              Integer offsetTo = Integer.parseInt(opinion
-                  .getAttributeValue("to"));
-              offsets.add(offsetFrom);
-              offsets.add(offsetTo);
-              targetClassSet.add(categoryAttribute);
-            }
-          }
-          List<Integer> offsetsWithoutDuplicates = new ArrayList<Integer>(
-              new HashSet<Integer>(offsets));
-          Collections.sort(offsetsWithoutDuplicates);
-          List<String> targetClassList = new ArrayList<String>(targetClassSet);
-
-          for (int i = 0; i < offsetsWithoutDuplicates.size(); i++) {
-            List<Integer> offsetArray = new ArrayList<Integer>();
-            offsetArray.add(offsetsWithoutDuplicates.get(i++));
-            if (offsetsWithoutDuplicates.size() > i) {
-              offsetArray.add(offsetsWithoutDuplicates.get(i));
-            }
-            offsetList.add(offsetArray);
-          }
-          int counter = 0;
-          for (int i = 0; i < offsetList.size(); i++) {
-            Integer offsetFrom = offsetList.get(i).get(0);
-            Integer offsetTo = offsetList.get(i).get(1);
-            String className = targetClassList.get(i);
-            System.err.println(className);
-            String aspectString = sentString.substring(offsetFrom, offsetTo);
-            sb.replace(offsetFrom + counter, offsetTo + counter, "<START:"
-                + className.substring(0, 3) + "> "
-                + aspectString + " <END>");
-            counter += 19;
+        //the list contains just one list of tokens
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        for (List<Token> sentence : segmentedSentence) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+                counter);
+            wf.setXpath(sentId);
+            final List<WF> wfTarget = new ArrayList<WF>();
+            wfTarget.add(wf);
+            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+            term.setPos("O");
+            term.setLemma(token.getTokenValue());
           }
         }
-        //we print the sentence even if no target/aspect is explicitly annotated
-        System.out.println(sb.toString());
-      }
+        counter++;
+        //going through every opinion element for each sentence
+        //each opinion element can contain one or more opinions
+        Element opinionsElement = sent.getChild("Opinions");
+        if (opinionsElement != null) {
+          //for each opinion we keep the offsets in a list
+          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
+          List<String> categoryList = new ArrayList<>();
+          List<String> polarityList = new ArrayList<>();
+          //iterating over every opinion in the opinions element
+          List<Element> opinionList = opinionsElement.getChildren();
+          for (Element opinion : opinionList) {
+            List<Integer> offsets = new ArrayList<>();
+            //OTE class, also valid for E-A
+            categoryList.add(opinion.getAttributeValue("category"));
+            //adding offsets
+            offsets.add(Integer.parseInt(opinion
+                  .getAttributeValue("from")));
+            offsets.add(Integer.parseInt(opinion
+                  .getAttributeValue("to")));
+            offsetList.add(offsets);
+            polarityList.add(opinion.getAttributeValue("polarity"));
+          }
+        }
+      }//end of sentence
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
@@ -301,15 +294,13 @@ public class AbsaSemEval {
   private static List<List<Token>> tokenizeSentence(String sentString) {
     RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
         setTokenizeProperties());
-    List<String> sentenceList = new ArrayList<String>();
+    List<String> sentenceList = new ArrayList<>();
     sentenceList.add(sentString);
     String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
     List<List<Token>> tokens = tokenizer.tokenize(sentences);
     return tokens;
   }
 
-  
- 
   private static Properties setTokenizeProperties() {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", "en");
