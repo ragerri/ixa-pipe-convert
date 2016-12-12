@@ -95,16 +95,15 @@ public class CLI {
     parser.addArgument("--nafToCoNLL03").help("Convert NAF to CoNLL03 format.\n");
     
     //opinion arguments
-    parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
-    parser.addArgument("--absaSemEvalOTEMulti").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP Multiclass NER annotation.\n");
     parser.addArgument("--absaSemEvalText")
         .action(Arguments.storeTrue())
         .help("Extract text sentences from ABSA SemEval corpora.\n");
     parser.addArgument("--absa15testToNAFWFs").help("Convert ABSA SemEval 2015 test to NAF WFs for annotation and evaluation.\n");
     parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
+    parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
     
     //utils
     parser.addArgument("--lowercase")
@@ -233,40 +232,29 @@ public class CLI {
     }
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
-      Convert converter = new Convert();
-      converter.absaSemEvalToNER2014(inputFile);
+      AbsaSemEval.absaSemEval2014ToNER(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalOTE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalOTE");
-      Convert converter = new Convert();
-      converter.absaSemEvalToNER2015(inputFile);
-    }
-    else if (parsedArguments.get("absaSemEvalOTEMulti") != null) {
-      String inputFile = parsedArguments.getString("absaSemEvalOTEMulti");
-      Convert converter = new Convert();
-      converter.absaSemEvalToMultiClassNER2015(inputFile);
+      AbsaSemEval.absaSemEvalToMultiClassNER2015(inputFile);
     }
     else if (parsedArguments.get("absaSemEvalText")) {
       BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
-      Convert converter = new Convert();
-      converter.absaSemEvalText(breader);
+      AbsaSemEval.absaSemEvalText(breader);
       breader.close();
     }
     else if (parsedArguments.get("absa15testToNAFWFs") != null) {
       String inputFile = parsedArguments.getString("absa15testToNAFWFs");
-      Convert converter = new Convert();
-      String kafString = converter.absa15testToNAFWFs(inputFile);
+      String kafString = AbsaSemEval.absa15testToNAFWFs(inputFile);
       System.out.print(kafString);
     }
     else if (parsedArguments.get("nafToATE") != null) {
       String inputFile = parsedArguments.getString("nafToATE");
-      Convert converter = new Convert();
-      System.out.print(converter.nafToATE(inputFile));
+      System.out.print(AbsaSemEval.nafToATE(inputFile));
     }
     else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");
-      Convert converter = new Convert();
-      converter.getYelpText(inputFile);
+      AbsaSemEval.getYelpText(inputFile);
     }
   }
 }
