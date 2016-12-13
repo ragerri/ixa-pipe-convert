@@ -95,12 +95,13 @@ public class CLI {
     parser.addArgument("--nafToCoNLL03").help("Convert NAF to CoNLL03 format.\n");
     
     //opinion arguments
-    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
-    parser.addArgument("--absaSemEvalOTE").help("Convert ABSA SemEval 2015 Opinion Target Extraction to OpenNLP NER annotation.\n");
-    parser.addArgument("--absaSemEvalText")
+    parser.addArgument("--absa2015ToCoNLL2002").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to CoNLL 2002 format.\n");
+    parser.addArgument("--absa2015ToNAF").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to NAF.\n");
+    parser.addArgument("--absa2015ToWFs").help("Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
+    parser.addArgument("--absa2015Text")
         .action(Arguments.storeTrue())
         .help("Extract text sentences from ABSA SemEval corpora.\n");
-    parser.addArgument("--absa15testToNAFWFs").help("Convert ABSA SemEval 2015 test to NAF WFs for annotation and evaluation.\n");
+    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
@@ -128,8 +129,7 @@ public class CLI {
     //cluster lexicons options
     if (parsedArguments.get("brownClean") != null) {
       File inputFile = new File(parsedArguments.getString("brownClean"));
-      Convert converter = new Convert();
-      converter.brownClusterClean(inputFile); 
+      Convert.brownClusterClean(inputFile); 
     }
     else if (parsedArguments.getString("serializeBrownCluster") != null) {
       File clusterFile = new File(parsedArguments.getString("serializeBrownCluster"));
@@ -152,43 +152,34 @@ public class CLI {
     // pos taggging functions
     else if (parsedArguments.getString("createMonosemicDictionary") != null) {
       File inputDir = new File(parsedArguments.getString("createMonosemicDictionary"));
-      Convert converter = new Convert();
-      converter.createMonosemicDictionary(inputDir);
+      Convert.createMonosemicDictionary(inputDir);
     }
     else if (parsedArguments.getString("createPOSDictionary") != null) {
       File inputDir = new File(parsedArguments.getString("createPOSDictionary"));
-      Convert converter = new Convert();
-      converter.convertLemmaToPOSDict(inputDir);
+     Convert.convertLemmaToPOSDict(inputDir);
     }
     else if (parsedArguments.getList("addLemmaDict2POSDict") != null) {
       List<Object> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
       File lemmaDict = new File((String) fileArgs.get(0));
       File xmlDict = new File((String) fileArgs.get(1));
-      Convert converter = new Convert();
-      converter.addLemmaToPOSDict(lemmaDict, xmlDict);
+      Convert.addLemmaToPOSDict(lemmaDict, xmlDict);
     }
     //parsing functions
     else if (parsedArguments.getString("treebank2WordPos") != null) {
       File inputTree = new File(parsedArguments.getString("treebank2WordPos"));
-      Convert converter = new Convert();
-      converter.treebank2WordPos(inputTree);
+      Convert.treebank2WordPos(inputTree);
     }
-    
     else if (parsedArguments.get("ancora2treebank") != null) { 
       File inputXML = new File(parsedArguments.getString("ancora2treebank"));
-      Convert converter = new Convert();
-      converter.processAncoraConstituentXMLCorpus(inputXML);
+      Convert.processAncoraConstituentXMLCorpus(inputXML);
     }
-    
     else if (parsedArguments.getString("treebank2tokens") != null) {
       File inputTree = new File(parsedArguments.getString("treebank2tokens"));
-      Convert converter = new Convert();
-      converter.treebank2tokens(inputTree);
+      Convert.treebank2tokens(inputTree);
     }
     else if (parsedArguments.get("normalizePennTreebank") != null) {
       File inputTree = new File(parsedArguments.getString("normalizePennTreebank"));
-      Convert converter = new Convert();
-      converter.getCleanPennTrees(inputTree);
+      Convert.getCleanPennTrees(inputTree);
     }
     else if (parsedArguments.get("parseToChunks") != null) {
       File inputTree = new File(parsedArguments.getString("parseToChunks"));
@@ -201,52 +192,48 @@ public class CLI {
     // sequence labelling functions
     else if (parsedArguments.getString("printNER") != null) {
       File inputDir = new File(parsedArguments.getString("printNER"));
-      Convert converter = new Convert();
-      converter.getNERFromNAF(inputDir);
+      Convert.getNERFromNAF(inputDir);
     }
     else if (parsedArguments.getString("printNED") != null) {
       File inputDir = new File(parsedArguments.getString("printNED"));
-      Convert converter = new Convert();
-      converter.getNEDFromNAF(inputDir);
+      Convert.getNEDFromNAF(inputDir);
     }
     else if (parsedArguments.getString("removeEntities") != null) {
       File inputDir = new File(parsedArguments.getString("removeEntities"));
-      Convert converter = new Convert();
-      converter.removeEntities(inputDir);
+      Convert.removeEntities(inputDir);
     }
     else if (parsedArguments.get("nafToCoNLL02") != null) {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL02"));
-      Convert converter = new Convert();
-      converter.nafToCoNLL02(inputDir);
+      Convert.nafToCoNLL2002(inputDir);
     }
     else if (parsedArguments.get("nafToCoNLL03") != null) {
       File inputDir = new File(parsedArguments.getString("nafToCoNLL03"));
-      Convert converter = new Convert();
-      converter.nafToCoNLL03(inputDir);
+      Convert.nafToCoNLL2003(inputDir);
     }
     // opinion functions
-    else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
-      File inputDir = new File(parsedArguments.getString("trivagoAspectsToCoNLL02"));
-      Convert converter = new Convert();
-      converter.trivagoAspectsToCoNLL02(inputDir);
+    else if (parsedArguments.get("absa2015ToCoNLL2002")!= null) {
+      String inputFile = parsedArguments.getString("absa2015ToCoNLL2002");
+      String conllFile = AbsaSemEval.absa2015ToCoNLL2002(inputFile);
+      System.out.print(conllFile);
+    }
+    else if (parsedArguments.get("absa2015ToNAF") != null) {
+      String inputFile = parsedArguments.getString("absa2015ToNAF");
+      String kafString = AbsaSemEval.absa2015ToNAF(inputFile);
+      System.out.println(kafString);
+    }
+    else if (parsedArguments.get("absa2015ToWFs") != null) {
+      String inputFile = parsedArguments.getString("absa2015ToWFs");
+      String kafString = AbsaSemEval.absa2015ToWFs(inputFile);
+      System.out.print(kafString);
+    }
+    else if (parsedArguments.get("absa2015Text")) {
+      BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
+      AbsaSemEval.absa2015Text(breader);
+      breader.close();
     }
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
-      AbsaSemEval.absaSemEval2014ToNER(inputFile);
-    }
-    else if (parsedArguments.get("absaSemEvalOTE") != null) {
-      String inputFile = parsedArguments.getString("absaSemEvalOTE");
-      AbsaSemEval.absaSemEval2015ToNAF(inputFile);
-    }
-    else if (parsedArguments.get("absaSemEvalText")) {
-      BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
-      AbsaSemEval.absaSemEvalText(breader);
-      breader.close();
-    }
-    else if (parsedArguments.get("absa15testToNAFWFs") != null) {
-      String inputFile = parsedArguments.getString("absa15testToNAFWFs");
-      String kafString = AbsaSemEval.absa15testToNAFWFs(inputFile);
-      System.out.print(kafString);
+      AbsaSemEval.absa2014ToNAF(inputFile);
     }
     else if (parsedArguments.get("nafToATE") != null) {
       String inputFile = parsedArguments.getString("nafToATE");
@@ -255,6 +242,10 @@ public class CLI {
     else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");
       AbsaSemEval.getYelpText(inputFile);
+    }
+    else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
+      File inputDir = new File(parsedArguments.getString("trivagoAspectsToCoNLL02"));
+      Convert.trivagoAspectsToCoNLL02(inputDir);
     }
   }
 }

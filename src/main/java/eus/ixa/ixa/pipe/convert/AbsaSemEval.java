@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -27,6 +28,8 @@ import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.Opinion;
+import ixa.kaflib.Opinion.OpinionExpression;
 import ixa.kaflib.Term;
 import ixa.kaflib.WF;
 
@@ -41,7 +44,286 @@ public class AbsaSemEval {
   private AbsaSemEval() {
   }
 
-  public static void absaSemEval2014ToNER(String fileName) {
+  private static void absa2015ToNAFOpinion(KAFDocument kaf, String fileName) {
+    //reading the ABSA xml file
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      
+      //naf sentence counter
+      int counter = 1;
+      for (Element sent : sentences) {
+        List<Integer> wfFromOffsets = new ArrayList<>();
+        List<Integer> wfToOffsets = new ArrayList<>();
+        List<WF> sentWFs = new ArrayList<>();
+        List<Term> sentTerms = new ArrayList<>();
+        //sentence id and original text
+        String sentId = sent.getAttributeValue("id");
+        String sentString = sent.getChildText("text");
+        //the list contains just one list of tokens
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        for (List<Token> sentence : segmentedSentence) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+                counter);
+            wf.setXpath(sentId);
+            final List<WF> wfTarget = new ArrayList<WF>();
+            wfTarget.add(wf);
+            wfFromOffsets.add(wf.getOffset());
+            wfToOffsets.add(wf.getOffset() + wf.getLength());
+            sentWFs.add(wf);
+            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+            term.setPos("O");
+            term.setLemma(token.getTokenValue());
+            sentTerms.add(term);
+          }
+        }
+        counter++;
+        String[] tokenIds = new String[sentWFs.size()];
+        for (int i = 0; i < sentWFs.size(); i++) {
+          tokenIds[i] = sentWFs.get(i).getId();
+        }
+        //going through every opinion element for each sentence
+        //each opinion element can contain one or more opinions
+        Element opinionsElement = sent.getChild("Opinions");
+        if (opinionsElement != null) {
+          //iterating over every opinion in the opinions element
+          List<Element> opinionList = opinionsElement.getChildren();
+          for (Element opinion : opinionList) {
+            //polarity and category are always specified
+            //TODO add polarity
+            String polarity = opinion.getAttributeValue("polarity");
+            String category = opinion.getAttributeValue("category");
+            String targetString = opinion.getAttributeValue("target");
+            
+            //adding OTE
+            if (!targetString.equalsIgnoreCase("NULL")) {
+              int fromOffset = Integer.parseInt(opinion
+                    .getAttributeValue("from"));
+              int toOffset = Integer.parseInt(opinion
+                    .getAttributeValue("to"));
+              int startIndex = -1;
+              int endIndex = -1;
+              for (int i = 0; i < wfFromOffsets.size(); i++) {
+                if (wfFromOffsets.get(i) == fromOffset) {
+                  startIndex = i;
+                }
+              }
+              for (int i = 0; i < wfToOffsets.size(); i++) {
+                if (wfToOffsets.get(i) == toOffset) {
+                  //span is +1 with respect to the last token of the span
+                  endIndex = i + 1;
+                }
+              }
+              List<String> wfIds = Arrays
+                  .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+              List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+              ixa.kaflib.Span<Term> oteSpan = KAFDocument.newTermSpan(nameTerms);
+              Opinion opinionLayer = kaf.newOpinion();
+              opinionLayer.createOpinionTarget(oteSpan);
+              //TODO expression span, perhaps heuristic around ote?
+              OpinionExpression opExpression = opinionLayer.createOpinionExpression(oteSpan);
+              opExpression.setPolarity(polarity);
+              opExpression.setSentimentProductFeature(category);
+            }
+          }
+        }
+      }//end of sentence
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public static String absa2015ToNAF(String fileName) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    absa2015ToNAFOpinion(kaf, fileName);
+    return kaf.toString();
+  }
+  
+  private static void absa2015ToNAFNER(KAFDocument kaf, String fileName) {
+    //reading the ABSA xml file
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      
+      //naf sentence counter
+      int counter = 1;
+      for (Element sent : sentences) {
+        List<Integer> wfFromOffsets = new ArrayList<>();
+        List<Integer> wfToOffsets = new ArrayList<>();
+        List<WF> sentWFs = new ArrayList<>();
+        List<Term> sentTerms = new ArrayList<>();
+        //sentence id and original text
+        String sentId = sent.getAttributeValue("id");
+        String sentString = sent.getChildText("text");
+        //the list contains just one list of tokens
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        for (List<Token> sentence : segmentedSentence) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+                counter);
+            wf.setXpath(sentId);
+            final List<WF> wfTarget = new ArrayList<WF>();
+            wfTarget.add(wf);
+            wfFromOffsets.add(wf.getOffset());
+            wfToOffsets.add(wf.getOffset() + wf.getLength());
+            sentWFs.add(wf);
+            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+            term.setPos("O");
+            term.setLemma(token.getTokenValue());
+            sentTerms.add(term);
+          }
+        }
+        counter++;
+        String[] tokenIds = new String[sentWFs.size()];
+        for (int i = 0; i < sentWFs.size(); i++) {
+          tokenIds[i] = sentWFs.get(i).getId();
+        }
+        //going through every opinion element for each sentence
+        //each opinion element can contain one or more opinions
+        Element opinionsElement = sent.getChild("Opinions");
+        if (opinionsElement != null) {
+          //iterating over every opinion in the opinions element
+          List<Element> opinionList = opinionsElement.getChildren();
+          for (Element opinion : opinionList) {
+            String category = opinion.getAttributeValue("category");
+            String targetString = opinion.getAttributeValue("target");
+            
+            //adding OTE
+            if (!targetString.equalsIgnoreCase("NULL")) {
+              int fromOffset = Integer.parseInt(opinion
+                    .getAttributeValue("from"));
+              int toOffset = Integer.parseInt(opinion
+                    .getAttributeValue("to"));
+              int startIndex = -1;
+              int endIndex = -1;
+              for (int i = 0; i < wfFromOffsets.size(); i++) {
+                if (wfFromOffsets.get(i) == fromOffset) {
+                  startIndex = i;
+                }
+              }
+              for (int i = 0; i < wfToOffsets.size(); i++) {
+                if (wfToOffsets.get(i) == toOffset) {
+                  //span is +1 with respect to the last token of the span
+                  endIndex = i + 1;
+                }
+              }
+              List<String> wfIds = Arrays
+                  .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+              List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
+              if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+                List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+                ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+                List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+                references.add(neSpan);
+                Entity neEntity = kaf.newEntity(references);
+                neEntity.setType(category);
+              }
+            }
+          }
+        }
+      }//end of sentence
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public static String absa2015ToCoNLL2002(String fileName) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    absa2015ToNAFNER(kaf, fileName);
+    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    return conllFile;
+  }
+  
+  /**
+   * Get all the WF ids for the terms contained in the KAFDocument.
+   * @param kaf the KAFDocument
+   * @return the list of all WF ids in the terms layer
+   */
+  public static List<String> getWFIdsFromTerms(List<Term> terms) {
+    List<String> wfTermIds = new ArrayList<>();
+    for (int i = 0; i < terms.size(); i++) {
+      List<WF> sentTerms = terms.get(i).getWFs();
+      for (WF form : sentTerms) {
+        wfTermIds.add(form.getId());
+      }
+    }
+    return wfTermIds;
+  }
+  
+  /**
+   * Check that the references from the entity spans are
+   * actually contained in the term ids.
+   * @param wfIds the worform ids corresponding to the Term span
+   * @param termWfIds all the terms in the document
+   * @return true or false
+   */
+  public static boolean checkTermsRefsIntegrity(List<String> wfIds,
+      List<String> termWfIds) {
+    for (int i = 0; i < wfIds.size(); i++) {
+      if (!termWfIds.contains(wfIds.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static String absa2015ToWFs(String fileName) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+
+      int counter = 1;
+      for (Element sent : sentences) {
+        String sentId = sent.getAttributeValue("id");
+        String sentString = sent.getChildText("text");
+        List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
+        for (List<Token> sentence : segmentedSentences) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+                counter);
+            wf.setXpath(sentId);
+          }
+        }
+        counter++;
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+    return kaf.toString();
+  }
+  
+  public static void absa2015Text(Reader reader) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    try {
+      Document doc = sax.build(reader);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+      for (Element sent : sentences) {
+        String sentString = sent.getChildText("text");
+        System.out.println(sentString);
+      }
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void absa2014ToNAF(String fileName) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -107,120 +389,7 @@ public class AbsaSemEval {
       e.printStackTrace();
     }
   }
-
-  /**
-   * Convert ABSA 2015-2016 format to NAF.
-   * @param fileName
-   */
-  public static void absaSemEval2015ToNAF(String fileName) {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    //reading the ABSA xml file
-    SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
-    try {
-      Document doc = sax.build(fileName);
-      XPathExpression<Element> expr = xFactory.compile("//sentence",
-          Filters.element());
-      List<Element> sentences = expr.evaluate(doc);
-      
-      //naf sentence counter
-      int counter = 1;
-      for (Element sent : sentences) {
-        //sentence id and original text
-        String sentId = sent.getAttributeValue("id");
-        String sentString = sent.getChildText("text");
-        //the list contains just one list of tokens
-        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
-        for (List<Token> sentence : segmentedSentence) {
-          for (Token token : sentence) {
-            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
-                counter);
-            wf.setXpath(sentId);
-            final List<WF> wfTarget = new ArrayList<WF>();
-            wfTarget.add(wf);
-            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
-            term.setPos("O");
-            term.setLemma(token.getTokenValue());
-          }
-        }
-        counter++;
-        //going through every opinion element for each sentence
-        //each opinion element can contain one or more opinions
-        Element opinionsElement = sent.getChild("Opinions");
-        if (opinionsElement != null) {
-          //for each opinion we keep the offsets in a list
-          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
-          List<String> categoryList = new ArrayList<>();
-          List<String> polarityList = new ArrayList<>();
-          //iterating over every opinion in the opinions element
-          List<Element> opinionList = opinionsElement.getChildren();
-          for (Element opinion : opinionList) {
-            List<Integer> offsets = new ArrayList<>();
-            //OTE class, also valid for E-A
-            categoryList.add(opinion.getAttributeValue("category"));
-            //adding offsets
-            offsets.add(Integer.parseInt(opinion
-                  .getAttributeValue("from")));
-            offsets.add(Integer.parseInt(opinion
-                  .getAttributeValue("to")));
-            offsetList.add(offsets);
-            polarityList.add(opinion.getAttributeValue("polarity"));
-          }
-        }
-      }//end of sentence
-    } catch (JDOMException | IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static String absa15testToNAFWFs(String fileName) {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
-    try {
-      Document doc = sax.build(fileName);
-      XPathExpression<Element> expr = xFactory.compile("//sentence",
-          Filters.element());
-      List<Element> sentences = expr.evaluate(doc);
-
-      int counter = 1;
-      for (Element sent : sentences) {
-        String sentId = sent.getAttributeValue("id");
-        String sentString = sent.getChildText("text");
-        List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
-        for (List<Token> sentence : segmentedSentences) {
-          for (Token token : sentence) {
-            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
-                counter);
-            wf.setXpath(sentId);
-          }
-        }
-        counter++;
-      }
-    } catch (JDOMException | IOException e) {
-      e.printStackTrace();
-    }
-    return kaf.toString();
-  }
   
-
-  public static void absaSemEvalText(Reader reader) {
-    SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
-    try {
-      Document doc = sax.build(reader);
-      XPathExpression<Element> expr = xFactory.compile("//sentence",
-          Filters.element());
-      List<Element> sentences = expr.evaluate(doc);
-      for (Element sent : sentences) {
-        String sentString = sent.getChildText("text");
-        System.out.println(sentString);
-      }
-    } catch (JDOMException | IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   public static String nafToATE(String kafDocument) {
 
     KAFDocument kaf = null;

@@ -58,6 +58,9 @@ import opennlp.tools.postag.POSDictionary;
  * 
  */
 public class Convert {
+  
+  private Convert() {
+  }
 
   public static Pattern detokenizeTargets = Pattern.compile(
       "<\\s+START\\s+:\\s+target\\s+>", Pattern.UNICODE_CHARACTER_CLASS);
@@ -73,7 +76,7 @@ public class Convert {
    * @throws IOException
    *           if io exception
    */
-  public String ancora2treebank(File inXML) throws IOException {
+  public static String ancora2treebank(File inXML) throws IOException {
     String filteredTrees = null;
     if (inXML.isFile()) {
 
@@ -114,7 +117,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void processAncoraConstituentXMLCorpus(File dir) throws IOException {
+  public static void processAncoraConstituentXMLCorpus(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
@@ -156,7 +159,7 @@ public class Convert {
    *          the input file
    * @throws IOException
    */
-  public void treebank2tokens(File treebankFile) throws IOException {
+  public static void treebank2tokens(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
@@ -180,7 +183,7 @@ public class Convert {
    *          the list of trees in penn treebank format
    * @return the tokenized document the document tokens
    */
-  private String getTokensFromTree(List<String> inputTrees) {
+  private static String getTokensFromTree(List<String> inputTrees) {
 
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
@@ -200,7 +203,7 @@ public class Convert {
    * @param sb
    *          the stringbuilder to add the trees
    */
-  private void getTokens(Parse parse, StringBuilder sb) {
+  private static void getTokens(Parse parse, StringBuilder sb) {
     if (parse.isPosTag()) {
       if (!parse.getType().equals("-NONE-")) {
         sb.append(parse.getCoveredText()).append(" ");
@@ -222,7 +225,7 @@ public class Convert {
    *          the input file
    * @throws IOException
    */
-  public void treebank2WordPos(File treebankFile) throws IOException {
+  public static void treebank2WordPos(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
@@ -246,7 +249,7 @@ public class Convert {
    * @param inputTrees
    * @return the document with Word_POS sentences
    */
-  private String getPreTerminals(List<String> inputTrees) {
+  private static String getPreTerminals(List<String> inputTrees) {
 
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
@@ -264,7 +267,7 @@ public class Convert {
    * @param parse
    * @param sb
    */
-  private void getWordType(Parse parse, StringBuilder sb) {
+  private static void getWordType(Parse parse, StringBuilder sb) {
     if (parse.isPosTag()) {
       if (!parse.getType().equals("-NONE-")) {
         sb.append(parse.getCoveredText()).append("_").append(parse.getType())
@@ -285,7 +288,7 @@ public class Convert {
    * @param treebankFile
    * @throws IOException
    */
-  public void getCleanPennTrees(File treebankFile) throws IOException {
+  public static void getCleanPennTrees(File treebankFile) throws IOException {
     if (treebankFile.isFile()) {
       List<String> inputTrees = Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
@@ -311,7 +314,7 @@ public class Convert {
    * @return
    */
   // TODO add the sed regexp to this function
-  private String normalizeParse(List<String> inputTrees) {
+  private static String normalizeParse(List<String> inputTrees) {
     StringBuilder parsedDoc = new StringBuilder();
     for (String parseSent : inputTrees) {
       Parse parse = Parse.parseParse(parseSent);
@@ -331,7 +334,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void removeEntities(File dir) throws IOException {
+  public static void removeEntities(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
@@ -373,7 +376,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  private String removeEntityLayer(File inFile) throws IOException {
+  private static String removeEntityLayer(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     /*
      * kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
@@ -391,7 +394,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void getNERFromNAF(File dir) throws IOException {
+  public static void getNERFromNAF(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       printEntities(dir);
@@ -422,7 +425,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void printEntities(File inFile) throws IOException {
+  public static void printEntities(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
@@ -438,7 +441,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void getNEDFromNAF(File dir) throws IOException {
+  public static void getNEDFromNAF(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       printEntities(dir);
@@ -469,7 +472,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void printNEDEntities(File inFile) throws IOException {
+  public static void printNEDEntities(File inFile) throws IOException {
     KAFDocument kaf = KAFDocument.createFromFile(inFile);
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
@@ -487,7 +490,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void createMonosemicDictionary(File lemmaDict) throws IOException {
+  public static void createMonosemicDictionary(File lemmaDict) throws IOException {
     // process one file
     if (lemmaDict.isFile()) {
       List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
@@ -498,7 +501,7 @@ public class Convert {
     }
   }
 
-  private void getMonosemicDict(List<String> inputLines) {
+  private static void getMonosemicDict(List<String> inputLines) {
     Map<String, String> monosemicMap = new HashMap<String, String>();
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
@@ -529,7 +532,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void convertLemmaToPOSDict(File lemmaDict) throws IOException {
+  public static void convertLemmaToPOSDict(File lemmaDict) throws IOException {
     // process one file
     if (lemmaDict.isFile()) {
       List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
@@ -556,7 +559,7 @@ public class Convert {
    *          the list of words and postag per line
    * @return the POSDictionary
    */
-  private POSDictionary getPOSTaggerDict(List<String> inputLines) {
+  private static POSDictionary getPOSTaggerDict(List<String> inputLines) {
     POSDictionary posTaggerDict = new POSDictionary();
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
@@ -587,7 +590,7 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public void addLemmaToPOSDict(File lemmaDict, File posTaggerDict)
+  public static void addLemmaToPOSDict(File lemmaDict, File posTaggerDict)
       throws IOException {
     // process one file
     if (lemmaDict.isFile() && posTaggerDict.isFile()) {
@@ -617,7 +620,7 @@ public class Convert {
    * @param tagDict
    *          the POSDictionary to which the lemma dictionary will be added
    */
-  private void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
+  private static void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
       String[] lineArray = line.split(" ");
@@ -633,12 +636,12 @@ public class Convert {
     }
   }
 
-  public void nafToCoNLL02(File dir) throws IOException {
+  public static void nafToCoNLL2002(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
       File outfile = new File(dir.getCanonicalFile() + ".conll02");
-      String outKAF = nafToCoNLLConvert02(kaf);
+      String outKAF = nafToCoNLLConvert2002(kaf);
       Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
@@ -647,13 +650,13 @@ public class Convert {
       if (listFile != null) {
         for (int i = 0; i < listFile.length; i++) {
           if (listFile[i].isDirectory()) {
-            nafToCoNLL02(listFile[i]);
+            nafToCoNLL2002(listFile[i]);
           } else {
             try {
               File outfile = new File(listFile[i].getCanonicalFile()
                   + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = nafToCoNLLConvert02(kaf);
+              String outKAF = nafToCoNLLConvert2002(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL02 document to " + outfile);
             } catch (FileNotFoundException noFile) {
@@ -672,7 +675,7 @@ public class Convert {
    *          the kaf document
    * @return the annotated named entities in conll02 format
    */
-  public String nafToCoNLLConvert02(KAFDocument kaf) {
+  public static String nafToCoNLLConvert2002(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
     Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
     Map<String, String> entityToType = new HashMap<String, String>();
@@ -697,7 +700,7 @@ public class Convert {
         if (entityToSpanSize.get(thisTerm.getId()) != null) {
           int neSpanSize = entityToSpanSize.get(thisTerm.getId());
           String neClass = entityToType.get(thisTerm.getId());
-          String neType = convertToConLLTypes(neClass);
+          //String neType = convertToConLLTypes(neClass);
           if (neSpanSize > 1) {
             for (int j = 0; j < neSpanSize; j++) {
               thisTerm = sentenceTerms.get(i + j);
@@ -712,7 +715,7 @@ public class Convert {
               } else {
                 sb.append(BIO.IN.toString());
               }
-              sb.append(neType);
+              sb.append(neClass);
               sb.append("\n");
             }
           } else {
@@ -723,7 +726,7 @@ public class Convert {
             sb.append(thisTerm.getMorphofeat());
             sb.append("\t");
             sb.append(BIO.BEGIN.toString());
-            sb.append(neType);
+            sb.append(neClass);
             sb.append("\n");
           }
           i += neSpanSize - 1;
@@ -743,12 +746,12 @@ public class Convert {
     return sb.toString();
   }
 
-  public void nafToCoNLL03(File dir) throws IOException {
+  public static void nafToCoNLL2003(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
       File outfile = new File(dir.getCanonicalFile() + ".conll03");
-      String outKAF = nafToCoNLLConvert03(kaf);
+      String outKAF = nafToCoNLLConvert2003(kaf);
       Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
@@ -757,13 +760,13 @@ public class Convert {
       if (listFile != null) {
         for (int i = 0; i < listFile.length; i++) {
           if (listFile[i].isDirectory()) {
-            nafToCoNLL03(listFile[i]);
+            nafToCoNLL2003(listFile[i]);
           } else {
             try {
               File outfile = new File(listFile[i].getCanonicalFile()
                   + ".conll03");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = nafToCoNLLConvert03(kaf);
+              String outKAF = nafToCoNLLConvert2003(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL03 document to " + outfile);
             } catch (FileNotFoundException noFile) {
@@ -782,7 +785,7 @@ public class Convert {
    *          the kaf document
    * @return the annotated named entities in conll03 format
    */
-  public String nafToCoNLLConvert03(KAFDocument kaf) {
+  public static String nafToCoNLLConvert2003(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
     Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
     Map<String, String> entityToType = new HashMap<String, String>();
@@ -811,7 +814,7 @@ public class Convert {
         if (entityToSpanSize.get(thisTerm.getId()) != null) {
           int neSpanSize = entityToSpanSize.get(thisTerm.getId());
           String neClass = entityToType.get(thisTerm.getId());
-          String neType = this.convertToConLLTypes(neClass);
+          String neType = Convert.convertToConLLTypes(neClass);
           // if Entity span is multi token
           if (neSpanSize > 1) {
             for (int j = 0; j < neSpanSize; j++) {
@@ -869,13 +872,13 @@ public class Convert {
   }
   
   
-  public void trivagoAspectsToCoNLL02(File dir) throws IOException {
+  public static void trivagoAspectsToCoNLL02(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
       System.err.println(">> Processing " + dir.getName());
       File outfile = new File(dir.getCanonicalFile() + ".conll02");
-      String outKAF = this.trivagoAspectsToCoNLLConvert02(kaf);
+      String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
       Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
@@ -891,7 +894,7 @@ public class Convert {
               File outfile = new File(listFile[i].getCanonicalFile()
                   + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = this.trivagoAspectsToCoNLLConvert02(kaf);
+              String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
               Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL02 document to " + outfile);
             } catch (FileNotFoundException noFile) {
@@ -910,7 +913,7 @@ public class Convert {
    *          the kaf document
    * @return the annotated named entities in conll02 format
    */
-  public String trivagoAspectsToCoNLLConvert02(KAFDocument kaf) {
+  public static String trivagoAspectsToCoNLLConvert02(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
     Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
     Map<String, String> entityToType = new HashMap<String, String>();
@@ -942,7 +945,6 @@ public class Convert {
         if (entityToSpanSize.get(thisTerm.getId()) != null) {
           int neSpanSize = entityToSpanSize.get(thisTerm.getId());
           String neClass = entityToType.get(thisTerm.getId());
-          String neType = convertToConLLTypes(neClass);
           if (neSpanSize > 1) {
             for (int j = 0; j < neSpanSize; j++) {
               thisTerm = sentenceTerms.get(i + j);
@@ -957,7 +959,7 @@ public class Convert {
               } else {
                 sb.append(BIO.IN.toString());
               }
-              sb.append(neType);
+              sb.append(neClass);
               sb.append("\n");
             }
           } else {
@@ -968,7 +970,7 @@ public class Convert {
             sb.append(thisTerm.getMorphofeat());
             sb.append("\t");
             sb.append(BIO.BEGIN.toString());
-            sb.append(neType);
+            sb.append(neClass);
             sb.append("\n");
           }
           i += neSpanSize - 1;
@@ -995,7 +997,7 @@ public class Convert {
    *          named entity class
    * @return the converted string
    */
-  public String convertToConLLTypes(String neType) {
+  public static String convertToConLLTypes(String neType) {
     String conllType = null;
     if (neType.startsWith("PER") || neType.startsWith("ORG")
         || neType.startsWith("LOC") || neType.startsWith("GPE") || neType.length() == 3) {
@@ -1022,7 +1024,7 @@ public class Convert {
     }
   }
 
-  public void brownClusterClean(File dir) throws IOException {
+  public static void brownClusterClean(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
       File outfile = new File(dir.getCanonicalFile() + ".clean");
@@ -1060,7 +1062,7 @@ public class Convert {
    *         characters
    * @throws IOException
    */
-  private String brownCleanUpperCase(File inFile) throws IOException {
+  private static String brownCleanUpperCase(File inFile) throws IOException {
     InputStream inputStream = CmdLineUtil.openInFile(inFile);
     StringBuilder precleantext = new StringBuilder();
     BufferedReader breader = new BufferedReader(new InputStreamReader(
