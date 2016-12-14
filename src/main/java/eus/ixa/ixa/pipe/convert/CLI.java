@@ -98,8 +98,8 @@ public class CLI {
     parser.addArgument("--absa2015ToWFs").help("Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
     parser.addArgument("--absa2015Text").help("Extract text sentences from ABSA 2015 and 2016 SemEval corpora.\n");
     parser.addArgument("--nafToAbsa2015").help("Convert NAF containing Opinions into ABSA 2015 and 2016 format.\n");
-    parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
-    parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
+    parser.addArgument("--absa2014ToCoNLL2002").help("Convert ABSA SemEval 2014 Aspect Term Extraction to CoNLL 2002 format.\n");
+    parser.addArgument("--nafToAbsa2014").help("Convert NAF containing opinions into ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
     
@@ -233,13 +233,14 @@ public class CLI {
       String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
       System.out.print(xmlFile);
     }
-    else if (parsedArguments.get("absaSemEvalATE") != null) {
-      String inputFile = parsedArguments.getString("absaSemEvalATE");
-      AbsaSemEval.absa2014ToNAF(inputFile);
+    else if (parsedArguments.get("absa2014ToCoNLL2002") != null) {
+      String inputFile = parsedArguments.getString("absa2014ToCoNLL2002");
+      String conllFile = AbsaSemEval.absa2014ToCoNLL2002(inputFile);
+      System.out.println(conllFile);
     }
-    else if (parsedArguments.get("nafToATE") != null) {
-      String inputFile = parsedArguments.getString("nafToATE");
-      System.out.print(AbsaSemEval.nafToATE(inputFile));
+    else if (parsedArguments.get("nafToAbsa2014") != null) {
+      String inputFile = parsedArguments.getString("nafToAbsa2014");
+      System.out.print(AbsaSemEval.nafToAbsa2014(inputFile));
     }
     else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");

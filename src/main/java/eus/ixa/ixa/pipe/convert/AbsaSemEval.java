@@ -22,7 +22,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -442,7 +441,8 @@ public class AbsaSemEval {
     return sb.toString().trim();
   }
 
-  public static void absa2014ToNAF(String fileName) {
+  private static void absa2014ToNAFNER(KAFDocument kaf, String fileName) {
+    //reading the ABSA xml file
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
@@ -450,105 +450,137 @@ public class AbsaSemEval {
       XPathExpression<Element> expr = xFactory.compile("//sentence",
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
+      
+      //naf sentence counter
+      int counter = 1;
       for (Element sent : sentences) {
-
-        StringBuilder sb = new StringBuilder();
+        List<Integer> wfFromOffsets = new ArrayList<>();
+        List<Integer> wfToOffsets = new ArrayList<>();
+        List<WF> sentWFs = new ArrayList<>();
+        List<Term> sentTerms = new ArrayList<>();
+        //sentence id and original text
+        String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        sb = sb.append(sentString);
-        Element aspectTerms = sent.getChild("aspectTerms");
-        String tokenizedSentence = null;
-        if (aspectTerms != null) {
-          List<List<Integer>> offsetList = new ArrayList<List<Integer>>();
-          List<Integer> offsets = new ArrayList<Integer>();
-          List<Element> aspectTermList = aspectTerms.getChildren();
-          if (!aspectTermList.isEmpty()) {
-            for (Element aspectElem : aspectTermList) {
-              Integer offsetFrom = Integer.parseInt(aspectElem
-                  .getAttributeValue("from"));
-              Integer offsetTo = Integer.parseInt(aspectElem
-                  .getAttributeValue("to"));
-              offsets.add(offsetFrom);
-              offsets.add(offsetTo);
-            }
+        //the list contains just one list of tokens
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        for (List<Token> sentence : segmentedSentence) {
+          for (Token token : sentence) {
+            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+                counter);
+            wf.setXpath(sentId);
+            final List<WF> wfTarget = new ArrayList<WF>();
+            wfTarget.add(wf);
+            wfFromOffsets.add(wf.getOffset());
+            wfToOffsets.add(wf.getOffset() + wf.getLength());
+            sentWFs.add(wf);
+            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+            term.setPos("O");
+            term.setLemma(token.getTokenValue());
+            sentTerms.add(term);
           }
-          Collections.sort(offsets);
-          for (int i = 0; i < offsets.size(); i++) {
-            List<Integer> offsetArray = new ArrayList<Integer>();
-            offsetArray.add(offsets.get(i++));
-            if (offsets.size() > i) {
-              offsetArray.add(offsets.get(i));
-            }
-            offsetList.add(offsetArray);
-          }
-          int counter = 0;
-          for (List<Integer> offsetSent : offsetList) {
-            Integer offsetFrom = offsetSent.get(0);
-            Integer offsetTo = offsetSent.get(1);
-            String aspectString = sentString.substring(offsetFrom, offsetTo);
-            sb.replace(offsetFrom + counter, offsetTo + counter,
-                "<START:term> " + aspectString + " <END>");
-            counter += 19;
-          }
-          tokenizedSentence = getStringFromTokens(sb.toString());
-          tokenizedSentence = tokenizedSentence.replaceAll(
-              "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
-          tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
-              "<END>");
-          System.out.println(tokenizedSentence);
         }
-        // TODO make public getTokens() method in RuleBasedTokenizer!!
-        //String tokenizedSentence = getStringFromTokens(sb.toString());
-        //tokenizedSentence = tokenizedSentence.replaceAll(
-        //    "<\\s+START\\s+:\\s+term\\s+>", "<START:term>");
-        //tokenizedSentence = tokenizedSentence.replaceAll("<\\s+END\\s+>",
-        //    "<END>");
-        //System.out.println(tokenizedSentence);
-      }
+        counter++;
+        String[] tokenIds = new String[sentWFs.size()];
+        for (int i = 0; i < sentWFs.size(); i++) {
+          tokenIds[i] = sentWFs.get(i).getId();
+        }
+        //going through every opinion element for each sentence
+        //each opinion element can contain one or more opinions
+        Element aspectTermsElem = sent.getChild("aspectTerms");
+        
+        if (aspectTermsElem != null) {
+          
+          List<Element> aspectTermsList = aspectTermsElem.getChildren();
+          //iterating over every opinion in the opinions element
+          if (!aspectTermsList.isEmpty()) {
+          for (Element aspectTerm : aspectTermsList) {
+            String targetString = aspectTerm.getAttributeValue("term");
+            System.err.println("-> " + targetString);
+            //adding OTE
+              int fromOffset = Integer.parseInt(aspectTerm
+                    .getAttributeValue("from"));
+              int toOffset = Integer.parseInt(aspectTerm
+                    .getAttributeValue("to"));
+              int startIndex = -1;
+              int endIndex = -1;
+              for (int i = 0; i < wfFromOffsets.size(); i++) {
+                if (wfFromOffsets.get(i) == fromOffset) {
+                  startIndex = i;
+                }
+              }
+              for (int i = 0; i < wfToOffsets.size(); i++) {
+                if (wfToOffsets.get(i) == toOffset) {
+                  //span is +1 with respect to the last token of the span
+                  endIndex = i + 1;
+                }
+              }
+              List<String> wfIds = Arrays
+                  .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+              List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
+              if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+                List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+                ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+                List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+                references.add(neSpan);
+                Entity neEntity = kaf.newEntity(references);
+                neEntity.setType("term");
+              }
+          }
+          }
+        }
+      }//end of sentence
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
   }
   
-  public static String nafToATE(String kafDocument) {
+  public static String absa2014ToCoNLL2002(String fileName) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    absa2014ToNAFNER(kaf, fileName);
+    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    return conllFile;
+  }
+  
+  public static String nafToAbsa2014(String kafDocument) {
 
     KAFDocument kaf = null;
     try {
       kaf = KAFDocument.createFromFile(new File(kafDocument));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     Element sentencesElem = new Element("sentences");
     Document doc = new Document(sentencesElem);
 
     for (List<WF> sent : kaf.getSentences()) {
-      StringBuilder sb = new StringBuilder();
       String sentId = sent.get(0).getXpath();
-      for (int i = 0; i < sent.size(); i++) {
-        sb = sb.append(sent.get(i).getForm()).append(" ");
-      }
+      Integer sentNumber = sent.get(0).getSent();
+      
+      //getting text element from WFs in NAF
+      String textString = getSentenceStringFromWFs(sent);
       Element sentenceElem = new Element("sentence");
       sentenceElem.setAttribute("id", sentId);
       Element textElem = new Element("text");
-      textElem.setText(sb.toString().trim());
+      textElem.setText(textString);
       sentenceElem.addContent(textElem);
-      List<Entity> sentEntities = kaf.getEntitiesBySent(sent.get(0).getSent());
-      if (!sentEntities.isEmpty()) {
+      
+      //creating opinions element for sentence
+      List<Opinion> opinionsBySentence = getOpinionsBySentence(kaf, sentNumber);
+      if (!opinionsBySentence.isEmpty()) {
         Element aspectTerms = new Element("aspectTerms");
-        for (Entity entity : sentEntities) {
-          // create and add opinion to the structure
+        //getting opinion info from NAF Opinion layer
+        for (Opinion opinion : opinionsBySentence) {
           String polarity = "";
-          String targetString = entity.getStr();
-          int offsetFrom = entity.getTerms().get(0).getWFs().get(0).getOffset();
-          List<WF> entWFs = entity.getTerms().get(entity.getTerms().size() - 1)
-              .getWFs();
-          int offsetTo = entWFs.get(entWFs.size() - 1).getOffset()
-              + entWFs.get(entWFs.size() - 1).getLength();
+          String targetString = opinion.getStr();
+          int fromOffset = opinion.getOpinionTarget().getTerms().get(0).getWFs().get(0).getOffset();
+          List<WF> targetWFs = opinion.getOpinionTarget().getTerms().get(opinion.getOpinionTarget().getTerms().size() -1).getWFs();
+          int toOffset = targetWFs.get(targetWFs.size() -1).getOffset() + targetWFs.get(targetWFs.size() -1).getLength();
+          
           Element aspectTerm = new Element("aspectTerm");
           aspectTerm.setAttribute("term", targetString);
           aspectTerm.setAttribute("polarity", polarity);
-          aspectTerm.setAttribute("from", Integer.toString(offsetFrom));
-          aspectTerm.setAttribute("to", Integer.toString(offsetTo));
+          aspectTerm.setAttribute("from", Integer.toString(fromOffset));
+          aspectTerm.setAttribute("to", Integer.toString(toOffset));
           aspectTerms.addContent(aspectTerm);
         }
         sentenceElem.addContent(aspectTerms);
@@ -596,9 +628,8 @@ public class AbsaSemEval {
     annotateProperties.setProperty("hardParagraph", "no");
     return annotateProperties;
   }
-  
-  
-  private static String getStringFromTokens(String sentString) {
+
+  public static String getStringFromTokens(String sentString) {
 
     StringBuilder sb = new StringBuilder();
     List<List<Token>> tokens = tokenizeSentence(sentString);
