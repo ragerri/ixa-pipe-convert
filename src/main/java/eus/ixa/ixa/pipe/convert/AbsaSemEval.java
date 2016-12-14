@@ -1,15 +1,32 @@
+/*
+ *Copyright 2016 Rodrigo Agerri
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -95,19 +112,19 @@ public class AbsaSemEval {
           List<Element> opinionList = opinionsElement.getChildren();
           for (Element opinion : opinionList) {
             //polarity and category are always specified
-            //TODO add polarity
             String polarity = opinion.getAttributeValue("polarity");
             String category = opinion.getAttributeValue("category");
             String targetString = opinion.getAttributeValue("target");
+            int startIndex = -1;
+            int endIndex = -1;
             
             //adding OTE
+            //TODO how to represent category and polarity without OTE span in NAF??
             if (!targetString.equalsIgnoreCase("NULL")) {
               int fromOffset = Integer.parseInt(opinion
                     .getAttributeValue("from"));
               int toOffset = Integer.parseInt(opinion
                     .getAttributeValue("to"));
-              int startIndex = -1;
-              int endIndex = -1;
               for (int i = 0; i < wfFromOffsets.size(); i++) {
                 if (wfFromOffsets.get(i) == fromOffset) {
                   startIndex = i;
@@ -306,74 +323,122 @@ public class AbsaSemEval {
     return kaf.toString();
   }
   
-  public static void absa2015Text(Reader reader) {
+  public static String absa2015Text(String inputFile) {
+    StringBuilder sb = new StringBuilder();
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
-      Document doc = sax.build(reader);
+      Document doc = sax.build(inputFile);
       XPathExpression<Element> expr = xFactory.compile("//sentence",
           Filters.element());
       List<Element> sentences = expr.evaluate(doc);
       for (Element sent : sentences) {
-        String sentString = sent.getChildText("text");
-        System.out.println(sentString);
+        sb.append(sent.getChildText("text")).append("\n");
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
+    return sb.toString();
   }
   
-  public static String nafToAbsa2015(String kafDocument) {
+  public static String nafToAbsa2015(String inputNAF) throws IOException {
 
-    KAFDocument kaf = null;
-    try {
-      kaf = KAFDocument.createFromFile(new File(kafDocument));
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    Element sentencesElem = new Element("sentences");
-    Document doc = new Document(sentencesElem);
-
-    for (List<WF> sent : kaf.getSentences()) {
-      StringBuilder sb = new StringBuilder();
-      String sentId = sent.get(0).getXpath();
-      for (int i = 0; i < sent.size(); i++) {
-        sb = sb.append(sent.get(i).getForm()).append(" ");
-      }
-      Element sentenceElem = new Element("sentence");
-      sentenceElem.setAttribute("id", sentId);
-      Element textElem = new Element("text");
-      textElem.setText(sb.toString().trim());
-      sentenceElem.addContent(textElem);
-      List<Entity> sentEntities = kaf.getEntitiesBySent(sent.get(0).getSent());
-
-      if (!sentEntities.isEmpty()) {
-        Element aspectTerms = new Element("aspectTerms");
-        for (Entity entity : sentEntities) {
-          // create and add opinion to the structure
-          String polarity = "";
-          String targetString = entity.getStr();
-          int offsetFrom = entity.getTerms().get(0).getWFs().get(0).getOffset();
-          List<WF> entWFs = entity.getTerms().get(entity.getTerms().size() - 1)
-              .getWFs();
-          int offsetTo = entWFs.get(entWFs.size() - 1).getOffset()
-              + entWFs.get(entWFs.size() - 1).getLength();
-          Element aspectTerm = new Element("aspectTerm");
-          aspectTerm.setAttribute("term", targetString);
-          aspectTerm.setAttribute("polarity", polarity);
-          aspectTerm.setAttribute("from", Integer.toString(offsetFrom));
-          aspectTerm.setAttribute("to", Integer.toString(offsetTo));
-          aspectTerms.addContent(aspectTerm);
+    KAFDocument kaf = KAFDocument.createFromFile(new File(inputNAF));
+    Set<String> reviewIds = getReviewIdsFromXpathAttribute(kaf);
+        
+    //root element in ABSA 2015 and 2016 format
+    Element reviewsElem = new Element("Reviews");
+    Document doc = new Document(reviewsElem);
+    
+    //creating Reviews children of Review
+    for (String reviewId : reviewIds) {
+      Element reviewElem = new Element("Review");
+      reviewElem.setAttribute("rid", reviewId);
+      Element sentencesElem = new Element("sentences");
+      //getting the sentences in the review
+      List<List<WF>> sentencesByReview = getSentencesByReview(kaf, reviewId);
+      for (List<WF> sent : sentencesByReview) {
+        String sentId = sent.get(0).getXpath();
+        Integer sentNumber = sent.get(0).getSent();
+        
+        //getting text element from word forms in NAF
+        String textString = getSentenceStringFromWFs(sent);
+        Element sentenceElem = new Element("sentence");
+        sentenceElem.setAttribute("id", sentId);
+        Element textElem = new Element("text");
+        textElem.setText(textString);
+        sentenceElem.addContent(textElem);
+        
+        //creating opinions element for sentence
+        List<Opinion> opinionsBySentence = getOpinionsBySentence(kaf, sentNumber);
+        Element opinionsElem = new Element("Opinions");
+        if (!opinionsBySentence.isEmpty()) {
+          //getting opinion info from NAF Opinion layer
+          for (Opinion opinion : opinionsBySentence) {
+            Element opinionElem = new Element("Opinion");
+            String polarity = opinion.getOpinionExpression().getPolarity();
+            String category = opinion.getOpinionExpression().getSentimentProductFeature();
+            String targetString = opinion.getStr();
+            int fromOffset = opinion.getOpinionTarget().getTerms().get(0).getWFs().get(0).getOffset();
+            List<WF> targetWFs = opinion.getOpinionTarget().getTerms().get(opinion.getOpinionTarget().getTerms().size() -1).getWFs();
+            int toOffset = targetWFs.get(targetWFs.size() -1).getOffset() + targetWFs.get(targetWFs.size() -1).getLength();
+            opinionElem.setAttribute("target", targetString);
+            opinionElem.setAttribute("category", category);
+            opinionElem.setAttribute("polarity", polarity);
+            opinionElem.setAttribute("from", Integer.toString(fromOffset));
+            opinionElem.setAttribute("to", Integer.toString(toOffset));
+            opinionsElem.addContent(opinionElem);
+          }
         }
-        sentenceElem.addContent(aspectTerms);
+        sentenceElem.addContent(opinionsElem);
+        sentencesElem.addContent(sentenceElem);
       }
-      sentencesElem.addContent(sentenceElem);
-    }
+      reviewElem.addContent(sentencesElem);
+      reviewsElem.addContent(reviewElem);
+    }//end of review
+    
     XMLOutputter xmlOutput = new XMLOutputter();
     Format format = Format.getPrettyFormat();
     xmlOutput.setFormat(format);
     return xmlOutput.outputString(doc);
+  }
+  
+  private static List<List<WF>> getSentencesByReview(KAFDocument kaf, String reviewId) {
+    List<List<WF>> sentsByReview = new ArrayList<List<WF>>();
+    for (List<WF> sent : kaf.getSentences()) {
+      if (sent.get(0).getXpath().split(":")[0].equalsIgnoreCase(reviewId)) {
+        sentsByReview.add(sent);
+      }
+    }
+    return sentsByReview;
+  }
+  
+  private static List<Opinion> getOpinionsBySentence(KAFDocument kaf, Integer sentNumber) {
+    List<Opinion> opinionList = kaf.getOpinions();
+    List<Opinion> opinionsBySentence = new ArrayList<>();
+    for (Opinion opinion : opinionList) {
+      if (sentNumber.equals(opinion.getOpinionTarget().getSpan().getFirstTarget().getSent())) {
+        opinionsBySentence.add(opinion);
+      }
+    }
+    return opinionsBySentence;
+  }
+  
+  private static Set<String> getReviewIdsFromXpathAttribute(KAFDocument kaf) {
+    Set<String> reviewIds = new LinkedHashSet<>();
+    for (List<WF> sent : kaf.getSentences()) {
+      String reviewId = sent.get(0).getXpath().split(":")[0];
+      reviewIds.add(reviewId);
+    }
+    return reviewIds;
+  }
+  
+  private static String getSentenceStringFromWFs(List<WF> sent) {
+    StringBuilder sb = new StringBuilder();
+    for (WF wf : sent) {
+      sb.append(wf.getForm()).append(" ");
+    }
+    return sb.toString().trim();
   }
 
   public static void absa2014ToNAF(String fileName) {
@@ -467,7 +532,6 @@ public class AbsaSemEval {
       textElem.setText(sb.toString().trim());
       sentenceElem.addContent(textElem);
       List<Entity> sentEntities = kaf.getEntitiesBySent(sent.get(0).getSent());
-
       if (!sentEntities.isEmpty()) {
         Element aspectTerms = new Element("aspectTerms");
         for (Entity entity : sentEntities) {

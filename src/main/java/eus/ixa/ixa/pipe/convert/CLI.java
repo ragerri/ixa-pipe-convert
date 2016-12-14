@@ -1,5 +1,5 @@
 /*
- *Copyright 2014 Rodrigo Agerri
+ *Copyright 2016 Rodrigo Agerri
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package eus.ixa.ixa.pipe.convert;
 
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -31,20 +31,18 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-import org.xml.sax.SAXException;
-
 /**
  * ixa-pipe-convert.
  * 
  * @author ragerri
- * @version 2014-10-28
+ * @version 2016-12-14
  * 
  */
 
 public class CLI {
 
   /**
-   * Get dynamically the version of ixa-pipe-nerc by looking at the MANIFEST
+   * Get dynamically the version of ixa-pipe-convert by looking at the MANIFEST
    * file.
    */
   private final static String version = CLI.class.getPackage()
@@ -98,9 +96,8 @@ public class CLI {
     parser.addArgument("--absa2015ToCoNLL2002").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to CoNLL 2002 format.\n");
     parser.addArgument("--absa2015ToNAF").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to NAF.\n");
     parser.addArgument("--absa2015ToWFs").help("Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
-    parser.addArgument("--absa2015Text")
-        .action(Arguments.storeTrue())
-        .help("Extract text sentences from ABSA SemEval corpora.\n");
+    parser.addArgument("--absa2015Text").help("Extract text sentences from ABSA 2015 and 2016 SemEval corpora.\n");
+    parser.addArgument("--nafToAbsa2015").help("Convert NAF containing Opinions into ABSA 2015 and 2016 format.\n");
     parser.addArgument("--absaSemEvalATE").help("Convert ABSA SemEval 2014 Aspect Term Extraction to OpenNLP NER annotation.\n");
     parser.addArgument("--nafToATE").help("Convert NAF with entities to ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
@@ -211,7 +208,7 @@ public class CLI {
       Convert.nafToCoNLL2003(inputDir);
     }
     // opinion functions
-    else if (parsedArguments.get("absa2015ToCoNLL2002")!= null) {
+    else if (parsedArguments.get("absa2015ToCoNLL2002") != null) {
       String inputFile = parsedArguments.getString("absa2015ToCoNLL2002");
       String conllFile = AbsaSemEval.absa2015ToCoNLL2002(inputFile);
       System.out.print(conllFile);
@@ -226,10 +223,15 @@ public class CLI {
       String kafString = AbsaSemEval.absa2015ToWFs(inputFile);
       System.out.print(kafString);
     }
-    else if (parsedArguments.get("absa2015Text")) {
-      BufferedReader breader = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
-      AbsaSemEval.absa2015Text(breader);
-      breader.close();
+    else if (parsedArguments.get("absa2015Text") != null) {
+      String inputFile = parsedArguments.getString("absa2015Text");
+      String text = AbsaSemEval.absa2015Text(inputFile);
+      System.out.print(text);
+    }
+    else if (parsedArguments.get("nafToAbsa2015") != null) {
+      String inputNAF = parsedArguments.getString("nafToAbsa2015");
+      String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
+      System.out.print(xmlFile);
     }
     else if (parsedArguments.get("absaSemEvalATE") != null) {
       String inputFile = parsedArguments.getString("absaSemEvalATE");
