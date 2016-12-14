@@ -196,7 +196,7 @@ public class AbsaSemEval {
           for (Element opinion : opinionList) {
             String category = opinion.getAttributeValue("category");
             String targetString = opinion.getAttributeValue("target");
-            
+            System.err.println("-> " + category + ", " + targetString);
             //adding OTE
             if (!targetString.equalsIgnoreCase("NULL")) {
               int fromOffset = Integer.parseInt(opinion
@@ -248,7 +248,7 @@ public class AbsaSemEval {
    * @param kaf the KAFDocument
    * @return the list of all WF ids in the terms layer
    */
-  public static List<String> getWFIdsFromTerms(List<Term> terms) {
+  private static List<String> getWFIdsFromTerms(List<Term> terms) {
     List<String> wfTermIds = new ArrayList<>();
     for (int i = 0; i < terms.size(); i++) {
       List<WF> sentTerms = terms.get(i).getWFs();
@@ -266,7 +266,7 @@ public class AbsaSemEval {
    * @param termWfIds all the terms in the document
    * @return true or false
    */
-  public static boolean checkTermsRefsIntegrity(List<String> wfIds,
+  private static boolean checkTermsRefsIntegrity(List<String> wfIds,
       List<String> termWfIds) {
     for (int i = 0; i < wfIds.size(); i++) {
       if (!termWfIds.contains(wfIds.get(i))) {
@@ -321,6 +321,59 @@ public class AbsaSemEval {
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
+  }
+  
+  public static String nafToAbsa2015(String kafDocument) {
+
+    KAFDocument kaf = null;
+    try {
+      kaf = KAFDocument.createFromFile(new File(kafDocument));
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    Element sentencesElem = new Element("sentences");
+    Document doc = new Document(sentencesElem);
+
+    for (List<WF> sent : kaf.getSentences()) {
+      StringBuilder sb = new StringBuilder();
+      String sentId = sent.get(0).getXpath();
+      for (int i = 0; i < sent.size(); i++) {
+        sb = sb.append(sent.get(i).getForm()).append(" ");
+      }
+      Element sentenceElem = new Element("sentence");
+      sentenceElem.setAttribute("id", sentId);
+      Element textElem = new Element("text");
+      textElem.setText(sb.toString().trim());
+      sentenceElem.addContent(textElem);
+      List<Entity> sentEntities = kaf.getEntitiesBySent(sent.get(0).getSent());
+
+      if (!sentEntities.isEmpty()) {
+        Element aspectTerms = new Element("aspectTerms");
+        for (Entity entity : sentEntities) {
+          // create and add opinion to the structure
+          String polarity = "";
+          String targetString = entity.getStr();
+          int offsetFrom = entity.getTerms().get(0).getWFs().get(0).getOffset();
+          List<WF> entWFs = entity.getTerms().get(entity.getTerms().size() - 1)
+              .getWFs();
+          int offsetTo = entWFs.get(entWFs.size() - 1).getOffset()
+              + entWFs.get(entWFs.size() - 1).getLength();
+          Element aspectTerm = new Element("aspectTerm");
+          aspectTerm.setAttribute("term", targetString);
+          aspectTerm.setAttribute("polarity", polarity);
+          aspectTerm.setAttribute("from", Integer.toString(offsetFrom));
+          aspectTerm.setAttribute("to", Integer.toString(offsetTo));
+          aspectTerms.addContent(aspectTerm);
+        }
+        sentenceElem.addContent(aspectTerms);
+      }
+      sentencesElem.addContent(sentenceElem);
+    }
+    XMLOutputter xmlOutput = new XMLOutputter();
+    Format format = Format.getPrettyFormat();
+    xmlOutput.setFormat(format);
+    return xmlOutput.outputString(doc);
   }
 
   public static void absa2014ToNAF(String fileName) {
