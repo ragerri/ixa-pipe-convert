@@ -376,7 +376,7 @@ public class AbsaSemEval {
           //getting opinion info from NAF Opinion layer
           for (Opinion opinion : opinionsBySentence) {
             Element opinionElem = new Element("Opinion");
-            String polarity = opinion.getOpinionExpression().getPolarity();
+            //String polarity = opinion.getOpinionExpression().getPolarity();
             String category = opinion.getOpinionExpression().getSentimentProductFeature();
             String targetString = opinion.getStr();
             int fromOffset = opinion.getOpinionTarget().getTerms().get(0).getWFs().get(0).getOffset();
@@ -384,7 +384,8 @@ public class AbsaSemEval {
             int toOffset = targetWFs.get(targetWFs.size() -1).getOffset() + targetWFs.get(targetWFs.size() -1).getLength();
             opinionElem.setAttribute("target", targetString);
             opinionElem.setAttribute("category", category);
-            opinionElem.setAttribute("polarity", polarity);
+            //TODO we still do not have polarity here
+            opinionElem.setAttribute("polarity", "na");
             opinionElem.setAttribute("from", Integer.toString(fromOffset));
             opinionElem.setAttribute("to", Integer.toString(toOffset));
             opinionsElem.addContent(opinionElem);
