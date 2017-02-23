@@ -696,9 +696,11 @@ public class Convert {
 
       for (int i = 0; i < sentenceTerms.size(); i++) {
         Term thisTerm = sentenceTerms.get(i);
+        //System.err.println("--> thisterm: "  + thisTerm.getForm() + " " + thisTerm.getId());
 
         if (entityToSpanSize.get(thisTerm.getId()) != null) {
           int neSpanSize = entityToSpanSize.get(thisTerm.getId());
+          //System.err.println("--> neSpanSize:  " + neSpanSize);
           String neClass = entityToType.get(thisTerm.getId());
           //String neType = convertToConLLTypes(neClass);
           if (neSpanSize > 1) {

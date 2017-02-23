@@ -41,7 +41,7 @@ import ixa.kaflib.WF;
 
 public class DSRCCorpus {
 
-  public static Pattern endOfSentence = Pattern.compile("[?|\\.]");
+  public static Pattern endOfSentence = Pattern.compile("[?|\\.+]");
 
   // do not instantiate this class
   private DSRCCorpus() {
@@ -88,6 +88,7 @@ public class DSRCCorpus {
       throws JDOMException, IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     DSRCToNAFNER(kaf, wordsFile, markFile);
+    //System.err.println(kaf.toString());
     String conllFile = Convert.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
@@ -138,10 +139,13 @@ public class DSRCCorpus {
       if (markable.getAttributeValue("annotation_type")
           .equalsIgnoreCase("target")) {
         String markSpan = markable.getAttributeValue("span");
-        String[] spanWords = markSpan.split("\\.\\.");
-        int startIndex = Integer.parseInt(spanWords[0].replaceAll("word_", ""));
+        System.err.println("--> span: " + markSpan);
+        String removeCommaSpan = markSpan.replaceAll(",word_.*", "");
+        System.err.println("--> newSpan: " + removeCommaSpan);
+        String[] spanWords = removeCommaSpan.split("\\.\\.");
+        int startIndex = Integer.parseInt(spanWords[0].replace("word_", ""));
         int endIndex = Integer
-            .parseInt(spanWords[spanWords.length - 1].replaceAll("word_", "")) + 1;
+            .parseInt(spanWords[spanWords.length - 1].replace("word_", "")) + 1;
 
         List<String> wfIds = Arrays
             .asList(Arrays.copyOfRange(tokenIds, startIndex - 1, endIndex - 1));
@@ -153,6 +157,7 @@ public class DSRCCorpus {
           references.add(neSpan);
           Entity neEntity = kaf.newEntity(references);
           neEntity.setType("TARGET");
+          System.err.println("--> target: " + neEntity.getStr());
         }
       } // end of create entity
     }
