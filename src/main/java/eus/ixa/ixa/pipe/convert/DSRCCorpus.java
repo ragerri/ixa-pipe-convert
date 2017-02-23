@@ -51,14 +51,11 @@ public class DSRCCorpus {
       throws IOException, JDOMException {
     // process one file
     Path wordsFile = Paths.get(inputDir);
-    if (Files.isRegularFile(wordsFile)) {
+    if (Files.isRegularFile(wordsFile) && wordsFile.toString().endsWith("words.xml")) {
       Path outFile = Files
           .createFile(Paths.get(wordsFile.toString() + ".conll02"));
       Path marksFile = Paths.get(wordsFile.toString().replace("_words.xml",
           "_OpinionExpression_level.xml"));
-      System.err.println("--> outFile: " + outFile);
-      System.err.println("--> wordsFile: " + wordsFile);
-      System.err.println("--> marksFile: " + marksFile);
       String outDoc = DSRCCorpus.DSRCToCoNLL2002Convert(wordsFile.toString(),
           marksFile.toString());
       Files.write(outFile, outDoc.getBytes());
@@ -71,14 +68,16 @@ public class DSRCCorpus {
           if (Files.isDirectory(file)) {
             DSRCToCoNLL2002(file.toString());
           } else {
-            Path outFile = Files
-                .createFile(Paths.get(file.toString() + ".conll02"));
-            Path marksFile = Paths.get(file.toString().replace("_words.xml",
-                "_OpinionExpression_level.xml"));
-            String outDoc = DSRCCorpus.DSRCToCoNLL2002Convert(file.toString(),
-                marksFile.toString());
-            Files.write(outFile, outDoc.getBytes());
-            System.err.println(">> Wrote CoNLL02 document to " + outFile);
+            if (file.toString().endsWith("words.xml")) {
+              Path outFile = Files
+                  .createFile(Paths.get(file.toString() + ".conll02"));
+              Path marksFile = Paths.get(file.toString().replace("_words.xml",
+                  "_OpinionExpression_level.xml"));
+              String outDoc = DSRCCorpus.DSRCToCoNLL2002Convert(file.toString(),
+                  marksFile.toString());
+              Files.write(outFile, outDoc.getBytes());
+              System.err.println(">> Wrote CoNLL02 document to " + outFile);
+            }
           }
         }
       }
@@ -135,18 +134,14 @@ public class DSRCCorpus {
     XPathExpression<Element> markExpr = markFactory.compile("//ns:markable",
         Filters.element(), null, Namespace.getNamespace("ns", "www.eml.org/NameSpaces/OpinionExpression"));
     List<Element> markables = markExpr.evaluate(markDoc);
-    System.err.println("no of markables:" +  markables.size());
     for (Element markable : markables) {
       if (markable.getAttributeValue("annotation_type")
           .equalsIgnoreCase("target")) {
         String markSpan = markable.getAttributeValue("span");
-        System.err.println("--> markSpan: " + markSpan);
         String[] spanWords = markSpan.split("\\.\\.");
-        //word counter starts with 1, so no problem with out of bounds
         int startIndex = Integer.parseInt(spanWords[0].replaceAll("word_", ""));
         int endIndex = Integer
-            .parseInt(spanWords[spanWords.length - 1].replace("word_", "")) + 1;
-        System.err.println("--> indexes: " + startIndex + " " + endIndex);
+            .parseInt(spanWords[spanWords.length - 1].replaceAll("word_", "")) + 1;
 
         List<String> wfIds = Arrays
             .asList(Arrays.copyOfRange(tokenIds, startIndex - 1, endIndex - 1));
@@ -157,7 +152,6 @@ public class DSRCCorpus {
           List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
           references.add(neSpan);
           Entity neEntity = kaf.newEntity(references);
-          System.err.println("--> target:" + neEntity.getStr());
           neEntity.setType("TARGET");
         }
       } // end of create entity
