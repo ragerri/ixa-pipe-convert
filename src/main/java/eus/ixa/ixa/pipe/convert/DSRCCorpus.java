@@ -1,22 +1,24 @@
-/*
-	 *Copyright 2016 Rodrigo Agerri
+/*Copyright 2017 Rodrigo Agerri
 
-	   Licensed under the Apache License, Version 2.0 (the "License");
-	   you may not use this file except in compliance with the License.
-	   You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-	       http://www.apache.org/licenses/LICENSE-2.0
-
-	   Unless required by applicable law or agreed to in writing, software
-	   distributed under the License is distributed on an "AS IS" BASIS,
-	   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	   See the License for the specific language governing permissions and
-	   limitations under the License.
-	 */
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+*/
 
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.regex.Pattern;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
@@ -44,7 +47,53 @@ public class DSRCCorpus {
   private DSRCCorpus() {
   }
 
-    private static void DSRCToNAFNER(KAFDocument kaf, String wordsDoc,
+  public static void DSRCToCoNLL2002(String inputDir)
+      throws IOException, JDOMException {
+    // process one file
+    Path wordsFile = Paths.get(inputDir);
+    if (Files.isRegularFile(wordsFile)) {
+      Path outFile = Files
+          .createFile(Paths.get(wordsFile.toString() + ".conll02"));
+      Path marksFile = Paths.get(wordsFile.toString().replace("_words.xml",
+          "_OpinionExpression_level.xml"));
+      System.err.println("--> outFile: " + outFile);
+      System.err.println("--> wordsFile: " + wordsFile);
+      System.err.println("--> marksFile: " + marksFile);
+      String outDoc = DSRCCorpus.DSRCToCoNLL2002Convert(wordsFile.toString(),
+          marksFile.toString());
+      Files.write(outFile, outDoc.getBytes());
+      System.err.println(">> Wrote CoNLL document to " + outFile);
+    } else {
+      // recursively process directories
+      try (DirectoryStream<Path> wordsDir = Files
+          .newDirectoryStream(wordsFile)) {
+        for (Path file : wordsDir) {
+          if (Files.isDirectory(file)) {
+            DSRCToCoNLL2002(file.toString());
+          } else {
+            Path outFile = Files
+                .createFile(Paths.get(file.toString() + ".conll02"));
+            Path marksFile = Paths.get(file.toString().replace("_words.xml",
+                "_OpinionExpression_level.xml"));
+            String outDoc = DSRCCorpus.DSRCToCoNLL2002Convert(file.toString(),
+                marksFile.toString());
+            Files.write(outFile, outDoc.getBytes());
+            System.err.println(">> Wrote CoNLL02 document to " + outFile);
+          }
+        }
+      }
+    }
+  }
+
+  public static String DSRCToCoNLL2002Convert(String wordsFile, String markFile)
+      throws JDOMException, IOException {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    DSRCToNAFNER(kaf, wordsFile, markFile);
+    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    return conllFile;
+  }
+
+  private static void DSRCToNAFNER(KAFDocument kaf, String wordsDoc,
       String markablesDoc) throws JDOMException, IOException {
     // reading the words xml file
     SAXBuilder sax = new SAXBuilder();
@@ -53,15 +102,13 @@ public class DSRCCorpus {
     XPathExpression<Element> expr = xFactory.compile("//word",
         Filters.element());
     List<Element> words = expr.evaluate(docWords);
-
+    List<WF> sentWFs = new ArrayList<>();
+    List<Term> sentTerms = new ArrayList<>();
     // building the NAF containing the WFs and Terms
     // naf sentence counter
     int sentCounter = 1;
     for (Element word : words) {
-      List<WF> sentWFs = new ArrayList<>();
-      List<Term> sentTerms = new ArrayList<>();
       // sentence id and original text
-      String wordId = word.getAttributeValue("id");
       String token = word.getText();
       // the list contains just one list of tokens
       WF wf = kaf.newWF(0, token, sentCounter);
@@ -76,50 +123,45 @@ public class DSRCCorpus {
       if (endMatcher.matches()) {
         sentCounter++;
       }
-      String[] tokenIds = new String[sentWFs.size()];
-      for (int i = 0; i < sentWFs.size(); i++) {
-        tokenIds[i] = sentWFs.get(i).getId();
-      }
-      // going through the markable elements in mmax opinion
-      // expressions files
-      SAXBuilder markSax = new SAXBuilder();
-      XPathFactory markxFactory = XPathFactory.instance();
-      Document markDoc = markSax.build(markablesDoc);
-      XPathExpression<Element> markExpr = markxFactory.compile("//markable",
-          Filters.element());
-      List<Element> markables = markExpr.evaluate(markDoc);
-      for (Element markable : markables) {
-        if (markable.getAttributeValue("annotation_type")
-            .equalsIgnoreCase("target")) {
-          String markSpan = markable.getAttributeValue("span");
-          String[] spanWords = markSpan.split("\\.\\.");
-          int startIndex = Integer
-              .parseInt(spanWords[0].replaceAll("word_", ""));
-          int endIndex = Integer.parseInt(
-              spanWords[spanWords.length - 1].replace("word_", "")) + 1;
-
-          List<String> wfIds = Arrays
-              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
-          if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
-            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
-            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
-            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
-            references.add(neSpan);
-            Entity neEntity = kaf.newEntity(references);
-            neEntity.setType("TARGET");
-          }
-        } // end of create entity
-      }
+    }// end of processing words
+    
+    String[] tokenIds = new String[sentWFs.size()];
+    for (int i = 0; i < sentWFs.size(); i++) {
+      tokenIds[i] = sentWFs.get(i).getId();
     }
-  }
+    //processing markables document in mmax opinion expression files
+    Document markDoc = sax.build(markablesDoc);
+    XPathFactory markFactory = XPathFactory.instance();
+    XPathExpression<Element> markExpr = markFactory.compile("//ns:markable",
+        Filters.element(), null, Namespace.getNamespace("ns", "www.eml.org/NameSpaces/OpinionExpression"));
+    List<Element> markables = markExpr.evaluate(markDoc);
+    System.err.println("no of markables:" +  markables.size());
+    for (Element markable : markables) {
+      if (markable.getAttributeValue("annotation_type")
+          .equalsIgnoreCase("target")) {
+        String markSpan = markable.getAttributeValue("span");
+        System.err.println("--> markSpan: " + markSpan);
+        String[] spanWords = markSpan.split("\\.\\.");
+        //word counter starts with 1, so no problem with out of bounds
+        int startIndex = Integer.parseInt(spanWords[0].replaceAll("word_", ""));
+        int endIndex = Integer
+            .parseInt(spanWords[spanWords.length - 1].replace("word_", "")) + 1;
+        System.err.println("--> indexes: " + startIndex + " " + endIndex);
 
-  public static String DSRCToCoNLL2002(String wordsFile, String markFile)
-      throws JDOMException, IOException {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    DSRCToNAFNER(kaf, wordsFile, markFile);
-    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
-    return conllFile;
+        List<String> wfIds = Arrays
+            .asList(Arrays.copyOfRange(tokenIds, startIndex - 1, endIndex - 1));
+        List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
+        if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+          List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+          ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+          List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+          references.add(neSpan);
+          Entity neEntity = kaf.newEntity(references);
+          System.err.println("--> target:" + neEntity.getStr());
+          neEntity.setType("TARGET");
+        }
+      } // end of create entity
+    }
   }
 
   /**

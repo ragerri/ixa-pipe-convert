@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jdom2.JDOMException;
 import org.xml.sax.SAXException;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -49,7 +50,7 @@ public class CLI {
       .getImplementationVersion();
   
 
-  public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+  public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, JDOMException {
 
     Namespace parsedArguments = null;
 
@@ -64,13 +65,14 @@ public class CLI {
     parser.addArgument("--serializeClarkCluster").help("Serialize Clark cluster lexicons and alike to an object.\n");
     parser.addArgument("--serializeEntityDictionary").help("Serialize ixa-pipe-nerc entity gazetteers to an object.\n");
     parser.addArgument("--serializeLemmaDictionary").help("Serialize DictionaryLemmatizer files to an object.\n");
+    
     //pos tagging functions
     parser.addArgument("--createMonosemicDictionary").help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     parser.addArgument("--createPOSDictionary").help("Create POSTagger OpenNLP dictionary from " +
             "lemmatizer dictionary.\n");
     parser.addArgument("--addLemmaDict2POSDict").nargs(2).help("Aggregate a lemmatizer dictionary to a POSTagger OpenNLP " +
             "dictionary: first input is lemmatizer dictionary and second output the XML dictionary to be expanded.\n");
-    
+   
     //parsing functions
     parser.addArgument("--ancora2treebank").help("Converts ancora constituent parsing annotation into " +
     		"Penn Treebank bracketing format.\n");
@@ -102,6 +104,7 @@ public class CLI {
     parser.addArgument("--nafToAbsa2014").help("Convert NAF containing opinions into ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
     parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
+    parser.addArgument("--dsrcToCoNLL02").help("Convert DSRC corpus in MMAX format to CoNLL02 for Opinion Target Extraction");
     
     //utils
     parser.addArgument("--lowercase")
@@ -249,6 +252,10 @@ public class CLI {
     else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
       File inputDir = new File(parsedArguments.getString("trivagoAspectsToCoNLL02"));
       Convert.trivagoAspectsToCoNLL02(inputDir);
+    }
+    else if (parsedArguments.get("dsrcToCoNLL02") != null) {
+      String inputDir = parsedArguments.getString("dsrcToCoNLL02");
+      DSRCCorpus.DSRCToCoNLL2002(inputDir);
     }
   }
 }
