@@ -35,6 +35,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.jdom2.JDOMException;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -988,6 +989,43 @@ public class Convert {
       sb.append("\n");// end of sentence
     }
     return sb.toString();
+  }
+  
+  public static void DSRCToCoNLL2002(String words, String markables) throws IOException, JDOMException {
+    // process one file
+    File wordsFile = new File(words);
+    File marksFile = new File(markables);
+    if (wordsFile.isFile()) {
+      File outfile = new File(wordsFile.getCanonicalFile() + ".conll02");
+      String outDoc = DSRCCorpus.DSRCToCoNLL2002(words, markables);
+      Files.write(outDoc, outfile, Charsets.UTF_8);
+      System.err.println(">> Wrote CoNLL document to " + outfile);
+    } else {
+      // recursively process directories
+      File[] listFile = wordsFile.listFiles();
+      File[] marksListFile = marksFile.listFiles();
+      if (listFile != null) {
+        for (int i = 0; i < listFile.length; i++) {
+          if (listFile[i].isDirectory()) {
+            String wordsDoc = listFile[i].getCanonicalPath();
+            String marksDoc = marksListFile[i].getCanonicalPath();
+            DSRCToCoNLL2002(wordsDoc, marksDoc);
+          } else {
+            try {
+              File outfile = new File(listFile[i].getCanonicalFile()
+                  + ".conll02");
+              String wordsDoc = listFile[i].getCanonicalPath();
+              String marksDoc = marksListFile[i].getPath() + listFile[i].getName().replace("_words.xml", "_OpinionExpression_level.xml");
+              String outDoc = DSRCCorpus.DSRCToCoNLL2002(wordsDoc, marksDoc);
+              Files.write(outDoc, outfile, Charsets.UTF_8);
+              System.err.println(">> Wrote CoNLL02 document to " + outfile);
+            } catch (FileNotFoundException noFile) {
+              continue;
+            }
+          }
+        }
+      }
+    }
   }
 
   /**
