@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +42,8 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.io.Files;
 
+import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.Term;
@@ -120,10 +122,10 @@ public class Convert {
   public static void processAncoraConstituentXMLCorpus(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
+      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(dir.getPath())
           + ".th");
       String outTree = ancora2treebank(dir);
-      Files.write(outTree, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outTree, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote XML ancora file to Penn Treebank in "
           + outfile);
     } else {
@@ -136,9 +138,9 @@ public class Convert {
           } else {
             try {
               File outfile = new File(
-                  Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
+                  com.google.common.io.Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
               String outTree = ancora2treebank(listFile[i]);
-              Files.write(outTree, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outTree, outfile, Charsets.UTF_8);
               System.err
                   .println(">> Wrote XML Ancora file Penn treebank format in "
                       + outfile);
@@ -162,12 +164,12 @@ public class Convert {
   public static void treebank2tokens(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
-      List<String> inputTrees = Files.readLines(
+      List<String> inputTrees = com.google.common.io.Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
           .getPath() + ".tok"));
       String outFile = getTokensFromTree(inputTrees);
-      Files.write(outFile, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote tokens to " + outfile);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -228,12 +230,12 @@ public class Convert {
   public static void treebank2WordPos(File treebankFile) throws IOException {
     // process one file
     if (treebankFile.isFile()) {
-      List<String> inputTrees = Files.readLines(
+      List<String> inputTrees = com.google.common.io.Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
           .getPath()) + ".pos");
       String outFile = getPreTerminals(inputTrees);
-      Files.write(outFile, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote Apache OpenNLP POS training format to "
           + outfile);
     } else {
@@ -290,12 +292,12 @@ public class Convert {
    */
   public static void getCleanPennTrees(File treebankFile) throws IOException {
     if (treebankFile.isFile()) {
-      List<String> inputTrees = Files.readLines(
+      List<String> inputTrees = com.google.common.io.Files.readLines(
           new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(Files.getNameWithoutExtension(treebankFile
+      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
           .getPath()) + ".treeN");
       String outFile = normalizeParse(inputTrees);
-      Files.write(outFile, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote normalized parse to " + outfile);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -337,10 +339,10 @@ public class Convert {
   public static void removeEntities(File dir) throws IOException {
     // process one file
     if (dir.isFile()) {
-      File outfile = new File(Files.getNameWithoutExtension(dir.getPath())
+      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(dir.getPath())
           + ".kaf.tok");
       String outKAF = removeEntityLayer(dir);
-      Files.write(outKAF, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err
           .println(">> Wrote KAF document without entities to " + outfile);
     } else {
@@ -352,10 +354,10 @@ public class Convert {
             removeEntities(listFile[i]);
           } else {
             try {
-              File outfile = new File(Files.getNameWithoutExtension(listFile[i]
+              File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(listFile[i]
                   .getPath()) + ".naf");
               String outKAF = removeEntityLayer(listFile[i]);
-              Files.write(outKAF, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote KAF document without entities to "
                   + outfile);
             } catch (FileNotFoundException noFile) {
@@ -493,7 +495,7 @@ public class Convert {
   public static void createMonosemicDictionary(File lemmaDict) throws IOException {
     // process one file
     if (lemmaDict.isFile()) {
-      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
+      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
       getMonosemicDict(inputLines);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -535,8 +537,8 @@ public class Convert {
   public static void convertLemmaToPOSDict(File lemmaDict) throws IOException {
     // process one file
     if (lemmaDict.isFile()) {
-      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(Files.getNameWithoutExtension(lemmaDict
+      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
+      File outFile = new File(com.google.common.io.Files.getNameWithoutExtension(lemmaDict
           .getCanonicalPath()) + ".xml");
       POSDictionary posTagDict = getPOSTaggerDict(inputLines);
       OutputStream outputStream = new FileOutputStream(outFile);
@@ -596,8 +598,8 @@ public class Convert {
     if (lemmaDict.isFile() && posTaggerDict.isFile()) {
       InputStream posDictInputStream = new FileInputStream(posTaggerDict);
       POSDictionary posDict = POSDictionary.create(posDictInputStream);
-      List<String> inputLines = Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(Files.getNameWithoutExtension(lemmaDict
+      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
+      File outFile = new File(com.google.common.io.Files.getNameWithoutExtension(lemmaDict
           .getCanonicalPath()) + ".xml");
       addPOSTaggerDict(inputLines, posDict);
       OutputStream outputStream = new FileOutputStream(outFile);
@@ -642,7 +644,7 @@ public class Convert {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
       File outfile = new File(dir.getCanonicalFile() + ".conll02");
       String outKAF = nafToCoNLLConvert2002(kaf);
-      Files.write(outKAF, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
       // recursively process directories
@@ -657,7 +659,7 @@ public class Convert {
                   + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
               String outKAF = nafToCoNLLConvert2002(kaf);
-              Files.write(outKAF, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL02 document to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
@@ -754,7 +756,7 @@ public class Convert {
       KAFDocument kaf = KAFDocument.createFromFile(dir);
       File outfile = new File(dir.getCanonicalFile() + ".conll03");
       String outKAF = nafToCoNLLConvert2003(kaf);
-      Files.write(outKAF, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
       // recursively process directories
@@ -769,7 +771,7 @@ public class Convert {
                   + ".conll03");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
               String outKAF = nafToCoNLLConvert2003(kaf);
-              Files.write(outKAF, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL03 document to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
@@ -881,7 +883,7 @@ public class Convert {
       System.err.println(">> Processing " + dir.getName());
       File outfile = new File(dir.getCanonicalFile() + ".conll02");
       String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
-      Files.write(outKAF, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
       // recursively process directories
@@ -897,7 +899,7 @@ public class Convert {
                   + ".conll02");
               KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
               String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
-              Files.write(outKAF, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote CoNLL02 document to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
@@ -1031,7 +1033,7 @@ public class Convert {
     if (dir.isFile()) {
       File outfile = new File(dir.getCanonicalFile() + ".clean");
       String outKAF = brownCleanUpperCase(dir);
-      Files.write(outKAF, outfile, Charsets.UTF_8);
+      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
       System.err.println(">> Wrote clean document to " + outfile);
     } else {
       // recursively process directories
@@ -1044,7 +1046,7 @@ public class Convert {
             try {
               File outfile = new File(listFile[i].getCanonicalFile() + ".clean");
               String outKAF = brownCleanUpperCase(listFile[i]);
-              Files.write(outKAF, outfile, Charsets.UTF_8);
+              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
               System.err.println(">> Wrote pre-clean document to " + outfile);
             } catch (FileNotFoundException noFile) {
               continue;
@@ -1092,6 +1094,38 @@ public class Convert {
     }
     breader.close();
     return precleantext.toString();
+  }
+  
+  /**
+   * Takes a text file and put the contents in a NAF document.
+   * It creates the WF elements.
+   * @param inputFile
+   * @throws IOException
+   */
+  public static void textToNAF(final Path inputFile) throws IOException {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    int noSents = 0;
+    int noParas = 1;
+    final List<String> sentences = Files.readAllLines(inputFile);
+    for (final String sentence : sentences) {
+      noSents = noSents + 1;
+      final String[] tokens = sentence.split(" ");
+      for (final String token : tokens) {
+        if (token.equals(RuleBasedSegmenter.PARAGRAPH)) {
+          ++noParas;
+          // TODO sentences without end markers;
+          // crap rule
+          while (noParas > noSents) {
+            ++noSents;
+          }
+        } else {
+          // TODO add offset
+          final WF wf = kaf.newWF(0, token, noSents);
+          wf.setPara(noParas);
+          //wf.setSent(noSents);
+        }
+      }
+    }
   }
 
 }

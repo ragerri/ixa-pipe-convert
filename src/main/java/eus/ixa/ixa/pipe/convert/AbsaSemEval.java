@@ -160,6 +160,7 @@ public class AbsaSemEval {
     return kaf.toString();
   }
   
+  //TODO write this without doing any tokenization (to compare results)
   private static void absa2015ToNAFNER(KAFDocument kaf, String fileName) {
     //reading the ABSA xml file
     SAXBuilder sax = new SAXBuilder();
@@ -624,8 +625,8 @@ public class AbsaSemEval {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", "en");
     annotateProperties.setProperty("normalize", "default");
-    annotateProperties.setProperty("untokenizable", "no");
     annotateProperties.setProperty("hardParagraph", "no");
+    annotateProperties.setProperty("untokenizable", "no");
     return annotateProperties;
   }
 
