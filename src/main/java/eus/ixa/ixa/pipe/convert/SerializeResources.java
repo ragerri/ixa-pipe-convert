@@ -16,11 +16,10 @@
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -53,11 +52,11 @@ public class SerializeResources {
   private SerializeResources() {
   }
   
-  public static void serializeClusterFiles(File clusterFile, boolean lowercase) throws IOException {
+  public static void serializeClusterFiles(Path clusterFile, boolean lowercase) throws IOException {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
     
-    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(clusterFile), Charset.forName("UTF-8")));
+    BufferedReader breader = Files.newBufferedReader(clusterFile, StandardCharsets.UTF_8);
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = spacePattern.split(line);
@@ -78,15 +77,15 @@ public class SerializeResources {
         }
       }
     }
-    String outputFile = clusterFile.getName() + SER_GZ;
+    String outputFile = clusterFile.toString() + SER_GZ;
     IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
     breader.close();
   }
   
-  public static void serializeBrownClusterFiles(File clusterFile, boolean lowercase) throws NumberFormatException, IOException {
+  public static void serializeBrownClusterFiles(Path clusterFile, boolean lowercase) throws NumberFormatException, IOException {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
-    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(clusterFile), Charset.forName("UTF-8")));
+    BufferedReader breader = Files.newBufferedReader(clusterFile, StandardCharsets.UTF_8);
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
@@ -110,14 +109,14 @@ public class SerializeResources {
         }
       }
     }
-    String outputFile = clusterFile.getName() + SER_GZ;
+    String outputFile = clusterFile.toString() + SER_GZ;
     IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
     breader.close();
   }
   
-  public static void serializeEntityGazetteers(File dictionaryFile) throws IOException {
+  public static void serializeEntityGazetteers(Path dictionaryFile) throws IOException {
     Map<String, String> dictionary = new HashMap<String, String>();
-    BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(dictionaryFile), Charset.forName("UTF-8")));
+    BufferedReader breader = Files.newBufferedReader(dictionaryFile, StandardCharsets.UTF_8);
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
@@ -128,15 +127,14 @@ public class SerializeResources {
         System.err.println(lineArray[0] + " is not well formed!");
       }
     }
-    String outputFile = dictionaryFile.getName() + SER_GZ;
+    String outputFile = dictionaryFile.toString() + SER_GZ;
     IOUtils.writeClusterToFile(dictionary, outputFile, IOUtils.TAB_DELIMITER);
     breader.close();
   }
 
-  public static void serializeLemmaDictionary(File lemmaDict) throws IOException {
+  public static void serializeLemmaDictionary(Path lemmaDict) throws IOException {
     Map<List<String>, String> dictMap = new HashMap<List<String>, String>();
-    final BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(
-        lemmaDict), Charset.forName("UTF-8")));
+    final BufferedReader breader = Files.newBufferedReader(lemmaDict, StandardCharsets.UTF_8);
     String line;
       while ((line = breader.readLine()) != null) {
         final String[] elems = tabPattern.split(line);
@@ -147,7 +145,7 @@ public class SerializeResources {
           System.err.println(elems[0] + " is not well formed!");
         }
       }
-      String outputFile = lemmaDict.getName() + SER_GZ;
+      String outputFile = lemmaDict.toString() + SER_GZ;
       IOUtils.writeDictionaryLemmatizerToFile(dictMap, outputFile, IOUtils.TAB_DELIMITER);
       breader.close();
   }

@@ -17,9 +17,11 @@
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -343,7 +345,8 @@ public class AbsaSemEval {
   
   public static String nafToAbsa2015(String inputNAF) throws IOException {
 
-    KAFDocument kaf = KAFDocument.createFromFile(new File(inputNAF));
+    Path kafPath = Paths.get(inputNAF);
+    KAFDocument kaf = KAFDocument.createFromFile(kafPath.toFile());
     Set<String> reviewIds = getReviewIdsFromXpathAttribute(kaf);
         
     //root element in ABSA 2015 and 2016 format
@@ -546,7 +549,8 @@ public class AbsaSemEval {
 
     KAFDocument kaf = null;
     try {
-      kaf = KAFDocument.createFromFile(new File(kafDocument));
+      Path kafPath = Paths.get(kafDocument);
+      kaf = KAFDocument.createFromFile(kafPath.toFile());
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -596,7 +600,8 @@ public class AbsaSemEval {
   
   public static void getYelpText(String fileName) throws IOException {
     JSONParser parser = new JSONParser();
-    BufferedReader breader = new BufferedReader(new FileReader(fileName));
+    Path filePath = Paths.get(fileName);
+    BufferedReader breader = new BufferedReader(Files.newBufferedReader(filePath, StandardCharsets.UTF_8));
     String line;
     while ((line = breader.readLine()) != null) {
       try {

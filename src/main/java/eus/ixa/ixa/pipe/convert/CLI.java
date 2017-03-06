@@ -16,9 +16,9 @@
 
 package eus.ixa.ixa.pipe.convert;
 
-
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -128,49 +128,49 @@ public class CLI {
     
     //cluster lexicons options
     if (parsedArguments.get("brownClean") != null) {
-      File inputFile = new File(parsedArguments.getString("brownClean"));
+      Path inputFile = Paths.get(parsedArguments.getString("brownClean"));
       Convert.brownClusterClean(inputFile); 
     }
     else if (parsedArguments.getString("serializeBrownCluster") != null) {
-      File clusterFile = new File(parsedArguments.getString("serializeBrownCluster"));
+      Path clusterFile = Paths.get(parsedArguments.getString("serializeBrownCluster"));
       boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
       SerializeResources.serializeBrownClusterFiles(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeClarkCluster") != null) {
-      File clusterFile = new File(parsedArguments.getString("serializeClarkCluster"));
+      Path clusterFile = Paths.get(parsedArguments.getString("serializeClarkCluster"));
       boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
       SerializeResources.serializeClusterFiles(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeEntityDictionary") != null) {
-      File dictionaryFile = new File(parsedArguments.getString("serializeEntityDictionary"));
+      Path dictionaryFile = Paths.get(parsedArguments.getString("serializeEntityDictionary"));
       SerializeResources.serializeEntityGazetteers(dictionaryFile);
     }
     else if (parsedArguments.getString("serializeLemmaDictionary") != null) {
-      File lemmaDict = new File(parsedArguments.getString("serializeLemmaDictionary"));
+      Path lemmaDict = Paths.get(parsedArguments.getString("serializeLemmaDictionary"));
       SerializeResources.serializeLemmaDictionary(lemmaDict);
     }
     // pos taggging functions
     else if (parsedArguments.getString("createMonosemicDictionary") != null) {
-      File inputDir = new File(parsedArguments.getString("createMonosemicDictionary"));
+      Path inputDir = Paths.get(parsedArguments.getString("createMonosemicDictionary"));
       Convert.createMonosemicDictionary(inputDir);
     }
     else if (parsedArguments.getString("createPOSDictionary") != null) {
-      File inputDir = new File(parsedArguments.getString("createPOSDictionary"));
+      Path inputDir = Paths.get(parsedArguments.getString("createPOSDictionary"));
      Convert.convertLemmaToPOSDict(inputDir);
     }
     else if (parsedArguments.getList("addLemmaDict2POSDict") != null) {
       List<Object> fileArgs = parsedArguments.getList("addLemmaDict2POSDict");
-      File lemmaDict = new File((String) fileArgs.get(0));
-      File xmlDict = new File((String) fileArgs.get(1));
+      Path lemmaDict = Paths.get((String) fileArgs.get(0));
+      Path xmlDict = Paths.get((String) fileArgs.get(1));
       Convert.addLemmaToPOSDict(lemmaDict, xmlDict);
     }
     //parsing functions
     else if (parsedArguments.getString("treebank2WordPos") != null) {
-      File inputTree = new File(parsedArguments.getString("treebank2WordPos"));
+      Path inputTree = Paths.get(parsedArguments.getString("treebank2WordPos"));
       Convert.treebank2WordPos(inputTree);
     }
     else if (parsedArguments.get("ancora2treebank") != null) { 
-      File inputXML = new File(parsedArguments.getString("ancora2treebank"));
+      Path inputXML = Paths.get(parsedArguments.getString("ancora2treebank"));
       Convert.processAncoraConstituentXMLCorpus(inputXML);
     }
     else if (parsedArguments.getString("treebank2tokens") != null) {
@@ -250,7 +250,7 @@ public class CLI {
       AbsaSemEval.getYelpText(inputFile);
     }
     else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
-      File inputDir = new File(parsedArguments.getString("trivagoAspectsToCoNLL02"));
+      Path inputDir = Paths.get(parsedArguments.getString("trivagoAspectsToCoNLL02"));
       Convert.trivagoAspectsToCoNLL02(inputDir);
     }
     else if (parsedArguments.get("dsrcToCoNLL02") != null) {

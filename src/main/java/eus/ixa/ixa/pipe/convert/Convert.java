@@ -18,16 +18,15 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,16 +77,16 @@ public class Convert {
    * @throws IOException
    *           if io exception
    */
-  public static String ancora2treebank(File inXML) throws IOException {
+  public static String ancora2treebank(Path inXML) throws IOException {
     String filteredTrees = null;
-    if (inXML.isFile()) {
+    if (Files.isRegularFile(inXML)) {
 
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       SAXParser saxParser;
       try {
         saxParser = saxParserFactory.newSAXParser();
         AncoraTreebank ancoraParser = new AncoraTreebank();
-        saxParser.parse(inXML, ancoraParser);
+        saxParser.parse(inXML.toFile(), ancoraParser);
         String trees = ancoraParser.getTrees();
         // remove empty trees created by "missing" and "elliptic" attributes
         filteredTrees = trees.replaceAll("\\(\\SN\\)", "");
@@ -119,13 +118,12 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void processAncoraConstituentXMLCorpus(File dir) throws IOException {
+  public static void processAncoraConstituentXMLCorpus(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
-      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(dir.getPath())
-          + ".th");
+    if (Files.isRegularFile(dir)) {
+      Path outfile = Paths.get(dir.toString() + ".th");
       String outTree = ancora2treebank(dir);
-      com.google.common.io.Files.write(outTree, outfile, Charsets.UTF_8);
+      Files.write(outfile, outTree.getBytes());
       System.err.println(">> Wrote XML ancora file to Penn Treebank in "
           + outfile);
     } else {
@@ -227,15 +225,13 @@ public class Convert {
    *          the input file
    * @throws IOException
    */
-  public static void treebank2WordPos(File treebankFile) throws IOException {
+  public static void treebank2WordPos(Path treebankFile) throws IOException {
     // process one file
-    if (treebankFile.isFile()) {
-      List<String> inputTrees = com.google.common.io.Files.readLines(
-          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
-          .getPath()) + ".pos");
+    if (Files.isRegularFile(treebankFile)) {
+      List<String> inputTrees = Files.readAllLines(treebankFile);
+      Path outfile = Paths.get(treebankFile.toString() + ".pos");
       String outFile = getPreTerminals(inputTrees);
-      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
+      Files.write(outfile, outFile.getBytes());
       System.err.println(">> Wrote Apache OpenNLP POS training format to "
           + outfile);
     } else {
@@ -492,10 +488,10 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void createMonosemicDictionary(File lemmaDict) throws IOException {
+  public static void createMonosemicDictionary(Path lemmaDict) throws IOException {
     // process one file
-    if (lemmaDict.isFile()) {
-      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
+    if (Files.isRegularFile(lemmaDict)) {
+      List<String> inputLines = Files.readAllLines(lemmaDict, StandardCharsets.UTF_8);
       getMonosemicDict(inputLines);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -534,14 +530,13 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void convertLemmaToPOSDict(File lemmaDict) throws IOException {
+  public static void convertLemmaToPOSDict(Path lemmaDict) throws IOException {
     // process one file
-    if (lemmaDict.isFile()) {
-      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(com.google.common.io.Files.getNameWithoutExtension(lemmaDict
-          .getCanonicalPath()) + ".xml");
+    if (Files.isRegularFile(lemmaDict)) {
+      List<String> inputLines = Files.readAllLines(lemmaDict, StandardCharsets.UTF_8);
+      Path outFile = Files.createFile(Paths.get(lemmaDict.toString() + ".xml"));
       POSDictionary posTagDict = getPOSTaggerDict(inputLines);
-      OutputStream outputStream = new FileOutputStream(outFile);
+      OutputStream outputStream = Files.newOutputStream(outFile);
       posTagDict.serialize(outputStream);
       outputStream.close();
       System.err
@@ -592,17 +587,16 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void addLemmaToPOSDict(File lemmaDict, File posTaggerDict)
+  public static void addLemmaToPOSDict(Path lemmaDict, Path posTaggerDict)
       throws IOException {
     // process one file
-    if (lemmaDict.isFile() && posTaggerDict.isFile()) {
-      InputStream posDictInputStream = new FileInputStream(posTaggerDict);
+    if (Files.isRegularFile(lemmaDict) && Files.isRegularFile(posTaggerDict)) {
+      InputStream posDictInputStream = Files.newInputStream(posTaggerDict);
       POSDictionary posDict = POSDictionary.create(posDictInputStream);
-      List<String> inputLines = com.google.common.io.Files.readLines(lemmaDict, Charsets.UTF_8);
-      File outFile = new File(com.google.common.io.Files.getNameWithoutExtension(lemmaDict
-          .getCanonicalPath()) + ".xml");
+      List<String> inputLines = Files.readAllLines(lemmaDict);
+      Path outFile = Paths.get(lemmaDict.toString() + ".xml");
       addPOSTaggerDict(inputLines, posDict);
-      OutputStream outputStream = new FileOutputStream(outFile);
+      OutputStream outputStream = Files.newOutputStream(outFile);
       posDict.serialize(outputStream);
       outputStream.close();
       System.err
@@ -876,34 +870,26 @@ public class Convert {
   }
   
   
-  public static void trivagoAspectsToCoNLL02(File dir) throws IOException {
+  public static void trivagoAspectsToCoNLL02(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
-      KAFDocument kaf = KAFDocument.createFromFile(dir);
-      System.err.println(">> Processing " + dir.getName());
-      File outfile = new File(dir.getCanonicalFile() + ".conll02");
+    if (Files.isRegularFile(dir)) {
+      KAFDocument kaf = KAFDocument.createFromFile(dir.toFile());
+      System.err.println(">> Processing " + dir.toString());
+      Path outfile = Paths.get(dir.toString() + ".conll02");
       String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
-      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
+      Files.write(outfile, outKAF.getBytes());
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
-      // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            trivagoAspectsToCoNLL02(listFile[i]);
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            trivagoAspectsToCoNLL02(file);
           } else {
-            try {
-              System.err.println(">> Processing " + listFile[i].getName());
-              File outfile = new File(listFile[i].getCanonicalFile()
-                  + ".conll02");
-              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
-              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote CoNLL02 document to " + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
+            Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
+            KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
+            String outKAF = trivagoAspectsToCoNLLConvert02(kaf);
+            Files.write(outfile, outKAF.getBytes());
+            System.err.println(">> Wrote CoNLL2002 to " + outfile);
           }
         }
       }
@@ -1028,29 +1014,24 @@ public class Convert {
     }
   }
 
-  public static void brownClusterClean(File dir) throws IOException {
+  public static void brownClusterClean(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
-      File outfile = new File(dir.getCanonicalFile() + ".clean");
+    if (Files.isRegularFile(dir)) {
+      Path outfile = Files.createFile(Paths.get(dir.toString() + ".clean"));
       String outKAF = brownCleanUpperCase(dir);
-      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
+      Files.write(outfile, outKAF.getBytes());
       System.err.println(">> Wrote clean document to " + outfile);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            brownClusterClean(listFile[i]);
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            brownClusterClean(file);
           } else {
-            try {
-              File outfile = new File(listFile[i].getCanonicalFile() + ".clean");
-              String outKAF = brownCleanUpperCase(listFile[i]);
-              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote pre-clean document to " + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
+            Path outfile = Files.createFile(Paths.get(file.toString() + ".clean"));
+            String outKAF = brownCleanUpperCase(file);
+            Files.write(outfile, outKAF.getBytes());
+            System.err.println(">> Wrote pre-clean document to " + outfile);
           }
         }
       }
@@ -1066,11 +1047,9 @@ public class Convert {
    *         characters
    * @throws IOException
    */
-  private static String brownCleanUpperCase(File inFile) throws IOException {
-    InputStream inputStream = CmdLineUtil.openInFile(inFile);
+  private static String brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.UTF_8);
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
