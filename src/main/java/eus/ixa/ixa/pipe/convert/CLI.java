@@ -174,40 +174,40 @@ public class CLI {
       Convert.processAncoraConstituentXMLCorpus(inputXML);
     }
     else if (parsedArguments.getString("treebank2tokens") != null) {
-      File inputTree = new File(parsedArguments.getString("treebank2tokens"));
+      Path inputTree = Paths.get(parsedArguments.getString("treebank2tokens"));
       Convert.treebank2tokens(inputTree);
     }
     else if (parsedArguments.get("normalizePennTreebank") != null) {
-      File inputTree = new File(parsedArguments.getString("normalizePennTreebank"));
+      Path inputTree = Paths.get(parsedArguments.getString("normalizePennTreebank"));
       Convert.getCleanPennTrees(inputTree);
     }
     else if (parsedArguments.get("parseToChunks") != null) {
-      File inputTree = new File(parsedArguments.getString("parseToChunks"));
+      Path inputTree = Paths.get(parsedArguments.getString("parseToChunks"));
       ParseToChunks.parseToChunks(inputTree);
     }
     else if (parsedArguments.get("parseToTabulated") != null) {
-      File inputTree = new File(parsedArguments.getString("parseToTabulated"));
+      Path inputTree = Paths.get(parsedArguments.getString("parseToTabulated"));
       ParseToTabulated.parseToTabulated(inputTree);
     }
     // sequence labelling functions
     else if (parsedArguments.getString("printNER") != null) {
-      File inputDir = new File(parsedArguments.getString("printNER"));
+      Path inputDir = Paths.get(parsedArguments.getString("printNER"));
       Convert.getNERFromNAF(inputDir);
     }
     else if (parsedArguments.getString("printNED") != null) {
-      File inputDir = new File(parsedArguments.getString("printNED"));
+      Path inputDir = Paths.get(parsedArguments.getString("printNED"));
       Convert.getNEDFromNAF(inputDir);
     }
     else if (parsedArguments.getString("removeEntities") != null) {
-      File inputDir = new File(parsedArguments.getString("removeEntities"));
+      Path inputDir = Paths.get(parsedArguments.getString("removeEntities"));
       Convert.removeEntities(inputDir);
     }
     else if (parsedArguments.get("nafToCoNLL02") != null) {
-      File inputDir = new File(parsedArguments.getString("nafToCoNLL02"));
+      Path inputDir = Paths.get(parsedArguments.getString("nafToCoNLL02"));
       Convert.nafToCoNLL2002(inputDir);
     }
     else if (parsedArguments.get("nafToCoNLL03") != null) {
-      File inputDir = new File(parsedArguments.getString("nafToCoNLL03"));
+      Path inputDir = Paths.get(parsedArguments.getString("nafToCoNLL03"));
       Convert.nafToCoNLL2003(inputDir);
     }
     // opinion functions

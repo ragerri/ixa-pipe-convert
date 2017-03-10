@@ -18,12 +18,14 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -159,15 +162,13 @@ public class Convert {
    *          the input file
    * @throws IOException
    */
-  public static void treebank2tokens(File treebankFile) throws IOException {
+  public static void treebank2tokens(Path treebankFile) throws IOException {
     // process one file
-    if (treebankFile.isFile()) {
-      List<String> inputTrees = com.google.common.io.Files.readLines(
-          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
-          .getPath() + ".tok"));
+    if (Files.isRegularFile(treebankFile)) {
+      List<String> inputTrees = Files.readAllLines(treebankFile, StandardCharsets.UTF_8);
+      Path outfile = Files.createFile(Paths.get(treebankFile.toString() + ".tok"));
       String outFile = getTokensFromTree(inputTrees);
-      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
+      Files.write(outfile, outFile.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote tokens to " + outfile);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -286,14 +287,12 @@ public class Convert {
    * @param treebankFile
    * @throws IOException
    */
-  public static void getCleanPennTrees(File treebankFile) throws IOException {
-    if (treebankFile.isFile()) {
-      List<String> inputTrees = com.google.common.io.Files.readLines(
-          new File(treebankFile.getCanonicalPath()), Charsets.UTF_8);
-      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(treebankFile
-          .getPath()) + ".treeN");
+  public static void getCleanPennTrees(Path treebankFile) throws IOException {
+    if (Files.isRegularFile(treebankFile)) {
+      List<String> inputTrees = Files.readAllLines(treebankFile, StandardCharsets.UTF_8);
+      Path outfile = Files.createFile(Paths.get(treebankFile.toString() + ".treeN"));
       String outFile = normalizeParse(inputTrees);
-      com.google.common.io.Files.write(outFile, outfile, Charsets.UTF_8);
+      Files.write(outfile, outFile.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote normalized parse to " + outfile);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -332,35 +331,16 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void removeEntities(File dir) throws IOException {
+  public static void removeEntities(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
-      File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(dir.getPath())
-          + ".kaf.tok");
-      String outKAF = removeEntityLayer(dir);
-      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-      System.err
-          .println(">> Wrote KAF document without entities to " + outfile);
+    if (Files.isRegularFile(dir)) {
+      removeEntityLayer(dir);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            removeEntities(listFile[i]);
-          } else {
-            try {
-              File outfile = new File(com.google.common.io.Files.getNameWithoutExtension(listFile[i]
-                  .getPath()) + ".naf");
-              String outKAF = removeEntityLayer(listFile[i]);
-              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote KAF document without entities to "
-                  + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
-          }
-        }
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter( path -> Files.isRegularFile(dir))
+          .forEach( path -> removeEntityLayer(path));
       }
     }
   }
@@ -370,18 +350,23 @@ public class Convert {
    * 
    * @param inFile
    *          the NAF document
-   * @return the NAF document without the removed layers
    * @throws IOException
    *           if io problems
    */
-  private static String removeEntityLayer(File inFile) throws IOException {
-    KAFDocument kaf = KAFDocument.createFromFile(inFile);
-    /*
-     * kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
-     * kaf.removeLayer(Layer.coreferences); kaf.removeLayer(Layer.chunks);
-     * kaf.removeLayer(Layer.deps);
-     */
-    return kaf.toString();
+  private static void removeEntityLayer(Path inFile) {
+    KAFDocument kaf = null;
+    try {
+      Path outfile = Files.createFile(Paths.get(inFile.toString() + ".tok.naf"));
+      kaf = KAFDocument.createFromFile(inFile.toFile());
+      //kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
+      //kaf.removeLayer(Layer.coreferences); kaf.removeLayer(Layer.chunks);
+      //kaf.removeLayer(Layer.deps);
+      Files.write(outfile, kaf.toString().getBytes(StandardCharsets.UTF_8));
+      System.err
+          .println(">> Wrote KAF document without entities to " + outfile);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
   
   /**
@@ -392,27 +377,20 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void getNERFromNAF(File dir) throws IOException {
+  public static void getNERFromNAF(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
+    if (Files.isRegularFile(dir)) {
       printEntities(dir);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            getNERFromNAF(listFile[i]);
-          } else {
-            try {
-              printEntities(listFile[i]);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
-          }
-        }
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter( path -> Files.isRegularFile(dir))
+          .forEach( path -> printEntities(path));
+      } catch (final IOException e) {
+          e.printStackTrace();
       }
-    }
+    }      
   }
 
   /**
@@ -423,8 +401,13 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void printEntities(File inFile) throws IOException {
-    KAFDocument kaf = KAFDocument.createFromFile(inFile);
+  public static void printEntities(Path inFile) {
+    KAFDocument kaf = null;
+    try {
+      kaf = KAFDocument.createFromFile(inFile.toFile());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       System.out.println(entity.getStr() + "\t" + entity.getType());        
@@ -439,26 +422,19 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void getNEDFromNAF(File dir) throws IOException {
+  public static void getNEDFromNAF(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
+    if (Files.isRegularFile(dir)) {
       printEntities(dir);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            getNEDFromNAF(listFile[i]);
-          } else {
-            try {
-              printNEDEntities(listFile[i]);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
-          }
-        }
-      }
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter( path -> Files.isRegularFile(dir))
+          .forEach( path -> printNEDEntities(path));
+      } catch (final IOException e) {
+        e.printStackTrace();
+    }
     }
   }
 
@@ -470,8 +446,13 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void printNEDEntities(File inFile) throws IOException {
-    KAFDocument kaf = KAFDocument.createFromFile(inFile);
+  public static void printNEDEntities(Path inFile) {
+    KAFDocument kaf = null;
+    try {
+      kaf = KAFDocument.createFromFile(inFile.toFile());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       if (entity.getExternalRefs().size() > 0)

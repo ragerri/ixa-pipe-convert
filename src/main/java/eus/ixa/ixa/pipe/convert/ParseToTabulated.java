@@ -1,12 +1,12 @@
 package eus.ixa.ixa.pipe.convert;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 
 import opennlp.tools.parser.Parse;
 
@@ -15,13 +15,11 @@ public class ParseToTabulated {
   private ParseToTabulated() {
   }
 
-  public static void parseToTabulated(File inFile) throws IOException {
-    final List<String> inputTrees = Files.readLines(
-        new File(inFile.getCanonicalPath()), Charsets.UTF_8);
-    final File outfile = new File(Files.getNameWithoutExtension(inFile
-        .getPath()) + ".tsv");
+  public static void parseToTabulated(Path inFile) throws IOException {
+    final List<String> inputTrees = Files.readAllLines(inFile, StandardCharsets.UTF_8);
+    final Path outfile = Files.createFile(Paths.get(inFile.toString() + ".tsv"));
     final String outTree = parseToTabulated(inputTrees);
-    Files.write(outTree, outfile, Charsets.UTF_8);
+    Files.write(outfile, outTree.getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote Tabulated POS format to " + outfile);
   }
 

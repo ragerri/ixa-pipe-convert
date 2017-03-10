@@ -1,12 +1,12 @@
 package eus.ixa.ixa.pipe.convert;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 
 import opennlp.tools.parser.Parse;
 
@@ -15,13 +15,11 @@ public class ParseToChunks {
   private ParseToChunks() {
   }
 
-  public static void parseToChunks(File inFile) throws IOException {
-    final List<String> inputTrees = Files.readLines(
-        new File(inFile.getCanonicalPath()), Charsets.UTF_8);
-    final File outfile = new File(Files.getNameWithoutExtension(inFile
-        .getPath()) + ".chunks");
+  public static void parseToChunks(Path inFile) throws IOException {
+    final List<String> inputTrees = Files.readAllLines(inFile, StandardCharsets.UTF_8);
+    final Path outfile = Files.createFile(Paths.get(inFile.toString() + ".chunks"));
     final String outTree = parseToChunks(inputTrees);
-    Files.write(outTree, outfile, Charsets.UTF_8);
+    Files.write(outfile, outTree.getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote chunks to " + outfile);
   }
 
