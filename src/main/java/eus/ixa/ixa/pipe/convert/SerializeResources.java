@@ -18,6 +18,7 @@ package eus.ixa.ixa.pipe.convert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 
@@ -50,6 +52,26 @@ public class SerializeResources {
   public static final String SER_GZ = ".gz";
   
   private SerializeResources() {
+  }
+  
+  public static void serializeClusters(Path dir, boolean lowercase) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir)) {
+      serializeClusterFiles(dir, lowercase);
+    } else {
+      // recursively process directories
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter(path -> Files.isRegularFile(dir))
+          .forEach(path -> {
+            try {
+              serializeClusterFiles(path, lowercase);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
+      }
+    }
   }
   
   public static void serializeClusterFiles(Path clusterFile, boolean lowercase) throws IOException {
@@ -80,6 +102,26 @@ public class SerializeResources {
     String outputFile = clusterFile.toString() + SER_GZ;
     IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
     breader.close();
+  }
+  
+  public static void serializeBrownClusters(Path dir, boolean lowercase) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir)) {
+      serializeBrownClusterFiles(dir, lowercase);
+    } else {
+      // recursively process directories
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter(path -> Files.isRegularFile(dir))
+          .forEach(path -> {
+            try {
+              serializeBrownClusterFiles(path, lowercase);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
+      }
+    }
   }
   
   public static void serializeBrownClusterFiles(Path clusterFile, boolean lowercase) throws NumberFormatException, IOException {

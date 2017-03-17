@@ -134,12 +134,12 @@ public class CLI {
     else if (parsedArguments.getString("serializeBrownCluster") != null) {
       Path clusterFile = Paths.get(parsedArguments.getString("serializeBrownCluster"));
       boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
-      SerializeResources.serializeBrownClusterFiles(clusterFile, lowercase);
+      SerializeResources.serializeBrownClusters(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeClarkCluster") != null) {
       Path clusterFile = Paths.get(parsedArguments.getString("serializeClarkCluster"));
       boolean lowercase = Boolean.valueOf((boolean) parsedArguments.get("lowercase"));
-      SerializeResources.serializeClusterFiles(clusterFile, lowercase);
+      SerializeResources.serializeClusters(clusterFile, lowercase);
     }
     else if (parsedArguments.getString("serializeEntityDictionary") != null) {
       Path dictionaryFile = Paths.get(parsedArguments.getString("serializeEntityDictionary"));

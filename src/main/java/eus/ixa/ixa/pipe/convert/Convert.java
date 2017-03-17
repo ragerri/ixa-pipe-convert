@@ -17,12 +17,9 @@
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
@@ -41,7 +38,6 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
@@ -50,7 +46,6 @@ import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.Term;
 import ixa.kaflib.WF;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSDictionary;
 
@@ -80,10 +75,12 @@ public class Convert {
    * @throws IOException
    *           if io exception
    */
-  public static String ancora2treebank(Path inXML) throws IOException {
+  public static void ancora2treebank(Path inXML) throws IOException {
     String filteredTrees = null;
     if (Files.isRegularFile(inXML)) {
-
+      Path outfile = Paths.get(inXML.toString() + ".th");
+      System.err.println(">> Wrote XML ancora file to Penn Treebank in "
+          + outfile);
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       SAXParser saxParser;
       try {
@@ -99,17 +96,15 @@ public class Convert {
         filteredTrees = filteredTrees.replaceAll("  ", " ");
         // remove empty sentences created by <sentence title="yes"> elements
         filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n", "");
+        Files.write(outfile, filteredTrees.getBytes(StandardCharsets.UTF_8));
       } catch (ParserConfigurationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (SAXException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } else {
       System.out.println("Please choose a valid file as input");
     }
-    return filteredTrees;
   }
 
   /**
@@ -124,32 +119,19 @@ public class Convert {
   public static void processAncoraConstituentXMLCorpus(Path dir) throws IOException {
     // process one file
     if (Files.isRegularFile(dir)) {
-      Path outfile = Paths.get(dir.toString() + ".th");
-      String outTree = ancora2treebank(dir);
-      Files.write(outfile, outTree.getBytes());
-      System.err.println(">> Wrote XML ancora file to Penn Treebank in "
-          + outfile);
+      ancora2treebank(dir);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            processAncoraConstituentXMLCorpus(listFile[i]);
-          } else {
+      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
+        pathStream
+          .filter(path -> Files.isRegularFile(dir))
+          .forEach(path -> {
             try {
-              File outfile = new File(
-                  com.google.common.io.Files.getNameWithoutExtension((listFile[i].getPath()) + ".th"));
-              String outTree = ancora2treebank(listFile[i]);
-              com.google.common.io.Files.write(outTree, outfile, Charsets.UTF_8);
-              System.err
-                  .println(">> Wrote XML Ancora file Penn treebank format in "
-                      + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
+              ancora2treebank(path);
+            } catch (IOException e) {
+              e.printStackTrace();
             }
-          }
-        }
+          });
       }
     }
   }
@@ -339,8 +321,8 @@ public class Convert {
       // recursively process directories
       try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
         pathStream
-          .filter( path -> Files.isRegularFile(dir))
-          .forEach( path -> removeEntityLayer(path));
+          .filter(path -> Files.isRegularFile(dir))
+          .forEach(path -> removeEntityLayer(path));
       }
     }
   }
@@ -613,32 +595,26 @@ public class Convert {
     }
   }
 
-  public static void nafToCoNLL2002(File dir) throws IOException {
+  public static void nafToCoNLL2002(Path dir) throws IOException {
     // process one file
-    if (dir.isFile()) {
-      KAFDocument kaf = KAFDocument.createFromFile(dir);
-      File outfile = new File(dir.getCanonicalFile() + ".conll02");
+    if (Files.isRegularFile(dir)) {
+      KAFDocument kaf = KAFDocument.createFromFile(dir.toFile());
+      Path outfile = Files.createFile(Paths.get(dir.toString() + ".conll02"));
       String outKAF = nafToCoNLLConvert2002(kaf);
-      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
+      Files.write(outfile, outKAF.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            nafToCoNLL2002(listFile[i]);
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            nafToCoNLL2002(file);
           } else {
-            try {
-              File outfile = new File(listFile[i].getCanonicalFile()
-                  + ".conll02");
-              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = nafToCoNLLConvert2002(kaf);
-              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote CoNLL02 document to " + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
+            Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
+            KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
+            String outKAF = nafToCoNLLConvert2002(kaf);
+            Files.write(outfile, outKAF.getBytes());
+            System.err.println(">> Wrote CoNLL02 document to " + outfile);
           }
         }
       }
@@ -725,32 +701,26 @@ public class Convert {
     return sb.toString();
   }
 
-  public static void nafToCoNLL2003(File dir) throws IOException {
-    // process one file
-    if (dir.isFile()) {
-      KAFDocument kaf = KAFDocument.createFromFile(dir);
-      File outfile = new File(dir.getCanonicalFile() + ".conll03");
+  public static void nafToCoNLL2003(Path dir) throws IOException {
+ // process one file
+    if (Files.isRegularFile(dir)) {
+      KAFDocument kaf = KAFDocument.createFromFile(dir.toFile());
+      Path outfile = Files.createFile(Paths.get(dir.toString() + ".conll03"));
       String outKAF = nafToCoNLLConvert2003(kaf);
-      com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
+      Files.write(outfile, outKAF.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote CoNLL document to " + outfile);
     } else {
       // recursively process directories
-      File listFile[] = dir.listFiles();
-      if (listFile != null) {
-        for (int i = 0; i < listFile.length; i++) {
-          if (listFile[i].isDirectory()) {
-            nafToCoNLL2003(listFile[i]);
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            nafToCoNLL2003(file);
           } else {
-            try {
-              File outfile = new File(listFile[i].getCanonicalFile()
-                  + ".conll03");
-              KAFDocument kaf = KAFDocument.createFromFile(listFile[i]);
-              String outKAF = nafToCoNLLConvert2003(kaf);
-              com.google.common.io.Files.write(outKAF, outfile, Charsets.UTF_8);
-              System.err.println(">> Wrote CoNLL03 document to " + outfile);
-            } catch (FileNotFoundException noFile) {
-              continue;
-            }
+            Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
+            KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
+            String outKAF = nafToCoNLLConvert2003(kaf);
+            Files.write(outfile, outKAF.getBytes());
+            System.err.println(">> Wrote CoNLL03 document to " + outfile);
           }
         }
       }
