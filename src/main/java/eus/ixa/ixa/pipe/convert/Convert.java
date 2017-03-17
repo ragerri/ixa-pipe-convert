@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -122,17 +120,15 @@ public class Convert {
       ancora2treebank(dir);
     } else {
       // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter(path -> Files.isRegularFile(dir))
-          .forEach(path -> {
-            try {
-              ancora2treebank(path);
-            } catch (IOException e) {
-              e.printStackTrace();
+        try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+          for (Path file : filesDir) {
+            if (Files.isDirectory(file)) {
+              processAncoraConstituentXMLCorpus(file);
+            } else {
+              ancora2treebank(file);
             }
-          });
-      }
+          }
+        }
     }
   }
 
@@ -317,12 +313,17 @@ public class Convert {
     // process one file
     if (Files.isRegularFile(dir)) {
       removeEntityLayer(dir);
-    } else {
+    } // process one file
+     else {
       // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter(path -> Files.isRegularFile(dir))
-          .forEach(path -> removeEntityLayer(path));
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            removeEntities(file);
+          } else {
+            removeEntityLayer(file);
+          }
+        }
       }
     }
   }
@@ -365,12 +366,14 @@ public class Convert {
       printEntities(dir);
     } else {
       // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter( path -> Files.isRegularFile(dir))
-          .forEach( path -> printEntities(path));
-      } catch (final IOException e) {
-          e.printStackTrace();
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            getNERFromNAF(file);
+          } else {
+            printEntities(file);
+          }
+        }
       }
     }      
   }
@@ -409,14 +412,15 @@ public class Convert {
     if (Files.isRegularFile(dir)) {
       printEntities(dir);
     } else {
-      // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter( path -> Files.isRegularFile(dir))
-          .forEach( path -> printNEDEntities(path));
-      } catch (final IOException e) {
-        e.printStackTrace();
-    }
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            getNEDFromNAF(file);
+          } else {
+            printEntities(file);
+          }
+        }
+      }
     }
   }
 
@@ -613,7 +617,7 @@ public class Convert {
             Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
             KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
             String outKAF = nafToCoNLLConvert2002(kaf);
-            Files.write(outfile, outKAF.getBytes());
+            Files.write(outfile, outKAF.getBytes(StandardCharsets.UTF_8));
             System.err.println(">> Wrote CoNLL02 document to " + outfile);
           }
         }

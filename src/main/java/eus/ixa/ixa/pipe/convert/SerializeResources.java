@@ -18,7 +18,7 @@ package eus.ixa.ixa.pipe.convert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 
@@ -60,16 +59,14 @@ public class SerializeResources {
       serializeClusterFiles(dir, lowercase);
     } else {
       // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter(path -> Files.isRegularFile(dir))
-          .forEach(path -> {
-            try {
-              serializeClusterFiles(path, lowercase);
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          });
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            serializeClusters(file, lowercase);
+          } else {
+            serializeClusterFiles(file, lowercase);
+          }
+        }
       }
     }
   }
@@ -99,8 +96,9 @@ public class SerializeResources {
         }
       }
     }
-    String outputFile = clusterFile.toString() + SER_GZ;
+    String outputFile = clusterFile.toRealPath().toString() + SER_GZ;
     IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
+    System.err.println("-> Cluster serialized to " + outputFile);
     breader.close();
   }
   
@@ -110,16 +108,14 @@ public class SerializeResources {
       serializeBrownClusterFiles(dir, lowercase);
     } else {
       // recursively process directories
-      try (final Stream<Path> pathStream = Files.walk(dir, FileVisitOption.FOLLOW_LINKS)) {
-        pathStream
-          .filter(path -> Files.isRegularFile(dir))
-          .forEach(path -> {
-            try {
-              serializeBrownClusterFiles(path, lowercase);
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          });
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            serializeBrownClusters(file, lowercase);
+          } else {
+            serializeBrownClusterFiles(file, lowercase);
+          }
+        }
       }
     }
   }
@@ -151,8 +147,9 @@ public class SerializeResources {
         }
       }
     }
-    String outputFile = clusterFile.toString() + SER_GZ;
+    String outputFile = clusterFile.toRealPath().toString() + SER_GZ;
     IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
+    System.err.println("-> Cluster serialized to " + outputFile);
     breader.close();
   }
   
