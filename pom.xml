@@ -4,7 +4,7 @@
 	<groupId>eus.ixa</groupId>
 	<artifactId>ixa-pipe-convert</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<name>ixa-pipe-convert</name>
 	<description>It converts corpora formats.</description>
 	<developers>
