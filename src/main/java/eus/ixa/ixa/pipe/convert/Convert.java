@@ -972,10 +972,7 @@ public class Convert {
   public static void brownClusterClean(Path dir) throws IOException {
     // process one file
     if (Files.isRegularFile(dir)) {
-      Path outfile = Files.createFile(Paths.get(dir.toString() + ".clean"));
-      String outKAF = brownCleanUpperCase(dir);
-      Files.write(outfile, outKAF.getBytes());
-      System.err.println(">> Wrote clean document to " + outfile);
+      brownCleanUpperCase(dir);
     } else {
       // recursively process directories
       try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
@@ -983,10 +980,7 @@ public class Convert {
           if (Files.isDirectory(file)) {
             brownClusterClean(file);
           } else {
-            Path outfile = Files.createFile(Paths.get(file.toString() + ".clean"));
-            String outKAF = brownCleanUpperCase(file);
-            Files.write(outfile, outKAF.getBytes());
-            System.err.println(">> Wrote pre-clean document to " + outfile);
+            brownCleanUpperCase(file);
           }
         }
       }
@@ -998,12 +992,11 @@ public class Convert {
    * 
    * @param sentences
    *          the list of sentences
-   * @return the list of sentences that contain more than 90% lowercase
-   *         characters
    * @throws IOException
    */
-  private static String brownCleanUpperCase(Path inFile) throws IOException {
+  private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
+    Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
     BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.ISO_8859_1);
     String line;
     while ((line = breader.readLine()) != null) {
@@ -1027,7 +1020,8 @@ public class Convert {
       }
     }
     breader.close();
-    return precleantext.toString();
+    Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
+    System.err.println(">> Wrote clean document to " + outfile);
   }
   
   /**
