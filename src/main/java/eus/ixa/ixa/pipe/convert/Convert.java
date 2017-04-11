@@ -970,10 +970,6 @@ public class Convert {
   }
 
   public static void brownClusterClean(Path dir) throws IOException {
-    // process one file
-    if (Files.isRegularFile(dir)) {
-      brownCleanUpperCase(dir);
-    } else {
       // recursively process directories
       try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
         for (Path file : filesDir) {
@@ -985,7 +981,6 @@ public class Convert {
         }
         filesDir.close();
       }
-    }
   }
 
   /**
