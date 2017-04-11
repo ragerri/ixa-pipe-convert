@@ -1004,7 +1004,7 @@ public class Convert {
    */
   private static String brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
-    BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.UTF_16);
+    BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.ISO_8859_1);
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
