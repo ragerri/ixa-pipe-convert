@@ -970,21 +970,21 @@ public class Convert {
   }
 
   public static void brownClusterClean(Path dir) throws IOException {
-    if (Files.isDirectory(dir)) {
-     // recursively process directories
+    // process one file
+    if (Files.isRegularFile(dir) && !dir.toString().endsWith(".clean")) {
+      brownCleanUpperCase(dir);
+    } else {
+      // recursively process directories
       try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
         for (Path file : filesDir) {
           if (Files.isDirectory(file)) {
             brownClusterClean(file);
           } else {
-            brownCleanUpperCase(file);
+            if (!file.toString().endsWith(".clean")) {
+              brownCleanUpperCase(file);
+            }
           }
         }
-        filesDir.close();
-      }
-    } else {
-      if (Files.isRegularFile(dir)) {
-        brownCleanUpperCase(dir);
       }
     }
   }
@@ -1020,7 +1020,7 @@ public class Convert {
         precleantext.append(line).append("\n");
       }
     }
-    Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
+    Path outfile = Files.createFile(Paths.get(inFile.toRealPath().toString() + ".clean"));
     Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote clean document to " + outfile);
     breader.close();
