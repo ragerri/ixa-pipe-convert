@@ -983,6 +983,7 @@ public class Convert {
             brownCleanUpperCase(file);
           }
         }
+        filesDir.close();
       }
     }
   }
@@ -1018,7 +1019,7 @@ public class Convert {
         precleantext.append(line).append("\n");
       }
     }
-    Path outfile = Files.createFile(Paths.get(inFile.toRealPath().toString() + ".clean"));
+    Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
     Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote clean document to " + outfile);
     breader.close();
