@@ -19,7 +19,9 @@ package eus.ixa.ixa.pipe.convert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -44,6 +46,7 @@ import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.Term;
 import ixa.kaflib.WF;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSDictionary;
 
@@ -998,7 +1001,9 @@ public class Convert {
    */
   private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
-    BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.UTF_8);
+    InputStream inputStream = CmdLineUtil.openInFile(inFile.toFile());
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
@@ -1020,7 +1025,7 @@ public class Convert {
         precleantext.append(line).append("\n");
       }
     }
-    Path outfile = Files.createFile(Paths.get(inFile.toRealPath().toString() + ".clean"));
+    Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
     Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote clean document to " + outfile);
     breader.close();
