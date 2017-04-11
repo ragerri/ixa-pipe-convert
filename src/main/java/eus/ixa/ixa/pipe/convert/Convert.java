@@ -996,7 +996,6 @@ public class Convert {
    */
   private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
-    Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
     BufferedReader breader = Files.newBufferedReader(inFile, StandardCharsets.ISO_8859_1);
     String line;
     while ((line = breader.readLine()) != null) {
@@ -1019,9 +1018,10 @@ public class Convert {
         precleantext.append(line).append("\n");
       }
     }
-    breader.close();
+    Path outfile = Files.createFile(Paths.get(inFile.toRealPath().toString() + ".clean"));
     Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote clean document to " + outfile);
+    breader.close();
   }
   
   /**
