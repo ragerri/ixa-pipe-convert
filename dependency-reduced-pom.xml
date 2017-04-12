@@ -4,7 +4,7 @@
   <groupId>eus.ixa</groupId>
   <artifactId>ixa-pipe-convert</artifactId>
   <name>ixa-pipe-convert</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>It converts corpora formats.</description>
   <url>http://ixa2.si.ehu.es/ixa-pipes</url>
   <prerequisites>
