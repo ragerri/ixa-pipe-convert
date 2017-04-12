@@ -103,7 +103,6 @@ public class CLI {
     parser.addArgument("--absa2014ToCoNLL2002").help("Convert ABSA SemEval 2014 Aspect Term Extraction to CoNLL 2002 format.\n");
     parser.addArgument("--nafToAbsa2014").help("Convert NAF containing opinions into ABSA SemEval 2014 format");
     parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
-    parser.addArgument("--trivagoAspectsToCoNLL02").help("Convert Trivago Aspects Elements to CoNLL02.\n");
     parser.addArgument("--dsrcToCoNLL02").help("Convert DSRC corpus in MMAX format to CoNLL02 for Opinion Target Extraction");
     
     //utils
@@ -248,10 +247,6 @@ public class CLI {
     else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");
       AbsaSemEval.getYelpText(inputFile);
-    }
-    else if (parsedArguments.get("trivagoAspectsToCoNLL02") != null) {
-      Path inputDir = Paths.get(parsedArguments.getString("trivagoAspectsToCoNLL02"));
-      Convert.trivagoAspectsToCoNLL02(inputDir);
     }
     else if (parsedArguments.get("dsrcToCoNLL02") != null) {
       String inputDir = parsedArguments.getString("dsrcToCoNLL02");
