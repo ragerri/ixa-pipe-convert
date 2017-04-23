@@ -137,6 +137,7 @@ public class AbsaSemEval {
                   endIndex = i + 1;
                 }
               }
+               if (startIndex<=endIndex){
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
               List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
@@ -147,6 +148,7 @@ public class AbsaSemEval {
               OpinionExpression opExpression = opinionLayer.createOpinionExpression(oteSpan);
               opExpression.setPolarity(polarity);
               opExpression.setSentimentProductFeature(category);
+            }
             }
           }
         }
@@ -235,6 +237,7 @@ public class AbsaSemEval {
                   endIndex = i + 1;
                 }
               }
+                if (startIndex<=endIndex){
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
               List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
@@ -246,6 +249,7 @@ public class AbsaSemEval {
                 Entity neEntity = kaf.newEntity(references);
                 neEntity.setType(category);
               }
+             }
             }
           }
         }
@@ -518,6 +522,7 @@ public class AbsaSemEval {
                   endIndex = i + 1;
                 }
               }
+              if (startIndex<=endIndex){
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
               List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
@@ -528,6 +533,7 @@ public class AbsaSemEval {
                 references.add(neSpan);
                 Entity neEntity = kaf.newEntity(references);
                 neEntity.setType("term");
+              }
               }
           }
           }
