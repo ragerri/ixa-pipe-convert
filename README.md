@@ -2,7 +2,8 @@
 ixa-pipe-convert
 =================
 
-Format converter.
+This module implements several scripts to do corpus format conversions usually required to train
+or to evaluate IXA pipes models (http://ixa2.si.ehu.es/ixa-pipes).
 
 Contents
 ========
@@ -61,7 +62,7 @@ mvn clean package
 ========
 
 ````shell
-java -jar target/ixa-pipe-convert-$version.jar -help
+java -jar target/ixa-pipe-convert-$version-exec.jar -help
 ````
 
 GENERATING JAVADOC
@@ -81,5 +82,5 @@ Rodrigo Agerri
 IXA NLP Group
 University of the Basque Country (UPV/EHU)
 E-20018 Donostia-San Sebastián
-rodrigo.agerri@ehu.es
+rodrigo.agerri@ehu.eus
 ````
