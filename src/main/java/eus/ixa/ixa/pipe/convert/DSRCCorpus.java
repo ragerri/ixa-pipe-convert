@@ -89,7 +89,7 @@ public class DSRCCorpus {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     DSRCToNAFNER(kaf, wordsFile, markFile);
     //System.err.println(kaf.toString());
-    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
 

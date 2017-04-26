@@ -17,8 +17,18 @@
 
 package eus.ixa.ixa.pipe.convert;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -59,9 +69,81 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version 2014-02-25
  *
  */
-public class AncoraTreebank extends DefaultHandler {
+public class AncoraTreebankReader extends DefaultHandler {
 
   List<String> constituents = new ArrayList<String>();
+  
+  /**
+   * Process the ancora constituent XML annotation into Penn Treebank bracketing
+   * style.
+   * 
+   * @param inXML
+   *          the ancora xml constituent document
+   * @return the ancora trees in penn treebank one line format
+   * @throws IOException
+   *           if io exception
+   */
+  public static void ancora2treebank(Path inXML) throws IOException {
+    String filteredTrees = null;
+    if (Files.isRegularFile(inXML)) {
+      Path outfile = Paths.get(inXML.toString() + ".th");
+      System.err.println(">> Wrote XML ancora file to Penn Treebank in "
+          + outfile);
+      SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+      SAXParser saxParser;
+      try {
+        saxParser = saxParserFactory.newSAXParser();
+        AncoraTreebankReader ancoraParser = new AncoraTreebankReader();
+        saxParser.parse(inXML.toFile(), ancoraParser);
+        String trees = ancoraParser.getTrees();
+        // remove empty trees created by "missing" and "elliptic" attributes
+        filteredTrees = trees.replaceAll("\\(\\SN\\)", "");
+        // format correctly closing brackets
+        filteredTrees = filteredTrees.replace(") )", "))");
+        // remove double spaces
+        filteredTrees = filteredTrees.replaceAll("  ", " ");
+        // remove empty sentences created by <sentence title="yes"> elements
+        filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n", "");
+        Files.write(outfile, filteredTrees.getBytes(StandardCharsets.UTF_8));
+      } catch (ParserConfigurationException e) {
+        e.printStackTrace();
+      } catch (SAXException e) {
+        e.printStackTrace();
+      }
+    } else {
+      System.out.println("Please choose a valid file as input");
+    }
+  }
+
+  /**
+   * Calls the ancora2treebank function to generate Penn Treebank trees from
+   * Ancora XML constituent parsing.
+   * 
+   * @param dir
+   *          the directory containing the documents
+   * @throws IOException
+   *           if io problems
+   */
+  public static void processAncoraConstituentXMLCorpus(Path dir) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir) && !dir.endsWith(".th")) {
+      ancora2treebank(dir);
+    } else {
+      // recursively process directories
+        try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+          for (Path file : filesDir) {
+            if (Files.isDirectory(file)) {
+              processAncoraConstituentXMLCorpus(file);
+            } else {
+              if (!file.endsWith(".th")) {
+              ancora2treebank(file);
+              }
+            }
+          }
+        }
+    }
+  }
+
   
   /**
    * Prints the trees. Note there are "elliptic" and 

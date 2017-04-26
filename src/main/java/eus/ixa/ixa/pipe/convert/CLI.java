@@ -162,19 +162,19 @@ public class CLI {
     //parsing functions
     else if (parsedArguments.getString("treebank2WordPos") != null) {
       Path inputTree = Paths.get(parsedArguments.getString("treebank2WordPos"));
-      Convert.treebank2WordPos(inputTree);
+      PennTreebankUtils.treebank2WordPos(inputTree);
     }
     else if (parsedArguments.get("ancora2treebank") != null) { 
       Path inputXML = Paths.get(parsedArguments.getString("ancora2treebank"));
-      Convert.processAncoraConstituentXMLCorpus(inputXML);
+      AncoraTreebankReader.processAncoraConstituentXMLCorpus(inputXML);
     }
     else if (parsedArguments.getString("treebank2tokens") != null) {
       Path inputTree = Paths.get(parsedArguments.getString("treebank2tokens"));
-      Convert.treebank2tokens(inputTree);
+      PennTreebankUtils.treebank2tokens(inputTree);
     }
     else if (parsedArguments.get("normalizePennTreebank") != null) {
       Path inputTree = Paths.get(parsedArguments.getString("normalizePennTreebank"));
-      Convert.getCleanPennTrees(inputTree);
+      PennTreebankUtils.getCleanPennTrees(inputTree);
     }
     else if (parsedArguments.get("parseToChunks") != null) {
       Path inputTree = Paths.get(parsedArguments.getString("parseToChunks"));
@@ -199,11 +199,11 @@ public class CLI {
     }
     else if (parsedArguments.get("nafToCoNLL02") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("nafToCoNLL02"));
-      Convert.nafToCoNLL2002(inputDir);
+      ConllUtils.nafToCoNLL2002(inputDir);
     }
     else if (parsedArguments.get("nafToCoNLL03") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("nafToCoNLL03"));
-      Convert.nafToCoNLL2003(inputDir);
+      ConllUtils.nafToCoNLL2003(inputDir);
     }
     // opinion functions
     else if (parsedArguments.get("absa2015ToCoNLL2002") != null) {

@@ -156,7 +156,7 @@ public class AbsaSemEval {
   public static String absa2015ToCoNLL2002(String fileName) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     absa2015ToNAFNER(kaf, fileName);
-    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
   
@@ -421,7 +421,7 @@ public class AbsaSemEval {
   public static String absa2014ToCoNLL2002(String fileName) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     absa2014ToNAFNER(kaf, fileName);
-    String conllFile = Convert.nafToCoNLLConvert2002(kaf);
+    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
   
