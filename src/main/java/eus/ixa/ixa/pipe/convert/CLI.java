@@ -96,15 +96,11 @@ public class CLI {
     
     //opinion arguments
     parser.addArgument("--absa2015ToCoNLL2002").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to CoNLL 2002 format.\n");
-    parser.addArgument("--absa2015ToNAF").help("Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to NAF.\n");
     parser.addArgument("--absa2015ToWFs").help("Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
-    parser.addArgument("--absa2015Text").help("Extract text sentences from ABSA 2015 and 2016 SemEval corpora.\n");
     parser.addArgument("--nafToAbsa2015").help("Convert NAF containing Opinions into ABSA 2015 and 2016 format.\n");
     parser.addArgument("--absa2014ToCoNLL2002").help("Convert ABSA SemEval 2014 Aspect Term Extraction to CoNLL 2002 format.\n");
     parser.addArgument("--nafToAbsa2014").help("Convert NAF containing opinions into ABSA SemEval 2014 format");
-    parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset");
-    parser.addArgument("--dsrcToCoNLL02").help("Convert DSRC corpus in MMAX format to CoNLL02 for Opinion Target Extraction");
-    
+    parser.addArgument("--yelpGetText").help("Extract text attribute from JSON yelp dataset"); 
     //utils
     parser.addArgument("--lowercase")
         .action(Arguments.storeTrue())
@@ -215,20 +211,10 @@ public class CLI {
       String conllFile = AbsaSemEval.absa2015ToCoNLL2002(inputFile);
       System.out.print(conllFile);
     }
-    else if (parsedArguments.get("absa2015ToNAF") != null) {
-      String inputFile = parsedArguments.getString("absa2015ToNAF");
-      String kafString = AbsaSemEval.absa2015ToNAF(inputFile);
-      System.out.println(kafString);
-    }
     else if (parsedArguments.get("absa2015ToWFs") != null) {
       String inputFile = parsedArguments.getString("absa2015ToWFs");
       String kafString = AbsaSemEval.absa2015ToWFs(inputFile);
       System.out.print(kafString);
-    }
-    else if (parsedArguments.get("absa2015Text") != null) {
-      String inputFile = parsedArguments.getString("absa2015Text");
-      String text = AbsaSemEval.absa2015Text(inputFile);
-      System.out.print(text);
     }
     else if (parsedArguments.get("nafToAbsa2015") != null) {
       String inputNAF = parsedArguments.getString("nafToAbsa2015");
@@ -247,10 +233,6 @@ public class CLI {
     else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");
       AbsaSemEval.getYelpText(inputFile);
-    }
-    else if (parsedArguments.get("dsrcToCoNLL02") != null) {
-      String inputDir = parsedArguments.getString("dsrcToCoNLL02");
-      DSRCCorpus.DSRCToCoNLL2002(inputDir);
     }
   }
 }
