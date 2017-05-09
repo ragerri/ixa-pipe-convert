@@ -61,7 +61,7 @@ public class AbsaSemEval {
   private AbsaSemEval() {
   }
 
-  private static void absa2015ToNAFNER(KAFDocument kaf, String fileName) {
+  private static void absa2015ToNAFNER(KAFDocument kaf, String fileName, String language) {
     //reading the ABSA xml file
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -82,7 +82,7 @@ public class AbsaSemEval {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
         //the list contains just one list of tokens
-        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentence) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -153,9 +153,9 @@ public class AbsaSemEval {
     }
   }
   
-  public static String absa2015ToCoNLL2002(String fileName) {
+  public static String absa2015ToCoNLL2002(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    absa2015ToNAFNER(kaf, fileName);
+    absa2015ToNAFNER(kaf, fileName, language);
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
@@ -193,7 +193,7 @@ public class AbsaSemEval {
     return true;
   }
 
-  public static String absa2015ToWFs(String fileName) {
+  public static String absa2015ToWFs(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -207,7 +207,7 @@ public class AbsaSemEval {
       for (Element sent : sentences) {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        List<List<Token>> segmentedSentences = tokenizeSentence(sentString);
+        List<List<Token>> segmentedSentences = tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentences) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -325,7 +325,7 @@ public class AbsaSemEval {
     return sb.toString().trim();
   }
 
-  private static void absa2014ToNAFNER(KAFDocument kaf, String fileName) {
+  private static void absa2014ToNAFNER(KAFDocument kaf, String fileName, String language) {
     //reading the ABSA xml file
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
@@ -346,7 +346,7 @@ public class AbsaSemEval {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
         //the list contains just one list of tokens
-        List<List<Token>> segmentedSentence = tokenizeSentence(sentString);
+        List<List<Token>> segmentedSentence = tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentence) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -418,9 +418,9 @@ public class AbsaSemEval {
     }
   }
   
-  public static String absa2014ToCoNLL2002(String fileName) {
+  public static String absa2014ToCoNLL2002(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    absa2014ToNAFNER(kaf, fileName);
+    absa2014ToNAFNER(kaf, fileName, language);
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
@@ -496,9 +496,9 @@ public class AbsaSemEval {
     breader.close();
   }
   
-  private static List<List<Token>> tokenizeSentence(String sentString) {
+  private static List<List<Token>> tokenizeSentence(String sentString, String language) {
     RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
-        setTokenizeProperties());
+        setTokenizeProperties(language));
     List<String> sentenceList = new ArrayList<>();
     sentenceList.add(sentString);
     String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
@@ -506,19 +506,19 @@ public class AbsaSemEval {
     return tokens;
   }
 
-  private static Properties setTokenizeProperties() {
+  private static Properties setTokenizeProperties(String language) {
     Properties annotateProperties = new Properties();
-    annotateProperties.setProperty("language", "en");
+    annotateProperties.setProperty("language", language);
     annotateProperties.setProperty("normalize", "default");
     annotateProperties.setProperty("hardParagraph", "no");
     annotateProperties.setProperty("untokenizable", "no");
     return annotateProperties;
   }
 
-  public static String getStringFromTokens(String sentString) {
+  public static String getStringFromTokens(String sentString, String language) {
 
     StringBuilder sb = new StringBuilder();
-    List<List<Token>> tokens = tokenizeSentence(sentString);
+    List<List<Token>> tokens = tokenizeSentence(sentString, language);
     for (List<Token> sentence : tokens) {
       for (Token tok : sentence) {
         sb.append(tok.getTokenValue()).append(" ");
