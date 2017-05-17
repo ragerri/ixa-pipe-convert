@@ -38,7 +38,7 @@ import net.sourceforge.argparse4j.inf.Subparsers;
  * ixa-pipe-convert.
  * 
  * @author ragerri
- * @version 2016-12-14
+ * @version 2017-05-17
  * 
  */
 
@@ -68,27 +68,38 @@ public class CLI {
    * The parser that manages cluster lexicon related functions.
    */
   private final Subparser clusterParser;
+  /**
+   * The parser that manages treebank conversions.
+   */
   private final Subparser treebankParser;
+  /**
+   * The parser that manages NAF to other formats conversions.
+   */
   private final Subparser nafParser;
   /**
    * The parser that manages the general conversion functions.
    */
   private final Subparser convertParser;
   
+  private static final String ABSA_CONVERSOR_NAME = "absa";
+  private static final String CLUSTER_CONVERSOR_NAME = "cluster";
+  private static final String TREEBANK_CONVERSOR_NAME = "treebank";
+  private static final String NAF_CONVERSOR_NAME = "naf";
+  private static final String OTHER_CONVERSOR_NAME = "convert";
   
   /**
    * Reading the CLI.
    */
   public CLI() {
-    absaParser = subParsers.addParser("absa").help("ABSA tasks at SemEval conversion functions.");
+    absaParser = subParsers.addParser(ABSA_CONVERSOR_NAME).help("ABSA tasks at SemEval conversion functions.");
     loadAbsaParameters();
-    clusterParser = subParsers.addParser("cluster").help("Cluster lexicon conversion functions.");
+    clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME).help("Cluster lexicon conversion functions.");
     loadClusterParameters();
-    treebankParser = subParsers.addParser("treebank").help("Treebank conversion functions.");
+    treebankParser = subParsers.addParser(TREEBANK_CONVERSOR_NAME).help("Treebank conversion functions.");
     loadTreebankParameters();
-    nafParser = subParsers.addParser("naf").help("NAF to other formats conversion functions.");
+    nafParser = subParsers.addParser(NAF_CONVERSOR_NAME).help("NAF to other formats conversion functions.");
     loadNafParameters();
-    convertParser = subParsers.addParser("convert").help(
+    convertParser = subParsers.addParser(OTHER_CONVERSOR_NAME).help(
         "Other conversion functions.");
     loadConvertParameters();
   }
@@ -113,17 +124,22 @@ public class CLI {
       try {
         parsedArguments = parser.parseArgs(args);
         System.err.println("CLI options: " + parsedArguments);
-        if (args[0].equals("absa")) {
+        switch (args[0]) {
+        case ABSA_CONVERSOR_NAME:
           absa();
-        } else if (args[0].equals("cluster")) {
+          break;
+        case CLUSTER_CONVERSOR_NAME:
           cluster();
-        } else if (args[0].equals("treebank")) {
+          break;
+        case TREEBANK_CONVERSOR_NAME:
           treebank();
-        } else if (args[0].equals("naf")) {
+          break;
+        case NAF_CONVERSOR_NAME:
           naf();
-        }
-        else if (args[0].equals("convert")) {
+          break;
+        case OTHER_CONVERSOR_NAME:
           convert();
+          break;
         }
       } catch (final ArgumentParserException e) {
         parser.handleError(e);
@@ -167,7 +183,6 @@ public class CLI {
     }
     
     public final void cluster() throws IOException {
-    //cluster lexicons options
       if (parsedArguments.get("brownClean") != null) {
         Path inputFile = Paths.get(parsedArguments.getString("brownClean"));
         Convert.brownClusterClean(inputFile); 
@@ -243,7 +258,6 @@ public class CLI {
     }
     
     public final void convert() throws IOException {
-      // pos taggging functions
       if (parsedArguments.getString("createMonosemicDictionary") != null) {
         Path inputDir = Paths.get(parsedArguments.getString("createMonosemicDictionary"));
         Convert.createMonosemicDictionary(inputDir);
@@ -309,7 +323,6 @@ public class CLI {
     }
     
     public void loadConvertParameters() {
-      //pos tagging functions
       convertParser.addArgument("--createMonosemicDictionary").help("Create monosemic dictionary from a lemmatizer dictionary.\n");
       convertParser.addArgument("--createPOSDictionary").help("Create POSTagger OpenNLP dictionary from " +
               "lemmatizer dictionary.\n");
