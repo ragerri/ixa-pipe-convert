@@ -17,7 +17,9 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import eus.ixa.ixa.pipe.ml.utils.IOUtils;
+import opennlp.tools.cmdline.CmdLineUtil;
 
 /**
 * Class to load and serialize ixa-pipes resources.
@@ -75,7 +78,9 @@ public class SerializeResources {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
     
-    BufferedReader breader = Files.newBufferedReader(clusterFile, StandardCharsets.UTF_8);
+    InputStream inputStream = CmdLineUtil.openInFile(clusterFile.toFile());
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = spacePattern.split(line);
@@ -123,7 +128,9 @@ public class SerializeResources {
   public static void serializeBrownClusterFiles(Path clusterFile, boolean lowercase) throws NumberFormatException, IOException {
     
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
-    BufferedReader breader = Files.newBufferedReader(clusterFile, StandardCharsets.UTF_8);
+    InputStream inputStream = CmdLineUtil.openInFile(clusterFile.toFile());
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
@@ -155,7 +162,9 @@ public class SerializeResources {
   
   public static void serializeEntityGazetteers(Path dictionaryFile) throws IOException {
     Map<String, String> dictionary = new HashMap<String, String>();
-    BufferedReader breader = Files.newBufferedReader(dictionaryFile, StandardCharsets.UTF_8);
+    InputStream inputStream = CmdLineUtil.openInFile(dictionaryFile.toFile());
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
@@ -173,7 +182,9 @@ public class SerializeResources {
 
   public static void serializeLemmaDictionary(Path lemmaDict) throws IOException {
     Map<List<String>, String> dictMap = new HashMap<List<String>, String>();
-    final BufferedReader breader = Files.newBufferedReader(lemmaDict, StandardCharsets.UTF_8);
+    InputStream inputStream = CmdLineUtil.openInFile(lemmaDict.toFile());
+    BufferedReader breader = new BufferedReader(new InputStreamReader(
+        inputStream, Charset.forName("UTF-8")));
     String line;
       while ((line = breader.readLine()) != null) {
         final String[] elems = tabPattern.split(line);
