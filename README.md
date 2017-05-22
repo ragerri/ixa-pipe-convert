@@ -77,7 +77,6 @@ mvn clean package
 ````
 
 # Usage
-========
 
 ````shell
 java -jar target/ixa-pipe-convert-$version-exec.jar -help
