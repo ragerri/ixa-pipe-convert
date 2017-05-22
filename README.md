@@ -5,23 +5,42 @@ ixa-pipe-convert
 This module implements several scripts to do corpus format conversions usually required to train
 or to evaluate IXA pipes models (http://ixa2.si.ehu.es/ixa-pipes).
 
-Contents
-========
+## TABLE OF CONTENTS
 
-The contents of the module are the following:
+1. [Aspect-Based Sentiment Analysis (ABSA) conversions](#absa)
+2. [Cluster Lexicon conversions](#clusters)
+3. [NAF to CoNLL conversions](#naf)
+4. [Installation](#installation)
 
-    + formatter.xml           Apache OpenNLP code formatter for Eclipse SDK
-    + pom.xml                 maven pom file which deals with everything related to compilation and execution of the module
-    + src/                    java source code of the module
-    + Furthermore, the installation process, as described in the README.md, will generate another directory:
-    target/                 it contains binary executable and other directories
+## ABSA
 
+There are several parameters to convert from and to the format used in the SemEval ABSA 2014-2016 shared tasks:
 
-INSTALLATION
-============
++ absa2015ToWFs: It converts ABSA SemEval 2014-2016 corpus to a tokenized NAF document. This function is used to obtain the evaluation set in the NAF format so that it can be annotated with ixa-pipe-opinion models for testing with the ABSA evaluation script.
++ nafToAbsa2014: The opinion-annotated NAF is converted to ABSA 2014 format for evaluation with the task official evaluation script.
++ nafToAbsa2015: The opinion-annotated NAF is converted to ABSA 2015 and 2016 formats for evaluation with the task official evaluation scripts.
++ absa2014ToCoNLL2002: It converts the ABSA 2014 corpus into CoNLL 2002 format for training ixa-pipe-opinion models.
++ absa2015ToCoNLL2002: It converts the ABSA 2015 and 2016 corpus into CoNLL 2002 format for training ixa-pipe-opinion models.
++ yelpGetText: It extracts the text element from the json formatted YELP dataset.
 
-1. Install MAVEN 3
-------------------
+## Clusters
+
+There are several parameters to pre-process cluster lexicons obtained following the methods described in (https://github.com/ragerri/cluster-preprocessing)
+
++ brownClean: It removes paragraph from a corpus if 90% of characters are not lowercase. Argument can be a file or a directory.
++ serializeBrownCluster: It serializes Brown cluster lexicons to be used to train models with (https://github.com/ixa-ehu/ixa-pipe-ml). Argument can be a file or a directory.
++ serializeClarkCluster: It serializes Clark and Word2vec cluster lexicons to be used to train models with  (https://github.com/ixa-ehu/ixa-pipe-ml). Argument can be a file or a directory.
++ serializeEntityDictionary: It serializes (https://github.com/ixa-ehu/ixa-pipe-nerc) entity dictionaries for training or tagging.
++ serializeLemmaDictionary: It serializes (https://github.com/ixa-ehu/ixa-pipe-pos) lemma dictionaries.
+
+## NAF
+
++ nafToCoNLL02: It converts NAF containing named entities layer (entities) into CoNLL 2002 format.
++ nafToCoNLL03: It converts NAF containing named entities layer (entities) into CoNLL 2003 format.
+
+## INSTALLATION
+
+### Install MAVEN
 
 Download MAVEN 3 from
 
@@ -49,8 +68,7 @@ If you re-login into your shell and run the command
 mvn -version
 ````
 
-3. Get module source code
---------------------------
+### Get module source code
 
 ````shell
 git clone https://github.com/ragerri/ixa-pipe-convert.git
@@ -58,15 +76,14 @@ cd ixa-pipe-convert
 mvn clean package
 ````
 
-4. Usage
+# Usage
 ========
 
 ````shell
 java -jar target/ixa-pipe-convert-$version-exec.jar -help
 ````
 
-GENERATING JAVADOC
-==================
+# GENERATING JAVADOC
 
 You can also generate the javadoc of the module by executing:
 
@@ -74,8 +91,7 @@ You can also generate the javadoc of the module by executing:
 mvn javadoc:jar
 ````
 
-Contact information
-===================
+### Contact information
 
 ````shell
 Rodrigo Agerri
