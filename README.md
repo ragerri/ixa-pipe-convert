@@ -2,6 +2,9 @@
 ixa-pipe-convert
 =================
 
+[![Build Status](https://travis-ci.org/ragerri/ixa-pipe-convert.svg?branch=master)](https://travis-ci.org/ragerri/ixa-pipe-convert)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/apache/opennlp/master/LICENSE)
+
 This module implements several scripts to do corpus format conversions usually required to train
 or to evaluate IXA pipes models (http://ixa2.si.ehu.es/ixa-pipes).
 
