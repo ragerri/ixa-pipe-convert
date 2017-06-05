@@ -330,7 +330,7 @@ public class CLI {
     }
     
     public void loadMarkytParameters() {
-      this.absaParser.addArgument("-l", "--language")
+      this.markytParser.addArgument("-l", "--language")
       .choices("en", "es")
       .required(true)
       .help("Choose a language.");
