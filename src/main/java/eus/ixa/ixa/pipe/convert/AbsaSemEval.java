@@ -165,7 +165,7 @@ public class AbsaSemEval {
    * @param kaf the KAFDocument
    * @return the list of all WF ids in the terms layer
    */
-  private static List<String> getWFIdsFromTerms(List<Term> terms) {
+  public static List<String> getWFIdsFromTerms(List<Term> terms) {
     List<String> wfTermIds = new ArrayList<>();
     for (int i = 0; i < terms.size(); i++) {
       List<WF> sentTerms = terms.get(i).getWFs();
@@ -183,7 +183,7 @@ public class AbsaSemEval {
    * @param termWfIds all the terms in the document
    * @return true or false
    */
-  private static boolean checkTermsRefsIntegrity(List<String> wfIds,
+  public static boolean checkTermsRefsIntegrity(List<String> wfIds,
       List<String> termWfIds) {
     for (int i = 0; i < wfIds.size(); i++) {
       if (!termWfIds.contains(wfIds.get(i))) {
@@ -496,7 +496,7 @@ public class AbsaSemEval {
     breader.close();
   }
   
-  private static List<List<Token>> tokenizeSentence(String sentString, String language) {
+  public static List<List<Token>> tokenizeSentence(String sentString, String language) {
     RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
         setTokenizeProperties(language));
     List<String> sentenceList = new ArrayList<>();
@@ -506,7 +506,7 @@ public class AbsaSemEval {
     return tokens;
   }
 
-  private static Properties setTokenizeProperties(String language) {
+  public static Properties setTokenizeProperties(String language) {
     Properties annotateProperties = new Properties();
     annotateProperties.setProperty("language", language);
     annotateProperties.setProperty("normalize", "default");

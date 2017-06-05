@@ -69,6 +69,10 @@ public class CLI {
    */
   private final Subparser clusterParser;
   /**
+   * The parser to manage markyt conversions.
+   */
+  private final Subparser markytParser;
+  /**
    * The parser that manages treebank conversions.
    */
   private final Subparser treebankParser;
@@ -83,6 +87,7 @@ public class CLI {
   
   private static final String ABSA_CONVERSOR_NAME = "absa";
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
+  private static final String MARKYT_CONVERSOR_NAME = "markyt";
   private static final String TREEBANK_CONVERSOR_NAME = "treebank";
   private static final String NAF_CONVERSOR_NAME = "naf";
   private static final String OTHER_CONVERSOR_NAME = "convert";
@@ -95,6 +100,8 @@ public class CLI {
     loadAbsaParameters();
     clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME).help("Cluster lexicon conversion functions.");
     loadClusterParameters();
+    markytParser = subParsers.addParser(MARKYT_CONVERSOR_NAME).help("Markyt conversion functions.\n");
+    loadMarkytParameters();
     treebankParser = subParsers.addParser(TREEBANK_CONVERSOR_NAME).help("Treebank conversion functions.");
     loadTreebankParameters();
     nafParser = subParsers.addParser(NAF_CONVERSOR_NAME).help("NAF to other formats conversion functions.");
@@ -131,6 +138,9 @@ public class CLI {
         case CLUSTER_CONVERSOR_NAME:
           cluster();
           break;
+        case MARKYT_CONVERSOR_NAME:
+          markyt();
+          break;
         case TREEBANK_CONVERSOR_NAME:
           treebank();
           break;
@@ -144,7 +154,7 @@ public class CLI {
       } catch (final ArgumentParserException e) {
         parser.handleError(e);
         System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-            + "-exec.jar (absa|cluster|treebank|naf|convert) -help for details");
+            + "-exec.jar (absa|cluster|markyt|treebank|naf|convert) -help for details");
         System.exit(1);
       }
     }
@@ -204,6 +214,26 @@ public class CLI {
       else if (parsedArguments.getString("serializeLemmaDictionary") != null) {
         Path lemmaDict = Paths.get(parsedArguments.getString("serializeLemmaDictionary"));
         SerializeResources.serializeLemmaDictionary(lemmaDict);
+      }
+    }
+    
+    public final void markyt() throws IOException {
+      String language = parsedArguments.getString("language");
+      if (parsedArguments.get("markytToCoNLL2002") != null) {
+        String docName = parsedArguments.getString("markytToCoNLL2002");
+        String entitiesFile = parsedArguments.getString("entities");
+        String conllFile = MarkytFormat.markytToCoNLL2002(docName, entitiesFile, language);
+        System.out.print(conllFile);
+      }
+      else if (parsedArguments.get("absa2015ToWFs") != null) {
+        String inputFile = parsedArguments.getString("absa2015ToWFs");
+        String kafString = AbsaSemEval.absa2015ToWFs(inputFile, language);
+        System.out.print(kafString);
+      }
+      else if (parsedArguments.get("nafToAbsa2015") != null) {
+        String inputNAF = parsedArguments.getString("nafToAbsa2015");
+        String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
+        System.out.print(xmlFile);
       }
     }
     
@@ -297,6 +327,17 @@ public class CLI {
       clusterParser.addArgument("--lowercase")
           .action(Arguments.storeTrue())
           .help("Lowercase input text.\n");
+    }
+    
+    public void loadMarkytParameters() {
+      this.absaParser.addArgument("-l", "--language")
+      .choices("en", "es")
+      .required(true)
+      .help("Choose a language.");
+      markytParser.addArgument("--markytToCoNLL2002").help("Document file to convert Markyt to CoNLL 2002 format.\n");
+      markytParser.addArgument("--entities").help("Entities file to convert Markyt to CoNLL 2002 format.");
+      markytParser.addArgument("--markytToWFs").help("Convert Markyt document file format to tokenized WF NAF layer.\n");
+      markytParser.addArgument("--nafTomarkyt").help("Convert NAF containing entities into Markyt prediction format.\n");
     }
     
     public void loadTreebankParameters() {
