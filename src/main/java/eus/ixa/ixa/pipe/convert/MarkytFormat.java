@@ -5,7 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.Entity;
@@ -17,104 +22,170 @@ public class MarkytFormat {
 
   private MarkytFormat() {
   }
-  
-  private static void markytToNAFNER(KAFDocument kaf, String docName, String entitiesFile, String language) throws IOException {
-    //reading the document file
+
+  private static void markytToNAFNER(KAFDocument kaf, String docName,
+      String entitiesFile, String language) throws IOException {
+    //100005->T#63#64#GLOBAL
+    ListMultimap<String, String> entitiesMap = getEntitiesMap(entitiesFile);
+    // reading the document file
     List<String> docs = Files.readAllLines(Paths.get(docName));
-      //naf sentence counter
-      int counter = 1;
-      for (String doc : docs) {
-        String[] docArray = doc.split("\t");
-        List<Integer> wfFromOffsets = new ArrayList<>();
-        List<Integer> wfToOffsets = new ArrayList<>();
-        List<WF> sentWFs = new ArrayList<>();
-        List<Term> sentTerms = new ArrayList<>();
-        //sentence id and original text
-        String sentId = docArray[0];
-        String lang = docArray[1];
-        String titleString = docArray[2];
-        String abstractString = docArray[3];
-        
-        //the list contains just one list of tokens
-        List<List<Token>> tokenizedTitle = AbsaSemEval.tokenizeSentence(titleString, language);
-        List<List<Token>> tokenizedAbstract = AbsaSemEval.tokenizeSentence(abstractString, language);
-        for (List<Token> sentence : tokenizedTitle) {
-          for (Token token : sentence) {
-            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
-                counter);
-            int toOffset = wf.getOffset() + wf.getLength();
-            System.err.println("-> Title Offsets: " + wf.getOffset() + ":" + toOffset);
-            wf.setXpath(sentId + "#" + lang + "#" + "T");
-            final List<WF> wfTarget = new ArrayList<WF>();
-            wfTarget.add(wf);
-            wfFromOffsets.add(wf.getOffset());
-            wfToOffsets.add(wf.getOffset() + wf.getLength());
-            sentWFs.add(wf);
-            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
-            term.setPos("O");
-            term.setLemma(token.getTokenValue());
-            sentTerms.add(term);
-          }
+    // naf sentence counter
+    int counter = 1;
+    for (String doc : docs) {
+      String[] docArray = doc.split("\t");
+      List<Integer> wfFromOffsetsTitle = new ArrayList<>();
+      List<Integer> wfToOffsetsTitle = new ArrayList<>();
+      List<Integer> wfFromOffsetsAbstract = new ArrayList<>();
+      List<Integer> wfToOffsetsAbstract = new ArrayList<>();
+      List<WF> sentWFs = new ArrayList<>();
+      List<Term> sentTerms = new ArrayList<>();
+      // docId and original text
+      String docId = docArray[0];
+      String titleString = docArray[2];
+      String abstractString = docArray[3];
+      
+      List<List<Token>> tokenizedTitle = StringUtils
+          .tokenizeSentence(titleString, language);
+      // adding tokens from Title
+      for (List<Token> sentence : tokenizedTitle) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          int toOffset = wf.getOffset() + wf.getLength();
+          wf.setXpath(docId + "#" + "T");
+          final List<WF> wfTarget = new ArrayList<WF>();
+          wfTarget.add(wf);
+          wfFromOffsetsTitle.add(wf.getOffset());
+          wfToOffsetsTitle.add(toOffset);
+          sentWFs.add(wf);
+          Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+          term.setPos("O");
+          term.setLemma(token.getTokenValue());
+          sentTerms.add(term);
         }
-        for (List<Token> sentence : tokenizedAbstract) {
-          for (Token token : sentence) {
-            WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(), counter);
-            int toOffset = wf.getOffset() + wf.getLength();
-            System.err.println("-> Abstract Offsets: " + wf.getOffset() + ":" + toOffset);
-            wf.setXpath(sentId + "#" + lang + "#" + "A");
-            final List<WF> wfTarget = new ArrayList<WF>();
-            wfTarget.add(wf);
-            wfFromOffsets.add(wf.getOffset());
-            wfToOffsets.add(wf.getOffset() + wf.getLength());
-            sentWFs.add(wf);
-            Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
-            term.setPos("O");
-            term.setLemma(token.getTokenValue());
-            sentTerms.add(term);
-          }
+      }
+      //update the NAF sentence counter after each title
+      counter++;
+      List<List<Token>> tokenizedAbstract = StringUtils
+          .tokenizeDocument(abstractString, language);
+      // adding tokens from Abstract
+      for (List<Token> sentence : tokenizedAbstract) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          int toOffset = wf.getOffset() + wf.getLength();
+          wf.setXpath(docId + "#" + "A");
+          final List<WF> wfTarget = new ArrayList<WF>();
+          wfTarget.add(wf);
+          wfFromOffsetsAbstract.add(wf.getOffset());
+          wfToOffsetsAbstract.add(toOffset);
+          sentWFs.add(wf);
+          Term term = kaf.newTerm(KAFDocument.newWFSpan(wfTarget));
+          term.setPos("O");
+          term.setLemma(token.getTokenValue());
+          sentTerms.add(term);
         }
+        //update the NAF sentence counter after each sentence in abstract
         counter++;
-        String[] tokenIds = new String[sentWFs.size()];
-        for (int i = 0; i < sentWFs.size(); i++) {
-          tokenIds[i] = sentWFs.get(i).getId();
-        }
-        //going through every entity marked in the entities file
-        List<String> entitiesAnnotations = Files.readAllLines(Paths.get(entitiesFile));
-        for (String entity : entitiesAnnotations) {
-          String[] entityArray = entity.split("\t");
-          String type = entityArray[5];
-          String[] offsets = entityArray[3].split(":");
-          int fromOffset = Integer.parseInt(offsets[0]);
-          int toOffset = Integer.parseInt(offsets[1]);
+      }
+      String[] tokenIds = new String[sentWFs.size()];
+      for (int i = 0; i < sentWFs.size(); i++) {
+        tokenIds[i] = sentWFs.get(i).getId();
+      }
+      List<String> entityValues = entitiesMap.get(docId);
+      System.err.println("-> DocId: " + docId);
+      //System.err.println(entityValues);
+      for (String entity : entityValues) {
+        //100005->T#63#64#GLOBAL
+        String[] entityAttributes = entity.split("#");
+        //processing entities in Titles
+        if (entityAttributes[0].equalsIgnoreCase("T")) {
+          int fromOffset = Integer.parseInt(entityAttributes[1]);
+          int toOffset = Integer.parseInt(entityAttributes[2]);
+          System.err.println("-> TitlefromOffset: " + fromOffset);
+          System.err.println("-> TitletoOffset: " + toOffset);
           int startIndex = -1;
           int endIndex = -1;
-          for (int i = 0; i < wfFromOffsets.size(); i++) {
-            if (wfFromOffsets.get(i) == fromOffset) {
+          for (int i = 0; i < wfFromOffsetsTitle.size(); i++) {
+            if (wfFromOffsetsTitle.get(i) == fromOffset) {
               startIndex = i;
             }
           }
-          for (int i = 0; i < wfToOffsets.size(); i++) {
-            if (wfToOffsets.get(i) == toOffset) {
+          for (int i = 0; i < wfToOffsetsTitle.size(); i++) {
+            if (wfToOffsetsTitle.get(i) == toOffset) {
               //span is +1 with respect to the last token of the span
               endIndex = i + 1;
             }
           }
           List<String> wfIds = Arrays
               .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = AbsaSemEval.getWFIdsFromTerms(sentTerms);
-          if (AbsaSemEval.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
             List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
             ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
             List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
             references.add(neSpan);
             Entity neEntity = kaf.newEntity(references);
-            neEntity.setType(type);
+            neEntity.setType(entityAttributes[3]);
+          }
+        }//processing entities in Abstract
+          else if (entityAttributes[0].equalsIgnoreCase("A")) {
+          int fromOffset = Integer.parseInt(entityAttributes[1]);
+          int toOffset = Integer.parseInt(entityAttributes[2]);
+          System.err.println("-> AbstractfromOffset: " + fromOffset);
+          System.err.println("-> AbstracttoOffset: " + toOffset);
+          int startIndex = -1;
+          int endIndex = -1;
+          for (int i = 0; i < wfFromOffsetsAbstract.size(); i++) {
+            if (wfFromOffsetsAbstract.get(i) == fromOffset) {
+              startIndex = i + wfFromOffsetsTitle.size();
+              //System.err.println("-> startIndex: " + startIndex);
+            }
+          }
+          for (int i = 0; i < wfToOffsetsAbstract.size(); i++) {
+            if (wfToOffsetsAbstract.get(i) == toOffset) {
+              //span is +1 with respect to the last token of the span
+              endIndex = (i + 1) + wfToOffsetsTitle.size();
+              //System.err.println("-> endIndex: " + endIndex);
+            }
+          }
+          List<String> wfIds = Arrays
+              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+            references.add(neSpan);
+            Entity neEntity = kaf.newEntity(references);
+            neEntity.setType(entityAttributes[3]);
+          }
         }
       }
-      }//end of sentence
+    }// end of document
   }
-  
-  public static String markytToCoNLL2002(String docName, String entitiesFile, String language) throws IOException {
+
+  private static ListMultimap<String,String> getEntitiesMap(String entitiesFile) throws IOException {
+    ListMultimap<String, String> entitiesMap = ArrayListMultimap
+        .create();
+    //going through every entity marked in the entities file
+    List<String> entitiesAnnotations = Files
+        .readAllLines(Paths.get(entitiesFile));
+    for (String entity : entitiesAnnotations) {
+      String[] entityArray = entity.split("\t");
+      String entityDocId = entityArray[0];
+      String docType = entityArray[2];
+      String type = entityArray[5];
+      String[] offsets = entityArray[3].split(":");
+      //100005->T#63#64#GLOBAL
+      String valueMap = docType + "#" + offsets[0] + "#" + offsets[1] + "#" + type;
+      entitiesMap.put(entityDocId, valueMap);
+    }
+    return entitiesMap;
+  }
+
+  public static String markytToCoNLL2002(String docName, String entitiesFile,
+      String language) throws IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     markytToNAFNER(kaf, docName, entitiesFile, language);
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);

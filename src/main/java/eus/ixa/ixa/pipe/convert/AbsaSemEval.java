@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.jdom2.Document;
@@ -42,7 +41,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
@@ -82,7 +80,7 @@ public class AbsaSemEval {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
         //the list contains just one list of tokens
-        List<List<Token>> segmentedSentence = tokenizeSentence(sentString, language);
+        List<List<Token>> segmentedSentence = StringUtils.tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentence) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -135,8 +133,8 @@ public class AbsaSemEval {
               }
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-              List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
-              if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+              if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
                 List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
                 ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
                 List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
@@ -159,39 +157,7 @@ public class AbsaSemEval {
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
-  
-  /**
-   * Get all the WF ids for the terms contained in the KAFDocument.
-   * @param kaf the KAFDocument
-   * @return the list of all WF ids in the terms layer
-   */
-  public static List<String> getWFIdsFromTerms(List<Term> terms) {
-    List<String> wfTermIds = new ArrayList<>();
-    for (int i = 0; i < terms.size(); i++) {
-      List<WF> sentTerms = terms.get(i).getWFs();
-      for (WF form : sentTerms) {
-        wfTermIds.add(form.getId());
-      }
-    }
-    return wfTermIds;
-  }
-  
-  /**
-   * Check that the references from the entity spans are
-   * actually contained in the term ids.
-   * @param wfIds the worform ids corresponding to the Term span
-   * @param termWfIds all the terms in the document
-   * @return true or false
-   */
-  public static boolean checkTermsRefsIntegrity(List<String> wfIds,
-      List<String> termWfIds) {
-    for (int i = 0; i < wfIds.size(); i++) {
-      if (!termWfIds.contains(wfIds.get(i))) {
-        return false;
-      }
-    }
-    return true;
-  }
+ 
 
   public static String absa2015ToWFs(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
@@ -207,7 +173,7 @@ public class AbsaSemEval {
       for (Element sent : sentences) {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
-        List<List<Token>> segmentedSentences = tokenizeSentence(sentString, language);
+        List<List<Token>> segmentedSentences = StringUtils.tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentences) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -245,7 +211,7 @@ public class AbsaSemEval {
         Integer sentNumber = sent.get(0).getSent();
         
         //getting text element from word forms in NAF
-        String textString = getSentenceStringFromWFs(sent);
+        String textString = NAFUtils.getSentenceStringFromWFs(sent);
         Element sentenceElem = new Element("sentence");
         sentenceElem.setAttribute("id", sentId);
         Element textElem = new Element("text");
@@ -317,13 +283,7 @@ public class AbsaSemEval {
     return reviewIds;
   }
   
-  private static String getSentenceStringFromWFs(List<WF> sent) {
-    StringBuilder sb = new StringBuilder();
-    for (WF wf : sent) {
-      sb.append(wf.getForm()).append(" ");
-    }
-    return sb.toString().trim();
-  }
+ 
 
   private static void absa2014ToNAFNER(KAFDocument kaf, String fileName, String language) {
     //reading the ABSA xml file
@@ -346,7 +306,7 @@ public class AbsaSemEval {
         String sentId = sent.getAttributeValue("id");
         String sentString = sent.getChildText("text");
         //the list contains just one list of tokens
-        List<List<Token>> segmentedSentence = tokenizeSentence(sentString, language);
+        List<List<Token>> segmentedSentence = StringUtils.tokenizeSentence(sentString, language);
         for (List<Token> sentence : segmentedSentence) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
@@ -400,8 +360,8 @@ public class AbsaSemEval {
               }
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-              List<String> wfTermIds = getWFIdsFromTerms(sentTerms);
-              if (checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+              if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
                 List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
                 ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
                 List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
@@ -442,7 +402,7 @@ public class AbsaSemEval {
       Integer sentNumber = sent.get(0).getSent();
       
       //getting text element from WFs in NAF
-      String textString = getSentenceStringFromWFs(sent);
+      String textString = NAFUtils.getSentenceStringFromWFs(sent);
       Element sentenceElem = new Element("sentence");
       sentenceElem.setAttribute("id", sentId);
       Element textElem = new Element("text");
@@ -495,37 +455,4 @@ public class AbsaSemEval {
     }
     breader.close();
   }
-  
-  public static List<List<Token>> tokenizeSentence(String sentString, String language) {
-    RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
-        setTokenizeProperties(language));
-    List<String> sentenceList = new ArrayList<>();
-    sentenceList.add(sentString);
-    String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
-    List<List<Token>> tokens = tokenizer.tokenize(sentences);
-    return tokens;
-  }
-
-  public static Properties setTokenizeProperties(String language) {
-    Properties annotateProperties = new Properties();
-    annotateProperties.setProperty("language", language);
-    annotateProperties.setProperty("normalize", "default");
-    annotateProperties.setProperty("hardParagraph", "no");
-    annotateProperties.setProperty("untokenizable", "no");
-    return annotateProperties;
-  }
-
-  public static String getStringFromTokens(String sentString, String language) {
-
-    StringBuilder sb = new StringBuilder();
-    List<List<Token>> tokens = tokenizeSentence(sentString, language);
-    for (List<Token> sentence : tokens) {
-      for (Token tok : sentence) {
-        sb.append(tok.getTokenValue()).append(" ");
-      }
-    }
-    return sb.toString();
-  }
-  
-  
 }

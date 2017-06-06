@@ -20,9 +20,13 @@ package eus.ixa.ixa.pipe.convert;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import com.google.common.io.Files;
 
+import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
+import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
+import eus.ixa.ixa.pipe.ml.tok.Token;
 import opennlp.tools.util.Span;
 
 /**
@@ -175,6 +179,39 @@ public final class StringUtils {
       }
     }
     return fileList;
+  }
+  
+  public static List<List<Token>> tokenizeSentence(String sentString, String language) {
+    RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
+        setTokenizeProperties(language));
+    List<String> sentenceList = new ArrayList<>();
+    sentenceList.add(sentString);
+    String[] sentences = sentenceList.toArray(new String[sentenceList.size()]);
+    List<List<Token>> tokens = tokenizer.tokenize(sentences);
+    return tokens;
+  }
+  
+  /**
+   * Tokenize a document given in a one line string.
+   * @param docString the oneline document string
+   * @param language the language
+   * @return the tokenized sentences
+   */
+  public static List<List<Token>> tokenizeDocument(String docString, String language) {
+    RuleBasedSegmenter segmenter = new RuleBasedSegmenter(docString, setTokenizeProperties(language));
+    RuleBasedTokenizer toker = new RuleBasedTokenizer(docString, setTokenizeProperties(language));
+    String[] sentences = segmenter.segmentSentence();
+    List<List<Token>> tokens = toker.tokenize(sentences);
+    return tokens;
+  }
+
+  public static Properties setTokenizeProperties(String language) {
+    Properties annotateProperties = new Properties();
+    annotateProperties.setProperty("language", language);
+    annotateProperties.setProperty("normalize", "default");
+    annotateProperties.setProperty("hardParagraph", "no");
+    annotateProperties.setProperty("untokenizable", "no");
+    return annotateProperties;
   }
 
 }
