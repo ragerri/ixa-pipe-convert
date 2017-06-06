@@ -34,6 +34,7 @@ public class MarkytFormat {
         String lang = docArray[1];
         String titleString = docArray[2];
         String abstractString = docArray[3];
+        
         //the list contains just one list of tokens
         List<List<Token>> tokenizedTitle = AbsaSemEval.tokenizeSentence(titleString, language);
         List<List<Token>> tokenizedAbstract = AbsaSemEval.tokenizeSentence(abstractString, language);
@@ -41,6 +42,8 @@ public class MarkytFormat {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
                 counter);
+            int toOffset = wf.getOffset() + wf.getLength();
+            System.err.println("-> Title Offsets: " + wf.getOffset() + ":" + toOffset);
             wf.setXpath(sentId + "#" + lang + "#" + "T");
             final List<WF> wfTarget = new ArrayList<WF>();
             wfTarget.add(wf);
@@ -56,6 +59,8 @@ public class MarkytFormat {
         for (List<Token> sentence : tokenizedAbstract) {
           for (Token token : sentence) {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(), counter);
+            int toOffset = wf.getOffset() + wf.getLength();
+            System.err.println("-> Abstract Offsets: " + wf.getOffset() + ":" + toOffset);
             wf.setXpath(sentId + "#" + lang + "#" + "A");
             final List<WF> wfTarget = new ArrayList<WF>();
             wfTarget.add(wf);
