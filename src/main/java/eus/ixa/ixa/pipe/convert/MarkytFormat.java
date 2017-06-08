@@ -5,9 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -23,7 +21,7 @@ public class MarkytFormat {
   private MarkytFormat() {
   }
 
-  private static void markytToNAFNER(KAFDocument kaf, String docName,
+  private static void barrToNAFNER(KAFDocument kaf, String docName,
       String entitiesFile, String language) throws IOException {
     //100005->T#63#64#GLOBAL
     ListMultimap<String, String> entitiesMap = getEntitiesMap(entitiesFile);
@@ -184,10 +182,10 @@ public class MarkytFormat {
     return entitiesMap;
   }
 
-  public static String markytToCoNLL2002(String docName, String entitiesFile,
+  public static String barrToCoNLL2002(String docName, String entitiesFile,
       String language) throws IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    markytToNAFNER(kaf, docName, entitiesFile, language);
+    barrToNAFNER(kaf, docName, entitiesFile, language);
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
