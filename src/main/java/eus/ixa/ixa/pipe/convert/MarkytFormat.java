@@ -100,8 +100,8 @@ public class MarkytFormat {
         if (entityAttributes[0].equalsIgnoreCase("T")) {
           int fromOffset = Integer.parseInt(entityAttributes[1]);
           int toOffset = Integer.parseInt(entityAttributes[2]);
-          System.err.println("-> TitlefromOffset: " + fromOffset);
-          System.err.println("-> TitletoOffset: " + toOffset);
+          //System.err.println("-> TitlefromOffset: " + fromOffset);
+          //System.err.println("-> TitletoOffset: " + toOffset);
           int startIndex = -1;
           int endIndex = -1;
           for (int i = 0; i < wfFromOffsetsTitle.size(); i++) {
@@ -130,8 +130,8 @@ public class MarkytFormat {
           else if (entityAttributes[0].equalsIgnoreCase("A")) {
           int fromOffset = Integer.parseInt(entityAttributes[1]);
           int toOffset = Integer.parseInt(entityAttributes[2]);
-          System.err.println("-> AbstractfromOffset: " + fromOffset);
-          System.err.println("-> AbstracttoOffset: " + toOffset);
+          //System.err.println("-> AbstractfromOffset: " + fromOffset);
+          //System.err.println("-> AbstracttoOffset: " + toOffset);
           int startIndex = -1;
           int endIndex = -1;
           for (int i = 0; i < wfFromOffsetsAbstract.size(); i++) {
@@ -147,6 +147,8 @@ public class MarkytFormat {
               //System.err.println("-> endIndex: " + endIndex);
             }
           }
+          //TODO have condition that indexes are not -1 to create
+          //a corpus with less entities but without manual intervention
           List<String> wfIds = Arrays
               .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
           List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
@@ -186,6 +188,7 @@ public class MarkytFormat {
       String language) throws IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     barrToNAFNER(kaf, docName, entitiesFile, language);
+    //System.out.println(kaf.toString());
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
