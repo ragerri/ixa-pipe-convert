@@ -115,16 +115,19 @@ public class MarkytFormat {
               endIndex = i + 1;
             }
           }
-          List<String> wfIds = Arrays
-              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
-          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
-            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
-            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
-            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
-            references.add(neSpan);
-            Entity neEntity = kaf.newEntity(references);
-            neEntity.setType(entityAttributes[3]);
+          //TODO remove this condition to correct manually offsets
+          if (startIndex != -1 && endIndex != -1) {
+            List<String> wfIds = Arrays
+                .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+            List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+            if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+              ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+              List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+              references.add(neSpan);
+              Entity neEntity = kaf.newEntity(references);
+              neEntity.setType(entityAttributes[3]);
+            }
           }
         }//processing entities in Abstract
           else if (entityAttributes[0].equalsIgnoreCase("A")) {
@@ -147,16 +150,19 @@ public class MarkytFormat {
               //System.err.println("-> endIndex: " + endIndex);
             }
           }
-          List<String> wfIds = Arrays
-              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
-          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
-            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
-            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
-            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
-            references.add(neSpan);
-            Entity neEntity = kaf.newEntity(references);
-            neEntity.setType(entityAttributes[3]);
+          //TODO remove this condition to correct offsets manually
+          if (startIndex != -1 && endIndex != -1) {
+            List<String> wfIds = Arrays
+                .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+            List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+            if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+              ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+              List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+              references.add(neSpan);
+              Entity neEntity = kaf.newEntity(references);
+              neEntity.setType(entityAttributes[3]);
+            }
           }
         }
       }
