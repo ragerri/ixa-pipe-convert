@@ -2,6 +2,7 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -196,4 +197,70 @@ public class MarkytFormat {
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
-}
+  
+  public static String barrToWFs(String docName, String language) throws IOException {
+    KAFDocument kaf = new KAFDocument("es", "v1.naf");
+    // reading the document file
+    List<String> docs = Files.readAllLines(Paths.get(docName));
+    // naf sentence counter
+    int counter = 1;
+    for (String doc : docs) {
+      String[] docArray = doc.split("\t");
+      // docId and original text
+      String docId = docArray[0];
+      String titleString = docArray[2];
+      String abstractString = docArray[3];
+      
+      List<List<Token>> tokenizedTitle = StringUtils
+          .tokenizeSentence(titleString, language);
+      // adding tokens from Title
+      for (List<Token> sentence : tokenizedTitle) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          wf.setXpath(docId + "#" + "T");
+        }
+      }
+      //update the NAF sentence counter after each title
+      counter++;
+      List<List<Token>> tokenizedAbstract = StringUtils
+          .tokenizeDocument(abstractString, language);
+      // adding tokens from Abstract
+      for (List<Token> sentence : tokenizedAbstract) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          wf.setXpath(docId + "#" + "A");
+        }
+        //update the NAF sentence counter after each sentence in abstract
+        counter++;
+      }
+    }
+    return kaf.toString();
+  }
+  
+  public static String nafToBARREntities(String inputNAF) throws IOException {
+    //Document        Language        Section Offsets Annotation_text Type
+    //100005  es      T       63:67   PCEA    GLOBAL
+    StringBuilder sb = new StringBuilder();
+    Path kafPath = Paths.get(inputNAF);
+    KAFDocument kaf = KAFDocument.createFromFile(kafPath.toFile());
+    List<Entity> entities = kaf.getEntities();
+    for (Entity entity : entities) {
+      String type = entity.getType();
+      String annotation = entity.getStr();
+      int fromOffset = entity.getTerms().get(0).getWFs().get(0).getOffset();
+      List<WF> targetWFs = entity.getTerms().get(entity.getTerms().size() - 1).getWFs();
+      int toOffset = targetWFs.get(targetWFs.size() - 1).getOffset() + targetWFs.get(targetWFs.size() - 1).getLength();
+      String offsets = Integer.toString(fromOffset) + ":" + Integer.toString(toOffset);
+      //100005#T
+      String xpath = entity.getTerms().get(0).getWFs().get(0).getXpath();
+      String[] xpathElems = xpath.split("#");
+      String section = xpathElems[1];
+      String document = xpathElems[0];
+      String language = kaf.getLang();
+      sb.append(document).append("\t").append(language).append("\t").append(section).append("\t").append(offsets).append("\t").append(annotation).append("\t").append(type).append("\n");
+    }
+    return sb.toString().trim();
+  }
+} 
