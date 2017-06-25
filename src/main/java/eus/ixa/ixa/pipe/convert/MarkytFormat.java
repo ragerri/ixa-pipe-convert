@@ -240,8 +240,8 @@ public class MarkytFormat {
   }
   
   public static String nafToBARREntities(String inputNAF) throws IOException {
-    //Document        Language        Section Offsets Annotation_text Type
-    //100005  es      T       63:67   PCEA    GLOBAL
+    //DOCUMENT_ID     SECTION INIT    END     ANNOTATED_TEXT  TYPE
+    //72280   A       207     211     TDAH    SHORT
     StringBuilder sb = new StringBuilder();
     Path kafPath = Paths.get(inputNAF);
     KAFDocument kaf = KAFDocument.createFromFile(kafPath.toFile());
@@ -252,14 +252,12 @@ public class MarkytFormat {
       int fromOffset = entity.getTerms().get(0).getWFs().get(0).getOffset();
       List<WF> targetWFs = entity.getTerms().get(entity.getTerms().size() - 1).getWFs();
       int toOffset = targetWFs.get(targetWFs.size() - 1).getOffset() + targetWFs.get(targetWFs.size() - 1).getLength();
-      String offsets = Integer.toString(fromOffset) + ":" + Integer.toString(toOffset);
       //100005#T
       String xpath = entity.getTerms().get(0).getWFs().get(0).getXpath();
       String[] xpathElems = xpath.split("#");
       String section = xpathElems[1];
       String document = xpathElems[0];
-      String language = kaf.getLang();
-      sb.append(document).append("\t").append(language).append("\t").append(section).append("\t").append(offsets).append("\t").append(annotation).append("\t").append(type).append("\n");
+      sb.append(document).append("\t").append(section).append("\t").append(fromOffset).append("\t").append(toOffset).append("\t").append(annotation).append("\t").append(type).append("\n");
     }
     return sb.toString().trim();
   }
