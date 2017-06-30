@@ -274,7 +274,7 @@ public class ConllUtils {
   /**
    * Enumeration class for CoNLL 2003 BIO format
    */
-  private static enum BIO {
+  public static enum BIO {
     BEGIN("B-"), IN("I-"), OUT("O");
     String tag;
 
