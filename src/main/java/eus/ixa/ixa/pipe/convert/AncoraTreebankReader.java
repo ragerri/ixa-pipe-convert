@@ -14,7 +14,6 @@
    limitations under the License.
  */
 
-
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
@@ -39,32 +38,36 @@ import org.xml.sax.helpers.DefaultHandler;
  * formatted document:
  * 
  * <ol>
- * <li> The first if statement in the startElement function filters the 
- *      elements/constituents not to be used to construct the Penn Treebank parse tree.
- * <li> The startElement function also normalizes ( and ) with -LRB- and -RRB- following
- *      Penn Treebank conventions. 
- * <li> The getTrees() function prints the Penn Treebank formatted Ancora trees. 
- *      IMPORTANT: 
- *    <ol>
- *      <li>these trees will contain ancora elements with "elliptic" and "missing"
- *      attributes (in ancora 2.0 they are all SN) which in Penn Treebank format create
- *      empty parse trees such as (SN). These elements need to be removed from the output
- *      of getTrees() with a regexp such as "\\(\\SN\\)". Also remove doubles spaces to 
- *      make sure the tree is correctly formatted.
- *      <li>The trees also contain <sentence title=yes elements, which create empty 
- *          (SENTENCE ) parse trees. These are removed using the regexp "\\(SENTENCE \\)\n
- *    </ol>
- * <li> the endElement adds a closing bracket ) for each constituent used in startElement
- *      except for SENTENCE, which being the last bracket of the tree, is added a \n to separate
- *      full sentence trees.
- * <li> Corpus typos Ancora 2.0:
- *     <ol>
- *     <li>3LB-CAST/a15-5.tbf.xml, line 1015 pos=fpa added.
- *     <li>CESS-CAST-A/12432_20000416.tbf.xml line 1631 pos=fpt added.
- *     <ol>CESS-CAST-P/132_20010301.tbf.xml line 1748 pos=fpt added.
- *     <ol>CESS-CAST-P/179_20010401.tbf.xml line 1069 pos=fpt added.
+ * <li>The first if statement in the startElement function filters the
+ * elements/constituents not to be used to construct the Penn Treebank parse
+ * tree.
+ * <li>The startElement function also normalizes ( and ) with -LRB- and -RRB-
+ * following Penn Treebank conventions.
+ * <li>The getTrees() function prints the Penn Treebank formatted Ancora trees.
+ * IMPORTANT:
+ * <ol>
+ * <li>these trees will contain ancora elements with "elliptic" and "missing"
+ * attributes (in ancora 2.0 they are all SN) which in Penn Treebank format
+ * create empty parse trees such as (SN). These elements need to be removed from
+ * the output of getTrees() with a regexp such as "\\(\\SN\\)". Also remove
+ * doubles spaces to make sure the tree is correctly formatted.
+ * <li>The trees also contain <sentence title=yes elements, which create empty
+ * (SENTENCE ) parse trees. These are removed using the regexp "\\(SENTENCE
+ * \\)\n
  * </ol>
- *       
+ * <li>the endElement adds a closing bracket ) for each constituent used in
+ * startElement except for SENTENCE, which being the last bracket of the tree,
+ * is added a \n to separate full sentence trees.
+ * <li>Corpus typos Ancora 2.0:
+ * <ol>
+ * <li>3LB-CAST/a15-5.tbf.xml, line 1015 pos=fpa added.
+ * <li>CESS-CAST-A/12432_20000416.tbf.xml line 1631 pos=fpt added.
+ * <ol>
+ * CESS-CAST-P/132_20010301.tbf.xml line 1748 pos=fpt added.
+ * <ol>
+ * CESS-CAST-P/179_20010401.tbf.xml line 1069 pos=fpt added.
+ * </ol>
+ * 
  * @author ragerri
  * @version 2014-02-25
  *
@@ -72,7 +75,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class AncoraTreebankReader extends DefaultHandler {
 
   List<String> constituents = new ArrayList<String>();
-  
+
   /**
    * Process the ancora constituent XML annotation into Penn Treebank bracketing
    * style.
@@ -87,8 +90,8 @@ public class AncoraTreebankReader extends DefaultHandler {
     String filteredTrees = null;
     if (Files.isRegularFile(inXML)) {
       Path outfile = Paths.get(inXML.toString() + ".th");
-      System.err.println(">> Wrote XML ancora file to Penn Treebank in "
-          + outfile);
+      System.err
+          .println(">> Wrote XML ancora file to Penn Treebank in " + outfile);
       SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
       SAXParser saxParser;
       try {
@@ -124,37 +127,36 @@ public class AncoraTreebankReader extends DefaultHandler {
    * @throws IOException
    *           if io problems
    */
-  public static void processAncoraConstituentXMLCorpus(Path dir) throws IOException {
+  public static void processAncoraConstituentXMLCorpus(Path dir)
+      throws IOException {
     // process one file
     if (Files.isRegularFile(dir) && !dir.endsWith(".th")) {
       ancora2treebank(dir);
     } else {
       // recursively process directories
-        try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
-          for (Path file : filesDir) {
-            if (Files.isDirectory(file)) {
-              processAncoraConstituentXMLCorpus(file);
-            } else {
-              if (!file.endsWith(".th")) {
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            processAncoraConstituentXMLCorpus(file);
+          } else {
+            if (!file.endsWith(".th")) {
               ancora2treebank(file);
-              }
             }
           }
         }
+      }
     }
   }
 
-  
   /**
-   * Prints the trees. Note there are "elliptic" and 
-   * "missing" elements which create empty trees to be removed with a regexp
-   * such as "\\(\\S+\\)
+   * Prints the trees. Note there are "elliptic" and "missing" elements which
+   * create empty trees to be removed with a regexp such as "\\(\\S+\\)
    * 
    * @return the trees in penn treebank format
    */
-  public String getTrees() { 
+  public String getTrees() {
     StringBuilder sb = new StringBuilder();
-    for (String constituent : constituents) { 
+    for (String constituent : constituents) {
       sb.append(constituent);
     }
     return sb.toString();
@@ -166,30 +168,36 @@ public class AncoraTreebankReader extends DefaultHandler {
 
     // do not print/use these elements/constituents
     if (!qName.equals("article") && !qName.equals("spec")) {
- 
+
       if (attributes.getValue("pos") != null) {
-        if (attributes.getValue("wd").equalsIgnoreCase("(") || attributes.getValue("wd").equalsIgnoreCase(")")) {
-          
-          // normalize ( and ) with -LRB- and -RRB- following Penn Treebank conventions  
-          String wordForm = attributes.getValue("wd").replace("(", "-LRB-").replace(")", "-RRB-");
-          constituents.add(" (" + attributes.getValue("pos").toUpperCase() + " " + wordForm);
-        } 
-        else {
-          constituents.add(" (" + attributes.getValue("pos").toUpperCase() + " " + attributes.getValue("wd"));
+        if (attributes.getValue("wd").equalsIgnoreCase("(")
+            || attributes.getValue("wd").equalsIgnoreCase(")")) {
+
+          // normalize ( and ) with -LRB- and -RRB- following Penn Treebank
+          // conventions
+          String wordForm = attributes.getValue("wd").replace("(", "-LRB-")
+              .replace(")", "-RRB-");
+          constituents.add(
+              " (" + attributes.getValue("pos").toUpperCase() + " " + wordForm);
+        } else {
+          constituents.add(" (" + attributes.getValue("pos").toUpperCase() + " "
+              + attributes.getValue("wd"));
         }
-      } else if (attributes.getValue("pos") == null && attributes.getValue("wd") != null) {
-        constituents.add(" (" + qName.toUpperCase() + " " + attributes.getValue("wd"));
+      } else if (attributes.getValue("pos") == null
+          && attributes.getValue("wd") != null) {
+        constituents
+            .add(" (" + qName.toUpperCase() + " " + attributes.getValue("wd"));
       } else if (qName.equals("sentence")) {
         constituents.add("(" + qName.toUpperCase());
-      }
-      else {
+      } else {
         constituents.add(" (" + qName.toUpperCase());
       }
     }
   }
 
   // calls by the parser whenever '>' end tag is found in xml
-  public void endElement(String uri, String localName, String qName) throws SAXException {
+  public void endElement(String uri, String localName, String qName)
+      throws SAXException {
 
     // do not close or use these elements
     if (!qName.equals("article") && !qName.equals("spec")) {

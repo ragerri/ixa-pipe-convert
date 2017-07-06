@@ -19,7 +19,6 @@ public class ConllUtils {
 
   public ConllUtils() {
   }
-  
 
   public static void nafToCoNLL2002(Path dir) throws IOException {
     // process one file
@@ -37,11 +36,12 @@ public class ConllUtils {
             nafToCoNLL2002(file);
           } else {
             if (!file.endsWith(".conll02")) {
-            Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
-            KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
-            String outKAF = nafToCoNLLConvert2002(kaf);
-            Files.write(outfile, outKAF.getBytes(StandardCharsets.UTF_8));
-            System.err.println(">> Wrote CoNLL02 document to " + outfile);
+              Path outfile = Files
+                  .createFile(Paths.get(file.toString() + ".conll02"));
+              KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
+              String outKAF = nafToCoNLLConvert2002(kaf);
+              Files.write(outfile, outKAF.getBytes(StandardCharsets.UTF_8));
+              System.err.println(">> Wrote CoNLL02 document to " + outfile);
             }
           }
         }
@@ -77,18 +77,21 @@ public class ConllUtils {
 
       for (int i = 0; i < sentenceTerms.size(); i++) {
         Term thisTerm = sentenceTerms.get(i);
-        //System.err.println("--> thisterm: "  + thisTerm.getForm() + " " + thisTerm.getId());
+        // System.err.println("--> thisterm: " + thisTerm.getForm() + " " +
+        // thisTerm.getId());
 
         if (entityToSpanSize.get(thisTerm.getId()) != null) {
           int neSpanSize = entityToSpanSize.get(thisTerm.getId());
-          //System.err.println("--> neSpanSize:  " + neSpanSize);
+          // System.err.println("--> neSpanSize: " + neSpanSize);
           String neClass = entityToType.get(thisTerm.getId());
-          //String neType = convertToConLLTypes(neClass);
+          // String neType = convertToConLLTypes(neClass);
           if (neSpanSize > 1) {
             for (int j = 0; j < neSpanSize; j++) {
-              //System.err.println("-> sentenceTerms: " + sentenceTerms.size());
-              //System.err.println("-> indexes: " + (i + j));
-              //System.err.println("-> terms: " + sentenceTerms.get(i + j).getId());
+              // System.err.println("-> sentenceTerms: " +
+              // sentenceTerms.size());
+              // System.err.println("-> indexes: " + (i + j));
+              // System.err.println("-> terms: " + sentenceTerms.get(i +
+              // j).getId());
               thisTerm = sentenceTerms.get(i + j);
               sb.append(thisTerm.getForm());
               sb.append("\t");
@@ -148,11 +151,12 @@ public class ConllUtils {
             nafToCoNLL2003(file);
           } else {
             if (!file.endsWith(".conll03")) {
-            Path outfile = Files.createFile(Paths.get(file.toString() + ".conll02"));
-            KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
-            String outKAF = nafToCoNLLConvert2003(kaf);
-            Files.write(outfile, outKAF.getBytes());
-            System.err.println(">> Wrote CoNLL03 document to " + outfile);
+              Path outfile = Files
+                  .createFile(Paths.get(file.toString() + ".conll02"));
+              KAFDocument kaf = KAFDocument.createFromFile(file.toFile());
+              String outKAF = nafToCoNLLConvert2003(kaf);
+              Files.write(outfile, outKAF.getBytes());
+              System.err.println(">> Wrote CoNLL03 document to " + outfile);
             }
           }
         }
@@ -252,7 +256,7 @@ public class ConllUtils {
     }
     return sb.toString();
   }
-  
+
   /**
    * Convert Entity class annotation to CoNLL formats.
    * 
@@ -263,7 +267,8 @@ public class ConllUtils {
   public static String convertToConLLTypes(String neType) {
     String conllType = null;
     if (neType.startsWith("PER") || neType.startsWith("ORG")
-        || neType.startsWith("LOC") || neType.startsWith("GPE") || neType.length() == 3) {
+        || neType.startsWith("LOC") || neType.startsWith("GPE")
+        || neType.length() == 3) {
       conllType = neType.substring(0, 3);
     } else {
       conllType = neType;

@@ -51,7 +51,8 @@ public class DSRCCorpus {
       throws IOException, JDOMException {
     // process one file
     Path wordsFile = Paths.get(inputDir);
-    if (Files.isRegularFile(wordsFile) && wordsFile.toString().endsWith("words.xml")) {
+    if (Files.isRegularFile(wordsFile)
+        && wordsFile.toString().endsWith("words.xml")) {
       Path outFile = Files
           .createFile(Paths.get(wordsFile.toString() + ".conll02"));
       Path marksFile = Paths.get(wordsFile.toString().replace("_words.xml",
@@ -88,7 +89,7 @@ public class DSRCCorpus {
       throws JDOMException, IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     DSRCToNAFNER(kaf, wordsFile, markFile);
-    //System.err.println(kaf.toString());
+    // System.err.println(kaf.toString());
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
@@ -123,17 +124,18 @@ public class DSRCCorpus {
       if (endMatcher.matches()) {
         sentCounter++;
       }
-    }// end of processing words
-    
+    } // end of processing words
+
     String[] tokenIds = new String[sentWFs.size()];
     for (int i = 0; i < sentWFs.size(); i++) {
       tokenIds[i] = sentWFs.get(i).getId();
     }
-    //processing markables document in mmax opinion expression files
+    // processing markables document in mmax opinion expression files
     Document markDoc = sax.build(markablesDoc);
     XPathFactory markFactory = XPathFactory.instance();
     XPathExpression<Element> markExpr = markFactory.compile("//ns:markable",
-        Filters.element(), null, Namespace.getNamespace("ns", "www.eml.org/NameSpaces/OpinionExpression"));
+        Filters.element(), null, Namespace.getNamespace("ns",
+            "www.eml.org/NameSpaces/OpinionExpression"));
     List<Element> markables = markExpr.evaluate(markDoc);
     for (Element markable : markables) {
       if (markable.getAttributeValue("annotation_type")

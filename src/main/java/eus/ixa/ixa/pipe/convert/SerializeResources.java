@@ -33,30 +33,35 @@ import eus.ixa.ixa.pipe.ml.utils.IOUtils;
 import opennlp.tools.cmdline.CmdLineUtil;
 
 /**
-* Class to load and serialize ixa-pipes resources.
-* <ol>
-* <li> Brown clusters: word\tword_class\tprob http://metaoptimize.com/projects/wordreprs/ </li>
-* <li> Clark clusters: word\\s+word_class\\s+prob https://github.com/ninjin/clark_pos_induction </li>
-* <li> Word2Vec clusters: word\\s+word_class http://code.google.com/p/word2vec/ </li>
-* </ol>
-*
-* @author ragerri
-* @version 2016-07-11
-*/
+ * Class to load and serialize ixa-pipes resources.
+ * <ol>
+ * <li>Brown clusters: word\tword_class\tprob
+ * http://metaoptimize.com/projects/wordreprs/</li>
+ * <li>Clark clusters: word\\s+word_class\\s+prob
+ * https://github.com/ninjin/clark_pos_induction</li>
+ * <li>Word2Vec clusters: word\\s+word_class http://code.google.com/p/word2vec/
+ * </li>
+ * </ol>
+ *
+ * @author ragerri
+ * @version 2016-07-11
+ */
 public class SerializeResources {
-  
+
   private static final Pattern spacePattern = Pattern.compile(" ");
   private static final Pattern tabPattern = Pattern.compile("\t");
   /**
    * Turkish capital letter I with dot.
    */
-  public static final Pattern dotInsideI = Pattern.compile("\u0130", Pattern.UNICODE_CHARACTER_CLASS);
+  public static final Pattern dotInsideI = Pattern.compile("\u0130",
+      Pattern.UNICODE_CHARACTER_CLASS);
   public static final String SER_GZ = ".gz";
-  
+
   private SerializeResources() {
   }
-  
-  public static void serializeClusters(Path dir, boolean lowercase) throws IOException {
+
+  public static void serializeClusters(Path dir, boolean lowercase)
+      throws IOException {
     // process one file
     if (Files.isRegularFile(dir)) {
       serializeClusterFiles(dir, lowercase);
@@ -73,41 +78,47 @@ public class SerializeResources {
       }
     }
   }
-  
-  public static void serializeClusterFiles(Path clusterFile, boolean lowercase) throws IOException {
-    
+
+  public static void serializeClusterFiles(Path clusterFile, boolean lowercase)
+      throws IOException {
+
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
-    
+
     InputStream inputStream = CmdLineUtil.openInFile(clusterFile.toFile());
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(
+        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = spacePattern.split(line);
       if (lineArray.length == 3) {
-        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
+        String normalizedToken = dotInsideI.matcher(lineArray[0])
+            .replaceAll("i");
         if (lowercase) {
-          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+          tokenToClusterMap.put(normalizedToken.toLowerCase(),
+              lineArray[1].intern());
         } else {
           tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
         }
-      }
-      else if (lineArray.length == 2) {
-        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
+      } else if (lineArray.length == 2) {
+        String normalizedToken = dotInsideI.matcher(lineArray[0])
+            .replaceAll("i");
         if (lowercase) {
-          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[1].intern());
+          tokenToClusterMap.put(normalizedToken.toLowerCase(),
+              lineArray[1].intern());
         } else {
           tokenToClusterMap.put(normalizedToken, lineArray[1].intern());
         }
       }
     }
     String outputFile = clusterFile.toRealPath().toString() + SER_GZ;
-    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
+    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile,
+        IOUtils.SPACE_DELIMITER);
     System.err.println("-> Cluster serialized to " + outputFile);
     breader.close();
   }
-  
-  public static void serializeBrownClusters(Path dir, boolean lowercase) throws IOException {
+
+  public static void serializeBrownClusters(Path dir, boolean lowercase)
+      throws IOException {
     // process one file
     if (Files.isRegularFile(dir)) {
       serializeBrownClusterFiles(dir, lowercase);
@@ -124,52 +135,59 @@ public class SerializeResources {
       }
     }
   }
-  
-  public static void serializeBrownClusterFiles(Path clusterFile, boolean lowercase) throws NumberFormatException, IOException {
-    
+
+  public static void serializeBrownClusterFiles(Path clusterFile,
+      boolean lowercase) throws NumberFormatException, IOException {
+
     Map<String, String> tokenToClusterMap = new HashMap<String, String>();
     InputStream inputStream = CmdLineUtil.openInFile(clusterFile.toFile());
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(
+        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
       if (lineArray.length == 3) {
         int freq = Integer.parseInt(lineArray[2]);
-          if (freq > 5 ) {
-            String normalizedToken = dotInsideI.matcher(lineArray[1]).replaceAll("I");
-            if (lowercase) {
-              tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[0].intern());
-            } else {
-              tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
-            }
+        if (freq > 5) {
+          String normalizedToken = dotInsideI.matcher(lineArray[1])
+              .replaceAll("I");
+          if (lowercase) {
+            tokenToClusterMap.put(normalizedToken.toLowerCase(),
+                lineArray[0].intern());
+          } else {
+            tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
+          }
         }
-      }
-      else if (lineArray.length == 2) {
-        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("I");
+      } else if (lineArray.length == 2) {
+        String normalizedToken = dotInsideI.matcher(lineArray[0])
+            .replaceAll("I");
         if (lowercase) {
-          tokenToClusterMap.put(normalizedToken.toLowerCase(), lineArray[0].intern());
+          tokenToClusterMap.put(normalizedToken.toLowerCase(),
+              lineArray[0].intern());
         } else {
           tokenToClusterMap.put(normalizedToken, lineArray[0].intern());
         }
       }
     }
     String outputFile = clusterFile.toRealPath().toString() + SER_GZ;
-    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile, IOUtils.SPACE_DELIMITER);
+    IOUtils.writeClusterToFile(tokenToClusterMap, outputFile,
+        IOUtils.SPACE_DELIMITER);
     System.err.println("-> Cluster serialized to " + outputFile);
     breader.close();
   }
-  
-  public static void serializeEntityGazetteers(Path dictionaryFile) throws IOException {
+
+  public static void serializeEntityGazetteers(Path dictionaryFile)
+      throws IOException {
     Map<String, String> dictionary = new HashMap<String, String>();
     InputStream inputStream = CmdLineUtil.openInFile(dictionaryFile.toFile());
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(
+        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       String[] lineArray = tabPattern.split(line);
       if (lineArray.length == 2) {
-        String normalizedToken = dotInsideI.matcher(lineArray[0]).replaceAll("i");
+        String normalizedToken = dotInsideI.matcher(lineArray[0])
+            .replaceAll("i");
         dictionary.put(normalizedToken.toLowerCase(), lineArray[1].intern());
       } else {
         System.err.println(lineArray[0] + " is not well formed!");
@@ -180,24 +198,25 @@ public class SerializeResources {
     breader.close();
   }
 
-  public static void serializeLemmaDictionary(Path lemmaDict) throws IOException {
+  public static void serializeLemmaDictionary(Path lemmaDict)
+      throws IOException {
     Map<List<String>, String> dictMap = new HashMap<List<String>, String>();
     InputStream inputStream = CmdLineUtil.openInFile(lemmaDict.toFile());
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(
+        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
-      while ((line = breader.readLine()) != null) {
-        final String[] elems = tabPattern.split(line);
-        if (elems.length == 3) {
-          String normalizedToken = dotInsideI.matcher(elems[0]).replaceAll("I");
-          dictMap.put(Arrays.asList(normalizedToken, elems[2]), elems[1]);
-        } else {
-          System.err.println(elems[0] + " is not well formed!");
-        }
+    while ((line = breader.readLine()) != null) {
+      final String[] elems = tabPattern.split(line);
+      if (elems.length == 3) {
+        String normalizedToken = dotInsideI.matcher(elems[0]).replaceAll("I");
+        dictMap.put(Arrays.asList(normalizedToken, elems[2]), elems[1]);
+      } else {
+        System.err.println(elems[0] + " is not well formed!");
       }
-      String outputFile = lemmaDict.toString() + SER_GZ;
-      IOUtils.writeDictionaryLemmatizerToFile(dictMap, outputFile, IOUtils.TAB_DELIMITER);
-      breader.close();
+    }
+    String outputFile = lemmaDict.toString() + SER_GZ;
+    IOUtils.writeDictionaryLemmatizerToFile(dictMap, outputFile,
+        IOUtils.TAB_DELIMITER);
+    breader.close();
   }
 }
-

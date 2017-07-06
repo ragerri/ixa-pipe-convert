@@ -10,7 +10,7 @@ import java.util.List;
 import opennlp.tools.parser.Parse;
 
 public class PennTreebankUtils {
-  
+
   public PennTreebankUtils() {
   }
 
@@ -25,8 +25,10 @@ public class PennTreebankUtils {
   public static void treebank2tokens(Path treebankFile) throws IOException {
     // process one file
     if (Files.isRegularFile(treebankFile)) {
-      List<String> inputTrees = Files.readAllLines(treebankFile, StandardCharsets.UTF_8);
-      Path outfile = Files.createFile(Paths.get(treebankFile.toString() + ".tok"));
+      List<String> inputTrees = Files.readAllLines(treebankFile,
+          StandardCharsets.UTF_8);
+      Path outfile = Files
+          .createFile(Paths.get(treebankFile.toString() + ".tok"));
       String outFile = getTokensFromTree(inputTrees);
       Files.write(outfile, outFile.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote tokens to " + outfile);
@@ -93,8 +95,8 @@ public class PennTreebankUtils {
       Path outfile = Paths.get(treebankFile.toString() + ".pos");
       String outFile = getPreTerminals(inputTrees);
       Files.write(outfile, outFile.getBytes());
-      System.err.println(">> Wrote Apache OpenNLP POS training format to "
-          + outfile);
+      System.err
+          .println(">> Wrote Apache OpenNLP POS training format to " + outfile);
     } else {
       System.out.println("Please choose a valid file as input.");
       System.exit(1);
@@ -149,8 +151,10 @@ public class PennTreebankUtils {
    */
   public static void getCleanPennTrees(Path treebankFile) throws IOException {
     if (Files.isRegularFile(treebankFile)) {
-      List<String> inputTrees = Files.readAllLines(treebankFile, StandardCharsets.UTF_8);
-      Path outfile = Files.createFile(Paths.get(treebankFile.toString() + ".treeN"));
+      List<String> inputTrees = Files.readAllLines(treebankFile,
+          StandardCharsets.UTF_8);
+      Path outfile = Files
+          .createFile(Paths.get(treebankFile.toString() + ".treeN"));
       String outFile = normalizeParse(inputTrees);
       Files.write(outfile, outFile.getBytes(StandardCharsets.UTF_8));
       System.err.println(">> Wrote normalized parse to " + outfile);

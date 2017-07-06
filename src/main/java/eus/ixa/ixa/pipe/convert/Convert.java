@@ -50,7 +50,7 @@ import opennlp.tools.postag.POSDictionary;
  * 
  */
 public class Convert {
-  
+
   private Convert() {
   }
 
@@ -71,7 +71,7 @@ public class Convert {
     if (Files.isRegularFile(dir)) {
       removeEntityLayer(dir);
     } // process one file
-     else {
+    else {
       // recursively process directories
       try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
         for (Path file : filesDir) {
@@ -96,11 +96,12 @@ public class Convert {
   private static void removeEntityLayer(Path inFile) {
     KAFDocument kaf = null;
     try {
-      Path outfile = Files.createFile(Paths.get(inFile.toString() + ".tok.naf"));
+      Path outfile = Files
+          .createFile(Paths.get(inFile.toString() + ".tok.naf"));
       kaf = KAFDocument.createFromFile(inFile.toFile());
-      //kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
-      //kaf.removeLayer(Layer.coreferences); kaf.removeLayer(Layer.chunks);
-      //kaf.removeLayer(Layer.deps);
+      // kaf.removeLayer(Layer.entities); kaf.removeLayer(Layer.constituency);
+      // kaf.removeLayer(Layer.coreferences); kaf.removeLayer(Layer.chunks);
+      // kaf.removeLayer(Layer.deps);
       Files.write(outfile, kaf.toString().getBytes(StandardCharsets.UTF_8));
       System.err
           .println(">> Wrote KAF document without entities to " + outfile);
@@ -108,7 +109,7 @@ public class Convert {
       e.printStackTrace();
     }
   }
-  
+
   /**
    * Extract entities that contain a link to an external resource in NAF.
    * 
@@ -132,7 +133,7 @@ public class Convert {
           }
         }
       }
-    }      
+    }
   }
 
   /**
@@ -152,7 +153,7 @@ public class Convert {
     }
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
-      System.out.println(entity.getStr() + "\t" + entity.getType());        
+      System.out.println(entity.getStr() + "\t" + entity.getType());
     }
   }
 
@@ -210,10 +211,12 @@ public class Convert {
    * @throws IOException
    *           if io problems
    */
-  public static void createMonosemicDictionary(Path lemmaDict) throws IOException {
+  public static void createMonosemicDictionary(Path lemmaDict)
+      throws IOException {
     // process one file
     if (Files.isRegularFile(lemmaDict)) {
-      List<String> inputLines = Files.readAllLines(lemmaDict, StandardCharsets.UTF_8);
+      List<String> inputLines = Files.readAllLines(lemmaDict,
+          StandardCharsets.UTF_8);
       getMonosemicDict(inputLines);
     } else {
       System.out.println("Please choose a valid file as input.");
@@ -255,15 +258,15 @@ public class Convert {
   public static void convertLemmaToPOSDict(Path lemmaDict) throws IOException {
     // process one file
     if (Files.isRegularFile(lemmaDict)) {
-      List<String> inputLines = Files.readAllLines(lemmaDict, StandardCharsets.UTF_8);
+      List<String> inputLines = Files.readAllLines(lemmaDict,
+          StandardCharsets.UTF_8);
       Path outFile = Files.createFile(Paths.get(lemmaDict.toString() + ".xml"));
       POSDictionary posTagDict = getPOSTaggerDict(inputLines);
       OutputStream outputStream = Files.newOutputStream(outFile);
       posTagDict.serialize(outputStream);
       outputStream.close();
-      System.err
-          .println(">> Serialized Apache OpenNLP POSDictionary format to "
-              + outFile);
+      System.err.println(
+          ">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
     } else {
       System.out.println("Please choose a valid file as input.");
       System.exit(1);
@@ -321,9 +324,8 @@ public class Convert {
       OutputStream outputStream = Files.newOutputStream(outFile);
       posDict.serialize(outputStream);
       outputStream.close();
-      System.err
-          .println(">> Serialized Apache OpenNLP POSDictionary format to "
-              + outFile);
+      System.err.println(
+          ">> Serialized Apache OpenNLP POSDictionary format to " + outFile);
     } else {
       System.out.println("Please choose a valid files as input.");
       System.exit(1);
@@ -338,7 +340,8 @@ public class Convert {
    * @param tagDict
    *          the POSDictionary to which the lemma dictionary will be added
    */
-  private static void addPOSTaggerDict(List<String> inputLines, POSDictionary tagDict) {
+  private static void addPOSTaggerDict(List<String> inputLines,
+      POSDictionary tagDict) {
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
       String[] lineArray = line.split(" ");
@@ -384,8 +387,8 @@ public class Convert {
   private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
     InputStream inputStream = CmdLineUtil.openInFile(inFile.toFile());
-    BufferedReader breader = new BufferedReader(new InputStreamReader(
-        inputStream, Charset.forName("UTF-8")));
+    BufferedReader breader = new BufferedReader(
+        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
@@ -408,14 +411,16 @@ public class Convert {
       }
     }
     Path outfile = Files.createFile(Paths.get(inFile.toString() + ".clean"));
-    Files.write(outfile, precleantext.toString().getBytes(StandardCharsets.UTF_8));
+    Files.write(outfile,
+        precleantext.toString().getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote clean document to " + outfile);
     breader.close();
   }
-  
+
   /**
-   * Takes a text file and put the contents in a NAF document.
-   * It creates the WF elements.
+   * Takes a text file and put the contents in a NAF document. It creates the WF
+   * elements.
+   * 
    * @param inputFile
    * @throws IOException
    */
@@ -439,7 +444,7 @@ public class Convert {
           // TODO add offset
           final WF wf = kaf.newWF(0, token, noSents);
           wf.setPara(noParas);
-          //wf.setSent(noSents);
+          // wf.setSent(noSents);
         }
       }
     }

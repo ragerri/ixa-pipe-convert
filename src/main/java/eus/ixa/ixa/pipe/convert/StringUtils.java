@@ -16,7 +16,6 @@ package eus.ixa.ixa.pipe.convert;
    limitations under the License.
  */
 
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +61,9 @@ public final class StringUtils {
     int sentenceLength = tokens.length;
     List<Integer> neTokens = new ArrayList<Integer>();
     for (j = 0; j <= sentenceLength - patternLength; ++j) {
-      for (i = 0; i < patternLength && patternTokens[i].equalsIgnoreCase(tokens[i + j]); ++i);
+      for (i = 0; i < patternLength
+          && patternTokens[i].equalsIgnoreCase(tokens[i + j]); ++i)
+        ;
       if (i >= patternLength) {
         neTokens.add(j);
         neTokens.add(i + j);
@@ -89,7 +90,9 @@ public final class StringUtils {
     int sentenceLength = tokens.length;
     List<Integer> neTokens = new ArrayList<Integer>();
     for (j = 0; j <= sentenceLength - patternLength; ++j) {
-      for (i = 0; i < patternLength && patternTokens[i].equals(tokens[i + j]); ++i);
+      for (i = 0; i < patternLength
+          && patternTokens[i].equals(tokens[i + j]); ++i)
+        ;
       if (i >= patternLength) {
         neTokens.add(j);
         neTokens.add(i + j);
@@ -112,14 +115,16 @@ public final class StringUtils {
    */
   public static List<Integer> exactStringFinder(final String pattern,
       final String sentence) {
-    char[] patternArray = pattern.toCharArray(), sentenceArray = sentence
-        .toCharArray();
+    char[] patternArray = pattern.toCharArray(),
+        sentenceArray = sentence.toCharArray();
     int i, j;
     int patternLength = patternArray.length;
     int sentenceLength = sentenceArray.length;
     List<Integer> neChars = new ArrayList<Integer>();
     for (j = 0; j <= sentenceLength - patternLength; ++j) {
-      for (i = 0; i < patternLength && patternArray[i] == sentenceArray[i + j]; ++i);
+      for (i = 0; i < patternLength
+          && patternArray[i] == sentenceArray[i + j]; ++i)
+        ;
       if (i >= patternLength) {
         neChars.add(j);
         neChars.add(i + j);
@@ -163,7 +168,7 @@ public final class StringUtils {
     }
     return sb.toString().trim();
   }
-  
+
   /**
    * Recursively get every file in a directory and add them to a list.
    * 
@@ -180,8 +185,9 @@ public final class StringUtils {
     }
     return fileList;
   }
-  
-  public static List<List<Token>> tokenizeSentence(String sentString, String language) {
+
+  public static List<List<Token>> tokenizeSentence(String sentString,
+      String language) {
     RuleBasedTokenizer tokenizer = new RuleBasedTokenizer(sentString,
         setTokenizeProperties(language));
     List<String> sentenceList = new ArrayList<>();
@@ -190,16 +196,22 @@ public final class StringUtils {
     List<List<Token>> tokens = tokenizer.tokenize(sentences);
     return tokens;
   }
-  
+
   /**
    * Tokenize a document given in a one line string.
-   * @param docString the oneline document string
-   * @param language the language
+   * 
+   * @param docString
+   *          the oneline document string
+   * @param language
+   *          the language
    * @return the tokenized sentences
    */
-  public static List<List<Token>> tokenizeDocument(String docString, String language) {
-    RuleBasedSegmenter segmenter = new RuleBasedSegmenter(docString, setTokenizeProperties(language));
-    RuleBasedTokenizer toker = new RuleBasedTokenizer(docString, setTokenizeProperties(language));
+  public static List<List<Token>> tokenizeDocument(String docString,
+      String language) {
+    RuleBasedSegmenter segmenter = new RuleBasedSegmenter(docString,
+        setTokenizeProperties(language));
+    RuleBasedTokenizer toker = new RuleBasedTokenizer(docString,
+        setTokenizeProperties(language));
     String[] sentences = segmenter.segmentSentence();
     List<List<Token>> tokens = toker.tokenize(sentences);
     return tokens;
@@ -215,4 +227,3 @@ public final class StringUtils {
   }
 
 }
-

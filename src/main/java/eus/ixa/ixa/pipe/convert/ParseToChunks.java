@@ -16,8 +16,10 @@ public class ParseToChunks {
   }
 
   public static void parseToChunks(Path inFile) throws IOException {
-    final List<String> inputTrees = Files.readAllLines(inFile, StandardCharsets.UTF_8);
-    final Path outfile = Files.createFile(Paths.get(inFile.toString() + ".chunks"));
+    final List<String> inputTrees = Files.readAllLines(inFile,
+        StandardCharsets.UTF_8);
+    final Path outfile = Files
+        .createFile(Paths.get(inFile.toString() + ".chunks"));
     final String outTree = parseToChunks(inputTrees);
     Files.write(outfile, outTree.getBytes(StandardCharsets.UTF_8));
     System.err.println(">> Wrote chunks to " + outfile);
@@ -60,7 +62,7 @@ public class ParseToChunks {
         for (int i = 0; i < preds.size(); i++) {
           sb.append(toks.get(i)).append("\t").append(tags.get(i)).append("\t")
               .append(preds.get(i)).append("\n");
-        } 
+        }
       }
       sb.append("\n");
     }
