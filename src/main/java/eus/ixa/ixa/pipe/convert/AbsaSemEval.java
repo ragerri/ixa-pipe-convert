@@ -358,6 +358,7 @@ public class AbsaSemEval {
                   endIndex = i + 1;
                 }
               }
+              if (startIndex != -1 && endIndex != -1) {
               List<String> wfIds = Arrays
                   .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
               List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
@@ -368,6 +369,7 @@ public class AbsaSemEval {
                 references.add(neSpan);
                 Entity neEntity = kaf.newEntity(references);
                 neEntity.setType("term");
+              }
               }
           }
           }
