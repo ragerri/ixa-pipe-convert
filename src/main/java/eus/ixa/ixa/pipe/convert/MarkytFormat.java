@@ -2,12 +2,11 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -23,7 +22,7 @@ public class MarkytFormat {
   private MarkytFormat() {
   }
 
-  private static void markytToNAFNER(KAFDocument kaf, String docName,
+  private static void barrToNAFNER(KAFDocument kaf, String docName,
       String entitiesFile, String language) throws IOException {
     //100005->T#63#64#GLOBAL
     ListMultimap<String, String> entitiesMap = getEntitiesMap(entitiesFile);
@@ -102,8 +101,8 @@ public class MarkytFormat {
         if (entityAttributes[0].equalsIgnoreCase("T")) {
           int fromOffset = Integer.parseInt(entityAttributes[1]);
           int toOffset = Integer.parseInt(entityAttributes[2]);
-          System.err.println("-> TitlefromOffset: " + fromOffset);
-          System.err.println("-> TitletoOffset: " + toOffset);
+          //System.err.println("-> TitlefromOffset: " + fromOffset);
+          //System.err.println("-> TitletoOffset: " + toOffset);
           int startIndex = -1;
           int endIndex = -1;
           for (int i = 0; i < wfFromOffsetsTitle.size(); i++) {
@@ -117,23 +116,26 @@ public class MarkytFormat {
               endIndex = i + 1;
             }
           }
-          List<String> wfIds = Arrays
-              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
-          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
-            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
-            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
-            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
-            references.add(neSpan);
-            Entity neEntity = kaf.newEntity(references);
-            neEntity.setType(entityAttributes[3]);
+          //TODO remove this condition to correct manually offsets
+          if (startIndex != -1 && endIndex != -1) {
+            List<String> wfIds = Arrays
+                .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+            List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+            if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+              ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+              List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+              references.add(neSpan);
+              Entity neEntity = kaf.newEntity(references);
+              neEntity.setType(entityAttributes[3]);
+            }
           }
         }//processing entities in Abstract
           else if (entityAttributes[0].equalsIgnoreCase("A")) {
           int fromOffset = Integer.parseInt(entityAttributes[1]);
           int toOffset = Integer.parseInt(entityAttributes[2]);
-          System.err.println("-> AbstractfromOffset: " + fromOffset);
-          System.err.println("-> AbstracttoOffset: " + toOffset);
+          //System.err.println("-> AbstractfromOffset: " + fromOffset);
+          //System.err.println("-> AbstracttoOffset: " + toOffset);
           int startIndex = -1;
           int endIndex = -1;
           for (int i = 0; i < wfFromOffsetsAbstract.size(); i++) {
@@ -149,16 +151,19 @@ public class MarkytFormat {
               //System.err.println("-> endIndex: " + endIndex);
             }
           }
-          List<String> wfIds = Arrays
-              .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
-          List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
-          if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
-            List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
-            ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
-            List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
-            references.add(neSpan);
-            Entity neEntity = kaf.newEntity(references);
-            neEntity.setType(entityAttributes[3]);
+          //TODO remove this condition to correct offsets manually
+          if (startIndex != -1 && endIndex != -1) {
+            List<String> wfIds = Arrays
+                .asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex));
+            List<String> wfTermIds = NAFUtils.getWFIdsFromTerms(sentTerms);
+            if (NAFUtils.checkTermsRefsIntegrity(wfIds, wfTermIds)) {
+              List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
+              ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
+              List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+              references.add(neSpan);
+              Entity neEntity = kaf.newEntity(references);
+              neEntity.setType(entityAttributes[3]);
+            }
           }
         }
       }
@@ -184,11 +189,76 @@ public class MarkytFormat {
     return entitiesMap;
   }
 
-  public static String markytToCoNLL2002(String docName, String entitiesFile,
+  public static String barrToCoNLL2002(String docName, String entitiesFile,
       String language) throws IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    markytToNAFNER(kaf, docName, entitiesFile, language);
+    barrToNAFNER(kaf, docName, entitiesFile, language);
+    //System.out.println(kaf.toString());
     String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
     return conllFile;
   }
-}
+  
+  public static String barrToWFs(String docName, String language) throws IOException {
+    KAFDocument kaf = new KAFDocument("es", "v1.naf");
+    // reading the document file
+    List<String> docs = Files.readAllLines(Paths.get(docName));
+    // naf sentence counter
+    int counter = 1;
+    for (String doc : docs) {
+      String[] docArray = doc.split("\t");
+      // docId and original text
+      String docId = docArray[0];
+      String titleString = docArray[2];
+      String abstractString = docArray[3];
+      
+      List<List<Token>> tokenizedTitle = StringUtils
+          .tokenizeSentence(titleString, language);
+      // adding tokens from Title
+      for (List<Token> sentence : tokenizedTitle) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          wf.setXpath(docId + "#" + "T");
+        }
+      }
+      //update the NAF sentence counter after each title
+      counter++;
+      List<List<Token>> tokenizedAbstract = StringUtils
+          .tokenizeDocument(abstractString, language);
+      // adding tokens from Abstract
+      for (List<Token> sentence : tokenizedAbstract) {
+        for (Token token : sentence) {
+          WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
+              counter);
+          wf.setXpath(docId + "#" + "A");
+        }
+        //update the NAF sentence counter after each sentence in abstract
+        counter++;
+      }
+    }
+    return kaf.toString();
+  }
+  
+  public static String nafToBARREntities(String inputNAF) throws IOException {
+    //DOCUMENT_ID     SECTION INIT    END     ANNOTATED_TEXT  TYPE
+    //72280   A       207     211     TDAH    SHORT
+    StringBuilder sb = new StringBuilder();
+    Path kafPath = Paths.get(inputNAF);
+    KAFDocument kaf = KAFDocument.createFromFile(kafPath.toFile());
+    List<Entity> entities = kaf.getEntities();
+    for (Entity entity : entities) {
+      String type = entity.getType();
+      String annotation = entity.getStr();
+      int fromOffset = entity.getTerms().get(0).getWFs().get(0).getOffset();
+      List<WF> targetWFs = entity.getTerms().get(entity.getTerms().size() - 1).getWFs();
+      int toOffset = targetWFs.get(targetWFs.size() - 1).getOffset() + targetWFs.get(targetWFs.size() - 1).getLength();
+      //100005#T
+      String xpath = entity.getTerms().get(0).getWFs().get(0).getXpath();
+      String[] xpathElems = xpath.split("#");
+      String section = xpathElems[1];
+      String document = xpathElems[0];
+      sb.append(document).append("\t").append(section).append("\t").append(fromOffset).append("\t").append(toOffset).append("\t").append(annotation).append("\t").append(type).append("\n");
+    }
+    return sb.toString().trim();
+  }
+} 

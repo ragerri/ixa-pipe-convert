@@ -13,7 +13,8 @@ or to evaluate IXA pipes models (http://ixa2.si.ehu.es/ixa-pipes).
 1. [Aspect-Based Sentiment Analysis (ABSA) conversions](#absa)
 2. [Cluster Lexicon conversions](#clusters)
 3. [NAF to CoNLL conversions](#naf)
-4. [Installation](#installation)
+4. [Markyt Formats conversions](#markyt)
+5. [Installation](#installation)
 
 ## ABSA
 
@@ -40,6 +41,12 @@ There are several parameters to pre-process cluster lexicons obtained following 
 
 + nafToCoNLL02: It converts NAF containing named entities layer (entities) into CoNLL 2002 format.
 + nafToCoNLL03: It converts NAF containing named entities layer (entities) into CoNLL 2003 format.
+
+## MARKYT
+
++ barrToWFs: It converts markyt BARR 2017 corpus to a tokenized NAF document. This function is used to obtain the evaluation set in the NAF format so that it can be annotated with ixa-pipe-nerc models for testing.
++ nafToBARR: The entity-annotated NAF is converted to BARR format for evaluation with the task official evaluation scripts.
++ barrToCoNLL2002: It converts the BARR corpus into CoNLL 2002 format for training ixa-pipe-ml sequence models.
 
 ## INSTALLATION
 

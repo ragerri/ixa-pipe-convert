@@ -219,21 +219,21 @@ public class CLI {
     
     public final void markyt() throws IOException {
       String language = parsedArguments.getString("language");
-      if (parsedArguments.get("markytToCoNLL2002") != null) {
-        String docName = parsedArguments.getString("markytToCoNLL2002");
+      if (parsedArguments.get("barrToCoNLL2002") != null) {
+        String docName = parsedArguments.getString("barrToCoNLL2002");
         String entitiesFile = parsedArguments.getString("entities");
-        String conllFile = MarkytFormat.markytToCoNLL2002(docName, entitiesFile, language);
+        String conllFile = MarkytFormat.barrToCoNLL2002(docName, entitiesFile, language);
         System.out.print(conllFile);
       }
-      else if (parsedArguments.get("absa2015ToWFs") != null) {
-        String inputFile = parsedArguments.getString("absa2015ToWFs");
-        String kafString = AbsaSemEval.absa2015ToWFs(inputFile, language);
+      else if (parsedArguments.get("barrToWFs") != null) {
+        String inputFile = parsedArguments.getString("barrToWFs");
+        String kafString = MarkytFormat.barrToWFs(inputFile, language);
         System.out.print(kafString);
       }
-      else if (parsedArguments.get("nafToAbsa2015") != null) {
-        String inputNAF = parsedArguments.getString("nafToAbsa2015");
-        String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
-        System.out.print(xmlFile);
+      else if (parsedArguments.get("nafToBARR") != null) {
+        String inputNAF = parsedArguments.getString("nafToBARR");
+        String barrEntities = MarkytFormat.nafToBARREntities(inputNAF);
+        System.out.print(barrEntities);
       }
     }
     
@@ -334,10 +334,10 @@ public class CLI {
       .choices("en", "es")
       .required(true)
       .help("Choose a language.");
-      markytParser.addArgument("--markytToCoNLL2002").help("Document file to convert Markyt to CoNLL 2002 format.\n");
-      markytParser.addArgument("--entities").help("Entities file to convert Markyt to CoNLL 2002 format.");
-      markytParser.addArgument("--markytToWFs").help("Convert Markyt document file format to tokenized WF NAF layer.\n");
-      markytParser.addArgument("--nafTomarkyt").help("Convert NAF containing entities into Markyt prediction format.\n");
+      markytParser.addArgument("--barrToCoNLL2002").help("Document file to convert BARR 2017 to CoNLL 2002 format.\n");
+      markytParser.addArgument("--entities").help("Entities file to convert BARR 2017 to CoNLL 2002 format.");
+      markytParser.addArgument("--barrToWFs").help("Convert BARR 2017 document file format to tokenized WF NAF layer.\n");
+      markytParser.addArgument("--nafToBARR").help("Convert NAF containing entities into BARR 2017 prediction format.\n");
     }
     
     public void loadTreebankParameters() {

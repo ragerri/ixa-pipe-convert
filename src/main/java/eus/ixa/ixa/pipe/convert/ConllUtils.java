@@ -58,8 +58,8 @@ public class ConllUtils {
    */
   public static String nafToCoNLLConvert2002(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
-    Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
-    Map<String, String> entityToType = new HashMap<String, String>();
+    Map<String, Integer> entityToSpanSize = new HashMap<>();
+    Map<String, String> entityToType = new HashMap<>();
     for (Entity ne : namedEntityList) {
       List<ixa.kaflib.Span<Term>> entitySpanList = ne.getSpans();
       for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
@@ -86,6 +86,9 @@ public class ConllUtils {
           //String neType = convertToConLLTypes(neClass);
           if (neSpanSize > 1) {
             for (int j = 0; j < neSpanSize; j++) {
+              //System.err.println("-> sentenceTerms: " + sentenceTerms.size());
+              //System.err.println("-> indexes: " + (i + j));
+              //System.err.println("-> terms: " + sentenceTerms.get(i + j).getId());
               thisTerm = sentenceTerms.get(i + j);
               sb.append(thisTerm.getForm());
               sb.append("\t");
@@ -130,7 +133,7 @@ public class ConllUtils {
   }
 
   public static void nafToCoNLL2003(Path dir) throws IOException {
- // process one file
+    // process one file
     if (Files.isRegularFile(dir) && !dir.endsWith(".conll03")) {
       KAFDocument kaf = KAFDocument.createFromFile(dir.toFile());
       Path outfile = Files.createFile(Paths.get(dir.toString() + ".conll03"));
@@ -166,8 +169,8 @@ public class ConllUtils {
    */
   public static String nafToCoNLLConvert2003(KAFDocument kaf) {
     List<Entity> namedEntityList = kaf.getEntities();
-    Map<String, Integer> entityToSpanSize = new HashMap<String, Integer>();
-    Map<String, String> entityToType = new HashMap<String, String>();
+    Map<String, Integer> entityToSpanSize = new HashMap<>();
+    Map<String, String> entityToType = new HashMap<>();
     for (Entity ne : namedEntityList) {
       List<ixa.kaflib.Span<Term>> entitySpanList = ne.getSpans();
       for (ixa.kaflib.Span<Term> spanTerm : entitySpanList) {
@@ -271,7 +274,7 @@ public class ConllUtils {
   /**
    * Enumeration class for CoNLL 2003 BIO format
    */
-  private static enum BIO {
+  public static enum BIO {
     BEGIN("B-"), IN("I-"), OUT("O");
     String tag;
 
