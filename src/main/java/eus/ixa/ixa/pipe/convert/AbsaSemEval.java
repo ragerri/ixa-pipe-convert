@@ -263,6 +263,15 @@ public class AbsaSemEval {
     xmlOutput.setFormat(format);
     return xmlOutput.outputString(doc);
   }
+  
+  public static void absa2015PrintTargets(String fileName, String language) {
+    KAFDocument kaf = new KAFDocument(language, "v1.naf");
+    absa2015ToNAFNER(kaf, fileName, language);
+    List<Entity> entityList = kaf.getEntities();
+    for (Entity entity : entityList) {
+      System.out.println(entity.getStr() + "\t" + entity.getType());
+    }
+  }
 
   private static List<List<WF>> getSentencesByReview(KAFDocument kaf,
       String reviewId) {
@@ -352,8 +361,8 @@ public class AbsaSemEval {
           // iterating over every opinion in the opinions element
           if (!aspectTermsList.isEmpty()) {
             for (Element aspectTerm : aspectTermsList) {
-              String targetString = aspectTerm.getAttributeValue("term");
-              System.err.println("-> " + targetString);
+              //String targetString = aspectTerm.getAttributeValue("term");
+              //System.err.println("-> " + targetString);
               // adding OTE
               int fromOffset = Integer
                   .parseInt(aspectTerm.getAttributeValue("from"));
@@ -457,6 +466,15 @@ public class AbsaSemEval {
     Format format = Format.getPrettyFormat();
     xmlOutput.setFormat(format);
     return xmlOutput.outputString(doc);
+  }
+  
+  public static void absa2014PrintTargets(String fileName, String language) {
+    KAFDocument kaf = new KAFDocument("en", "v1.naf");
+    absa2014ToNAFNER(kaf, fileName, language);
+    List<Entity> entityList = kaf.getEntities();
+    for (Entity entity : entityList) {
+      System.out.println(entity.getStr() + "\t" + entity.getType());
+    }
   }
 
   public static void getYelpText(String fileName) throws IOException {

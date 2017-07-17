@@ -183,6 +183,9 @@ public class CLI {
       String inputNAF = parsedArguments.getString("nafToAbsa2015");
       String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
       System.out.print(xmlFile);
+    } else if (parsedArguments.get("absa2015PrintTargets") != null) {
+      String inputNAF = parsedArguments.getString("absa2015PrintTargets");
+      AbsaSemEval.absa2015PrintTargets(inputNAF, language);
     } else if (parsedArguments.get("absa2014ToCoNLL2002") != null) {
       String inputFile = parsedArguments.getString("absa2014ToCoNLL2002");
       String conllFile = AbsaSemEval.absa2014ToCoNLL2002(inputFile, language);
@@ -193,6 +196,9 @@ public class CLI {
     } else if (parsedArguments.get("yelpGetText") != null) {
       String inputFile = parsedArguments.getString("yelpGetText");
       AbsaSemEval.getYelpText(inputFile);
+    } else if (parsedArguments.get("absa2014PrintTargets") != null) {
+      String inputNAF = parsedArguments.getString("absa2014PrintTargets");
+      AbsaSemEval.absa2014PrintTargets(inputNAF, language);
     }
   }
 
@@ -311,10 +317,12 @@ public class CLI {
         "Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
     absaParser.addArgument("--nafToAbsa2015").help(
         "Convert NAF containing Opinions into ABSA 2015 and 2016 format.\n");
+    absaParser.addArgument("--absa2015PrintTargets").help("Print all targets in ABSA 2015 and 2016 datasets.\n");
     absaParser.addArgument("--absa2014ToCoNLL2002").help(
         "Convert ABSA SemEval 2014 Aspect Term Extraction to CoNLL 2002 format.\n");
     absaParser.addArgument("--nafToAbsa2014")
         .help("Convert NAF containing opinions into ABSA SemEval 2014 format");
+    absaParser.addArgument("--absa2014PrintTargets").help("Print all targets in ABSA 2014 dataset.\n");
     absaParser.addArgument("--yelpGetText")
         .help("Extract text attribute from JSON yelp dataset");
   }
