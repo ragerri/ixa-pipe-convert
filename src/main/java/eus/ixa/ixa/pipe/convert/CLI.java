@@ -82,6 +82,7 @@ public class CLI {
    * The parser that manages NAF to other formats conversions.
    */
   private final Subparser nafParser;
+  private final Subparser epecParser;
   /**
    * The parser that manages the general conversion functions.
    */
@@ -92,6 +93,7 @@ public class CLI {
   private static final String MARKYT_CONVERSOR_NAME = "markyt";
   private static final String TREEBANK_CONVERSOR_NAME = "treebank";
   private static final String NAF_CONVERSOR_NAME = "naf";
+  private static final String EPEC_CONVERSOR_NAME = "epec";
   private static final String OTHER_CONVERSOR_NAME = "convert";
 
   /**
@@ -113,6 +115,8 @@ public class CLI {
     nafParser = subParsers.addParser(NAF_CONVERSOR_NAME)
         .help("NAF to other formats conversion functions.");
     loadNafParameters();
+    epecParser = subParsers.addParser(EPEC_CONVERSOR_NAME).help("EPEC format conversion functions.");
+    loadEpecParameters();
     convertParser = subParsers.addParser(OTHER_CONVERSOR_NAME)
         .help("Other conversion functions.");
     loadConvertParameters();
@@ -156,6 +160,9 @@ public class CLI {
       case NAF_CONVERSOR_NAME:
         naf();
         break;
+      case EPEC_CONVERSOR_NAME:
+        epec();
+        break;
       case OTHER_CONVERSOR_NAME:
         convert();
         break;
@@ -163,7 +170,7 @@ public class CLI {
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-          + "-exec.jar (absa|cluster|markyt|treebank|naf|convert) -help for details");
+          + "-exec.jar (absa|cluster|markyt|treebank|naf|epec|convert) -help for details");
       System.exit(1);
     }
   }
@@ -289,6 +296,14 @@ public class CLI {
       Convert.removeEntities(inputDir);
     }
   }
+  
+  public final void epec() throws IOException {
+    if (parsedArguments.get("threeLevel") != null) {
+      Path inputDir = Paths.get(parsedArguments.getString("threeLevel"));
+      String conllCorpus = EpecCorpus.getCatSubCatCase(inputDir);
+      System.out.println(conllCorpus);
+    }
+  }
 
   public final void convert() throws IOException {
     if (parsedArguments.getString("createMonosemicDictionary") != null) {
@@ -390,6 +405,10 @@ public class CLI {
         .help("Prints named entity string if NED link available in NAF.\n");
     nafParser.addArgument("--removeEntities")
         .help("Removes the entity NAF layer.\n");
+  }
+  
+  public void loadEpecParameters() {
+    epecParser.addArgument("--threeLevel").help("Convert Epec to tabulated format containing category, subcategory, case and lemma.\n");
   }
 
   public void loadConvertParameters() {
