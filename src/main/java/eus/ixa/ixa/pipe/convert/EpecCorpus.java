@@ -56,6 +56,7 @@ public class EpecCorpus {
         String word = fields[0];
         String lemma = fields[1];
         String cleanLemma = cleanLemmas(word, lemma);
+        String cleanWord = cleanWords(word,lemma);
         String category = "";
         String subcategory = "";
         String kasua = "";
@@ -70,16 +71,16 @@ public class EpecCorpus {
             kasua = field;
           }
         }
-        if (word.equalsIgnoreCase("zidorratrinkete")) {
+        if (cleanWord.equalsIgnoreCase("zidorratrinkete")) {
           sb.append("\n");
         } else if (subcategory.equalsIgnoreCase("")) {
-          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category)
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t").append(category)
           .append("\n");
         } else if (kasua.equalsIgnoreCase("")){
-          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category).
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t").append(category).
           append("_").append(subcategory).append("\n");
         } else {
-          sb.append(word).append("\t").append(cleanLemma).append("\t")
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t")
               .append(category).append("_").append(subcategory).append("_")
               .append(kasua).append("\n");
         }
@@ -89,6 +90,7 @@ public class EpecCorpus {
     }
     String corpus = sb.toString();
     corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    corpus = corpus.trim();
     return corpus;
   }
   
@@ -100,6 +102,7 @@ public class EpecCorpus {
         String word = fields[0];
         String lemma = fields[1];
         String cleanLemma = cleanLemmas(word, lemma);
+        String cleanWord = cleanWords(word,lemma);
         String category = "";
         String subcategory = "";
         for (String field : fields) {
@@ -110,13 +113,13 @@ public class EpecCorpus {
             subcategory = field;
           }
         }
-        if (word.equalsIgnoreCase("zidorratrinkete")) {
+        if (cleanWord.equalsIgnoreCase("zidorratrinkete")) {
           sb.append("\n");
         } else if (subcategory.equalsIgnoreCase("")) {
-          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category)
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t").append(category)
           .append("\n");
         } else {
-          sb.append(word).append("\t").append(cleanLemma).append("\t")
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t")
               .append(category).append("_").append(subcategory).append("\n");
         }
       } else {
@@ -125,6 +128,7 @@ public class EpecCorpus {
     }
     String corpus = sb.toString();
     corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    corpus = corpus.trim();
     return corpus;
   }
   
@@ -136,16 +140,17 @@ public class EpecCorpus {
         String word = fields[0];
         String lemma = fields[1];
         String cleanLemma = cleanLemmas(word, lemma);
+        String cleanWord = cleanWords(word,lemma);
         String category = "";
         for (String field : fields) {
           if (categories.contains(field)) {
             category = field;
           }
         }
-        if (word.equalsIgnoreCase("zidorratrinkete")) {
+        if (cleanWord.equalsIgnoreCase("zidorratrinkete")) {
           sb.append("\n");
         } else {
-          sb.append(word).append("\t").append(cleanLemma).append("\t")
+          sb.append(cleanWord).append("\t").append(cleanLemma).append("\t")
               .append(category).append("\n");
         }
       } else {
@@ -154,6 +159,7 @@ public class EpecCorpus {
     }
     String corpus = sb.toString();
     corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    corpus = corpus.trim();
     return corpus;
   }
 
@@ -171,6 +177,13 @@ public class EpecCorpus {
       lemma = word;
     }
     return lemma;
+  }
+  
+  private static String cleanWords(String word, String lemma) {
+    if (word.equalsIgnoreCase("@")) {
+      word = lemma;
+    }
+    return word;
   }
 
 }
