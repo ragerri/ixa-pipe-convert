@@ -13,11 +13,11 @@ public class EpecCorpus {
   private EpecCorpus() {
   }
 
-  private static Set<String> categories = new HashSet<>(
-      Arrays.asList("ADB", "ADI", "ADJ", "ADL", "ADT", "AMM", "ASP", "ATZ",
-          "AUR", "BST", "DEK", "DET", "ELI", "ERL", "GRA", "HAOS", "IOR", "ITJ",
-          "IZE", "LOT", "MAR", "PRT", "PUNT_KOMA", "PUNT_PUNT", "PUNT_BI_PUNT",
-          "PUNT_GALD", "PUNT_PUNT_KOMA", "PUNT_HIRU", "PUNT_ESKL", "0"));
+  private static Set<String> categories = new HashSet<>(Arrays.asList("ADB",
+      "ADI", "ADJ", "ADL", "ADT", "AMM", "ASP", "ATZ", "AUR", "BST", "DEK",
+      "DET", "ELI", "ERL", "GRA", "HAOS", "IOR", "ITJ", "IZE", "LOT", "MAR",
+      "PRT", "PUNT_KOMA", "PUNT_PUNT", "PUNT_BI_PUNT", "PUNT_GALD",
+      "PUNT_PUNT_KOMA", "PUNT_HIRU", "PUNT_ESKL", "BEREIZ", "0"));
 
   private static Set<String> subcategories = new HashSet<>(
       Arrays.asList("ADK", "ADP", "ARR", "BAN", "BIH", "DZG", "DZH", "ELK",
@@ -29,12 +29,18 @@ public class EpecCorpus {
       "ABZ", "ALA", "SOZ", "DAT", "DES", "ERG", "GEL", "GEN", "INE", "INS",
       "MOT", "ABS", "PAR", "PRO", "BNK", "DESK", "0"));
 
-  public static String getCatSubCatCase(Path corpus) throws IOException {
+  public static String formatCorpus(Path corpus, String option) throws IOException {
     String conllCorpus = null;
     // process one file
     if (Files.isRegularFile(corpus)) {
       List<String> inputLines = Files.readAllLines(corpus);
-      conllCorpus = getThreeFields(inputLines);
+      if (option.equalsIgnoreCase("threeLevel")) {
+        conllCorpus = getThreeFields(inputLines);
+      } else if (option.equalsIgnoreCase("twoLevel")) {
+        conllCorpus = getTwoFields(inputLines);
+      } else if (option.equalsIgnoreCase("oneLevel")) {
+        conllCorpus = getOneField(inputLines);
+      }
     } else {
       System.out.println("Please choose a valid file as input.");
       System.exit(1);
@@ -49,9 +55,10 @@ public class EpecCorpus {
       if (fields.length > 2) {
         String word = fields[0];
         String lemma = fields[1];
-        String category = "0";
-        String subcategory = "0";
-        String kasua = "0";
+        String cleanLemma = cleanLemmas(word, lemma);
+        String category = "";
+        String subcategory = "";
+        String kasua = "";
         for (String field : fields) {
           if (categories.contains(field)) {
             category = field;
@@ -63,14 +70,107 @@ public class EpecCorpus {
             kasua = field;
           }
         }
-        sb.append(word).append("\t").append(lemma).append("\t").append(category)
-            .append("\t").append(subcategory).append("\t").append(kasua)
-            .append("\n");
+        if (word.equalsIgnoreCase("zidorratrinkete")) {
+          sb.append("\n");
+        } else if (subcategory.equalsIgnoreCase("")) {
+          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category)
+          .append("\n");
+        } else if (kasua.equalsIgnoreCase("")){
+          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category).
+          append("_").append(subcategory).append("\n");
+        } else {
+          sb.append(word).append("\t").append(cleanLemma).append("\t")
+              .append(category).append("_").append(subcategory).append("_")
+              .append(kasua).append("\n");
+        }
       } else {
         System.err.println("-> Line: " + line);
       }
     }
-    return sb.toString();
+    String corpus = sb.toString();
+    corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    return corpus;
+  }
+  
+  private static String getTwoFields(List<String> inputLines) {
+    StringBuilder sb = new StringBuilder();
+    for (String line : inputLines) {
+      String[] fields = line.split(" ");
+      if (fields.length > 2) {
+        String word = fields[0];
+        String lemma = fields[1];
+        String cleanLemma = cleanLemmas(word, lemma);
+        String category = "";
+        String subcategory = "";
+        for (String field : fields) {
+          if (categories.contains(field)) {
+            category = field;
+          }
+          if (subcategories.contains(field)) {
+            subcategory = field;
+          }
+        }
+        if (word.equalsIgnoreCase("zidorratrinkete")) {
+          sb.append("\n");
+        } else if (subcategory.equalsIgnoreCase("")) {
+          sb.append(word).append("\t").append(cleanLemma).append("\t").append(category)
+          .append("\n");
+        } else {
+          sb.append(word).append("\t").append(cleanLemma).append("\t")
+              .append(category).append("_").append(subcategory).append("\n");
+        }
+      } else {
+        System.err.println("-> Line: " + line);
+      }
+    }
+    String corpus = sb.toString();
+    corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    return corpus;
+  }
+  
+  private static String getOneField(List<String> inputLines) {
+    StringBuilder sb = new StringBuilder();
+    for (String line : inputLines) {
+      String[] fields = line.split(" ");
+      if (fields.length > 2) {
+        String word = fields[0];
+        String lemma = fields[1];
+        String cleanLemma = cleanLemmas(word, lemma);
+        String category = "";
+        for (String field : fields) {
+          if (categories.contains(field)) {
+            category = field;
+          }
+        }
+        if (word.equalsIgnoreCase("zidorratrinkete")) {
+          sb.append("\n");
+        } else {
+          sb.append(word).append("\t").append(cleanLemma).append("\t")
+              .append(category).append("\n");
+        }
+      } else {
+        System.err.println("-> Line: " + line);
+      }
+    }
+    String corpus = sb.toString();
+    corpus = corpus.replaceAll("\n\n\n", "\n\n");
+    return corpus;
+  }
+
+  private static String cleanLemmas(String word, String lemma) {
+    if (lemma.startsWith("/")) {
+      lemma = lemma.substring(1, lemma.length());
+    }
+    if (lemma.endsWith("/")) {
+      lemma = lemma.substring(0, lemma.length() - 1);
+    }
+    if (lemma.equalsIgnoreCase("IDENT")) {
+      lemma = word;
+    }
+    if (word.equalsIgnoreCase("/")) {
+      lemma = word;
+    }
+    return lemma;
   }
 
 }

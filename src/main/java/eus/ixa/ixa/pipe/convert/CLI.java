@@ -300,7 +300,15 @@ public class CLI {
   public final void epec() throws IOException {
     if (parsedArguments.get("threeLevel") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("threeLevel"));
-      String conllCorpus = EpecCorpus.getCatSubCatCase(inputDir);
+      String conllCorpus = EpecCorpus.formatCorpus(inputDir, "threeLevel");
+      System.out.println(conllCorpus);
+    } else if (parsedArguments.get("twoLevel") != null) {
+      Path inputDir = Paths.get(parsedArguments.getString("twoLevel"));
+      String conllCorpus = EpecCorpus.formatCorpus(inputDir, "twoLevel");
+      System.out.println(conllCorpus);
+    } else if (parsedArguments.get("oneLevel") != null) {
+      Path inputDir = Paths.get(parsedArguments.getString("oneLevel"));
+      String conllCorpus = EpecCorpus.formatCorpus(inputDir, "oneLevel");
       System.out.println(conllCorpus);
     }
   }
@@ -409,6 +417,8 @@ public class CLI {
   
   public void loadEpecParameters() {
     epecParser.addArgument("--threeLevel").help("Convert Epec to tabulated format containing category, subcategory, case and lemma.\n");
+    epecParser.addArgument("--twoLevel").help("Convert Epec to tabulated format containing category and subcategory.\n");
+    epecParser.addArgument("--oneLevel").help("Convert Epec to tabulated format containing category.\n");
   }
 
   public void loadConvertParameters() {
