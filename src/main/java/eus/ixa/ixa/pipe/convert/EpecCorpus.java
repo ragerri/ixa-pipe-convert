@@ -1,6 +1,7 @@
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public class EpecCorpus {
     String conllCorpus = null;
     // process one file
     if (Files.isRegularFile(corpus)) {
-      List<String> inputLines = Files.readAllLines(corpus);
+      List<String> inputLines = com.google.common.io.Files.readLines(corpus.toFile(), Charset.forName("UTF-8"));
       if (option.equalsIgnoreCase("threeLevel")) {
         conllCorpus = getThreeFields(inputLines);
       } else if (option.equalsIgnoreCase("twoLevel")) {
