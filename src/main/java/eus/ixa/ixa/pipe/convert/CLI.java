@@ -66,6 +66,7 @@ public class CLI {
    * The parser that manages the absa sub-command.
    */
   private final Subparser absaParser;
+  private final Subparser timemlParser;
   /**
    * The parser that manages cluster lexicon related functions.
    */
@@ -89,6 +90,7 @@ public class CLI {
   private final Subparser convertParser;
 
   private static final String ABSA_CONVERSOR_NAME = "absa";
+  private static final String TIMEML_CONVERSOR_NAME = "timeml";
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
   private static final String MARKYT_CONVERSOR_NAME = "markyt";
   private static final String TREEBANK_CONVERSOR_NAME = "treebank";
@@ -103,6 +105,8 @@ public class CLI {
     absaParser = subParsers.addParser(ABSA_CONVERSOR_NAME)
         .help("ABSA tasks at SemEval conversion functions.");
     loadAbsaParameters();
+    timemlParser = subParsers.addParser(TIMEML_CONVERSOR_NAME).help("TimeML Conversion functions.");
+    loadTimeMLParameters();
     clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME)
         .help("Cluster lexicon conversion functions.");
     loadClusterParameters();
@@ -148,6 +152,9 @@ public class CLI {
       case ABSA_CONVERSOR_NAME:
         absa();
         break;
+      case TIMEML_CONVERSOR_NAME:
+        timeml();
+        break;
       case CLUSTER_CONVERSOR_NAME:
         cluster();
         break;
@@ -170,7 +177,7 @@ public class CLI {
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-          + "-exec.jar (absa|cluster|markyt|treebank|naf|epec|convert) -help for details");
+          + "-exec.jar (absa|timeml|cluster|markyt|treebank|naf|epec|convert) -help for details");
       System.exit(1);
     }
   }
@@ -206,6 +213,19 @@ public class CLI {
     } else if (parsedArguments.get("absa2014PrintTargets") != null) {
       String inputNAF = parsedArguments.getString("absa2014PrintTargets");
       AbsaSemEval.absa2014PrintTargets(inputNAF, language);
+    }
+  }
+  
+  public final void timeml() {
+    String language = parsedArguments.getString("language");
+    if (parsedArguments.get("timemlToCoNLL2002") != null) {
+      String inputFile = parsedArguments.getString("timemlToCoNLL2002");
+      String conllFile = TimeMLToNAF.timeMLToCoNLL2002(inputFile, language);
+      System.out.print(conllFile);
+    } else if (parsedArguments.get("timemlToWFs") != null) {
+      String inputFile = parsedArguments.getString("timemlToWFs");
+      String kafString = TimeMLToNAF.timeMLToWFs(inputFile, language);
+      System.out.print(kafString);
     }
   }
 
@@ -348,6 +368,12 @@ public class CLI {
     absaParser.addArgument("--absa2014PrintTargets").help("Print all targets in ABSA 2014 dataset.\n");
     absaParser.addArgument("--yelpGetText")
         .help("Extract text attribute from JSON yelp dataset");
+  }
+  
+  public void loadTimeMLParameters() {
+    this.timemlParser.addArgument("-l","--language").choices("en","es").required(true).help("Choose a language.");
+    timemlParser.addArgument("--timemlToCoNLL2002").help("Convert TimeML from Tempeval3 task to CoNLL 2002 format.\n");
+    timemlParser.addArgument("--timemlToWFs").help("Convert TimemL from Tempeval3 task to WF NAF layer.\n");
   }
 
   public void loadClusterParameters() {
