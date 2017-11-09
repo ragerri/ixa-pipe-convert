@@ -76,8 +76,8 @@ public class TimeMLToNAF {
       //getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
-      String dctTimexText = dctTimex.getText();
-      kaf.createFileDesc().creationtime = dctTimexText;
+      String dctTimexValue = dctTimex.getAttributeValue("value");
+      kaf.createFileDesc().creationtime = dctTimexValue;
       //getting the TEXT
       Element textElement = rootElement.getChild("TEXT");
       String words = textElement.getValue(); 
