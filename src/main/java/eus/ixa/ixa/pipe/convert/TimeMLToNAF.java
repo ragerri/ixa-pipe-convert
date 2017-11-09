@@ -14,6 +14,7 @@ import org.jdom2.xpath.XPathFactory;
 
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.KAFDocument.FileDesc;
 import ixa.kaflib.WF;
 
 public class TimeMLToNAF {
@@ -42,8 +43,14 @@ public class TimeMLToNAF {
       
       //getting the TEXT
       Element textElement = rootElement.getChild("TEXT");
-      List<Element> textElements = textElement.getChildren();
-      
+      List<Content> textElements = textElement.getContent();
+      //we need to iterate over single content of the text element
+      //to get the text and the relevant attributes from TIMEX and
+      //EVENT elements
+      for (Content textElem : textElements) {
+        
+      }
+
       
         
       
@@ -60,39 +67,22 @@ public class TimeMLToNAF {
     return conllFile;
   }
   
-  public static String timeMLToWFs(String fileName, String language) {
+  public static String timeMLToRawNAF(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
     try {
       Document doc = sax.build(fileName);
       Element rootElement = doc.getRootElement();
-      XPathExpression<Element> timexExpr = xFactory.compile("//TIMEX3",
-          Filters.element());
-      List<Element> timexElems = timexExpr.evaluate(doc);
-      XPathExpression<Element> eventExpr = xFactory.compile("//EVENT", Filters.element());
-      
       //getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
-      String dctTimexType = dctTimex.getAttributeValue("type");
-      String dctTimexValue = dctTimex.getAttributeValue("value");
       String dctTimexText = dctTimex.getText();
-      
+      kaf.createFileDesc().creationtime = dctTimexText;
       //getting the TEXT
       Element textElement = rootElement.getChild("TEXT");
-      List<Content> textElements = textElement.getContent();
-      //we need to iterate over single content of the text element
-      //to get the text and the relevant attributes from TIMEX and
-      //EVENT elements
-      for (Content textElem : textElements) {
-        System.out.println(textElem);
-      }
-      
-        
-      
+      String words = textElement.getValue(); 
+      kaf.setRawText(words);
     } catch (JDOMException | IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return kaf.toString();

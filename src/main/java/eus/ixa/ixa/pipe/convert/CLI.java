@@ -222,9 +222,9 @@ public class CLI {
       String inputFile = parsedArguments.getString("timemlToCoNLL2002");
       String conllFile = TimeMLToNAF.timeMLToCoNLL2002(inputFile, language);
       System.out.print(conllFile);
-    } else if (parsedArguments.get("timemlToWFs") != null) {
-      String inputFile = parsedArguments.getString("timemlToWFs");
-      String kafString = TimeMLToNAF.timeMLToWFs(inputFile, language);
+    } else if (parsedArguments.get("timemlToRawNAF") != null) {
+      String inputFile = parsedArguments.getString("timemlToRawNAF");
+      String kafString = TimeMLToNAF.timeMLToRawNAF(inputFile, language);
       System.out.print(kafString);
     }
   }
@@ -372,8 +372,8 @@ public class CLI {
   
   public void loadTimeMLParameters() {
     this.timemlParser.addArgument("-l","--language").choices("en","es").required(true).help("Choose a language.");
+    timemlParser.addArgument("--timemlToRawNAF").help("Convert TimemL from Tempeval3 task to Raw NAF layer.\n");
     timemlParser.addArgument("--timemlToCoNLL2002").help("Convert TimeML from Tempeval3 task to CoNLL 2002 format.\n");
-    timemlParser.addArgument("--timemlToWFs").help("Convert TimemL from Tempeval3 task to WF NAF layer.\n");
   }
 
   public void loadClusterParameters() {
