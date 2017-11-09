@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jdom2.Content;
+import org.jdom2.Content.CType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -37,10 +38,8 @@ public class TimeMLToNAF {
       //getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
-      String dctTimexType = dctTimex.getAttributeValue("type");
       String dctTimexValue = dctTimex.getAttributeValue("value");
-      String dctTimexText = dctTimex.getText();
-      
+      kaf.createFileDesc().creationtime = dctTimexValue;
       //getting the TEXT
       Element textElement = rootElement.getChild("TEXT");
       List<Content> textElements = textElement.getContent();
@@ -48,12 +47,10 @@ public class TimeMLToNAF {
       //to get the text and the relevant attributes from TIMEX and
       //EVENT elements
       for (Content textElem : textElements) {
-        
+        if (textElem.getCType().equals(CType.Element)) {
+          System.out.println(textElem.getValue());
+        }
       }
-
-      
-        
-      
     } catch (JDOMException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
