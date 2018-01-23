@@ -24,6 +24,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.jdom2.JDOMException;
+import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -66,6 +67,7 @@ public class CLI {
    * The parser that manages the absa sub-command.
    */
   private final Subparser absaParser;
+  private final Subparser interstockParser;
   private final Subparser timemlParser;
   /**
    * The parser that manages cluster lexicon related functions.
@@ -90,6 +92,7 @@ public class CLI {
   private final Subparser convertParser;
 
   private static final String ABSA_CONVERSOR_NAME = "absa";
+  private static final String INTERSTOCK_CONVERSOR_NAME = "interstock";
   private static final String TIMEML_CONVERSOR_NAME = "timeml";
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
   private static final String MARKYT_CONVERSOR_NAME = "markyt";
@@ -105,6 +108,8 @@ public class CLI {
     absaParser = subParsers.addParser(ABSA_CONVERSOR_NAME)
         .help("ABSA tasks at SemEval conversion functions.");
     loadAbsaParameters();
+    interstockParser = subParsers.addParser(INTERSTOCK_CONVERSOR_NAME).help("Interstock data conversion functions.");
+    loadInterstockParameters();
     timemlParser = subParsers.addParser(TIMEML_CONVERSOR_NAME).help("TimeML Conversion functions.");
     loadTimeMLParameters();
     clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME)
@@ -152,6 +157,9 @@ public class CLI {
       case ABSA_CONVERSOR_NAME:
         absa();
         break;
+      case INTERSTOCK_CONVERSOR_NAME:
+        interstock();
+        break;
       case TIMEML_CONVERSOR_NAME:
         timeml();
         break;
@@ -177,7 +185,7 @@ public class CLI {
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-          + "-exec.jar (absa|timeml|cluster|markyt|treebank|naf|epec|convert) -help for details");
+          + "-exec.jar (absa|interstock|timeml|cluster|markyt|treebank|naf|epec|convert) -help for details");
       System.exit(1);
     }
   }
@@ -213,6 +221,13 @@ public class CLI {
     } else if (parsedArguments.get("absa2014PrintTargets") != null) {
       String inputNAF = parsedArguments.getString("absa2014PrintTargets");
       AbsaSemEval.absa2014PrintTargets(inputNAF, language);
+    }
+  }
+  
+  public final void interstock() {
+    if (parsedArguments.get("getJsonText") != null) {
+      String inputFile = parsedArguments.getString("getJsonText");
+      Interstock.getJSONTextElem(inputFile);
     }
   }
   
@@ -368,6 +383,11 @@ public class CLI {
     absaParser.addArgument("--absa2014PrintTargets").help("Print all targets in ABSA 2014 dataset.\n");
     absaParser.addArgument("--yelpGetText")
         .help("Extract text attribute from JSON yelp dataset");
+  }
+  
+  public void loadInterstockParameters() {
+    interstockParser.addArgument("--getJsonText")
+    .help("Extract text attribute from JSON interstock dataset");
   }
   
   public void loadTimeMLParameters() {
