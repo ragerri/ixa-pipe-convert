@@ -15,38 +15,22 @@ import org.json.simple.parser.ParseException;
 import opennlp.tools.cmdline.CmdLineUtil;
 
 public class Interstock {
-  
+
   private Interstock() {
   }
 
-  public static void getJSONTextElem(String inputFile) {
+  public static void getJSONBodyElem(String inputFile) throws IOException {
     JSONParser parser = new JSONParser();
     Path filePath = Paths.get(inputFile);
     InputStream inputStream = CmdLineUtil.openInFile(filePath.toFile());
-    BufferedReader breader = new BufferedReader(
-        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
-    String line;
+    BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
     try {
-      while ((line = breader.readLine()) != null) {
-        try {
-          Object obj = parser.parse(line);
-          JSONObject jsonObject = (JSONObject) obj;
-          String text = (String) jsonObject.get("text");
-          System.out.println(text);
-        } catch (ParseException e) {
-          e.printStackTrace();
-        }
-      }
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    try {
-      breader.close();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
+      Object obj = parser.parse(breader);
+      JSONObject jsonObject = (JSONObject) obj;
+      String body = (String) jsonObject.get("body");
+      System.out.println(body);
+    } catch (ParseException e) {
       e.printStackTrace();
     }
   }
-    
-  }
+}

@@ -24,7 +24,6 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.jdom2.JDOMException;
-import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -224,10 +223,10 @@ public class CLI {
     }
   }
   
-  public final void interstock() {
+  public final void interstock() throws IOException {
     if (parsedArguments.get("getJsonText") != null) {
       String inputFile = parsedArguments.getString("getJsonText");
-      Interstock.getJSONTextElem(inputFile);
+      Interstock.getJSONBodyElem(inputFile);
     }
   }
   
