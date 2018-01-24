@@ -224,9 +224,15 @@ public class CLI {
   }
   
   public final void interstock() throws IOException {
-    if (parsedArguments.get("getJsonText") != null) {
-      String inputFile = parsedArguments.getString("getJsonText");
-      Interstock.getJSONBodyElem(inputFile);
+    if (parsedArguments.get("getJsonFinanceBinaryDataset") != null) {
+      String inputFile = parsedArguments.getString("getJsonFinanceBinaryDataset");
+      Interstock.getJsonFinanceBinaryDataset(inputFile);
+    } else if (parsedArguments.get("getJsonMultipleOpinions") != null) {
+      String inputFile = parsedArguments.getString("getJsonMultipleOpinions");
+      Interstock.getJsonMultipleOpinions(inputFile);
+    } else if (parsedArguments.get("getJsonAllOpinions") != null) {
+      String inputFile = parsedArguments.getString("getJsonAllOpinions");
+      Interstock.getJsonAllOpinions(inputFile);
     }
   }
   
@@ -385,8 +391,12 @@ public class CLI {
   }
   
   public void loadInterstockParameters() {
-    interstockParser.addArgument("--getJsonText")
-    .help("Extract text attribute from JSON interstock dataset");
+    interstockParser.addArgument("--getJsonFinanceBinaryDataset")
+    .help("Convert JSON interstock dataset into Document Classifier finance binary dataset.\n");
+    interstockParser.addArgument("--getJsonMultipleOpinions")
+    .help("Print every document that contains multiple opinions in JSON Interstock dataset\n");
+    interstockParser.addArgument("--getJsonAllOpinions")
+    .help("Print every opinion in JSON Interstock dataset\n");
   }
   
   public void loadTimeMLParameters() {
