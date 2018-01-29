@@ -230,9 +230,21 @@ public class CLI {
     } else if (parsedArguments.get("getJsonMultipleOpinions") != null) {
       String inputFile = parsedArguments.getString("getJsonMultipleOpinions");
       Interstock.getJsonMultipleOpinions(inputFile);
-    } else if (parsedArguments.get("getJsonAllOpinions") != null) {
-      String inputFile = parsedArguments.getString("getJsonAllOpinions");
-      Interstock.getJsonAllOpinions(inputFile);
+    } else if (parsedArguments.get("getJsonAllOpinionsBinary") != null) {
+      String inputFile = parsedArguments.getString("getJsonAllOpinionsBinary");
+      Interstock.getJsonAllOpinionsBinary(inputFile);
+    } else if (parsedArguments.get("getJsonFinanceOpinionsBinary") != null) {
+      String inputFile = parsedArguments.getString("getJsonFinanceOpinionsBinary");
+      Interstock.getJsonFinanceOpinionsBinary(inputFile);
+    } else if (parsedArguments.get("getJsonFinanceAllOpinionsBinary") != null) {
+      String inputFile = parsedArguments.getString("getJsonFinanceAllOpinionsBinary");
+      Interstock.getJsonFinanceAllOpinionsBinary(inputFile);
+    } else if (parsedArguments.get("getJsonFinanceOpinionsPolarity") != null) {
+      String inputFile = parsedArguments.getString("getJsonFinanceOpinionsPolarity");
+      Interstock.getJsonFinanceOpinionsPolarity(inputFile);
+    } else if (parsedArguments.get("getJsonFinanceAllOpinionsPolarity") != null) {
+      String inputFile = parsedArguments.getString("getJsonFinanceAllOpinionsPolarity");
+      Interstock.getJsonFinanceAllOpinionsPolarity(inputFile);
     }
   }
   
@@ -391,12 +403,23 @@ public class CLI {
   }
   
   public void loadInterstockParameters() {
+    //getting all documents into various formats
     interstockParser.addArgument("--getJsonFinanceBinaryDataset")
-    .help("Convert JSON interstock dataset into Document Classifier finance binary dataset.\n");
+    .help("Print the first opinion from each document in JSON Interstock dataset into finance nofinance categories.\n");
     interstockParser.addArgument("--getJsonMultipleOpinions")
-    .help("Print every document that contains multiple opinions in JSON Interstock dataset\n");
-    interstockParser.addArgument("--getJsonAllOpinions")
-    .help("Print every opinion in JSON Interstock dataset\n");
+    .help("Print every document that contains multiple opinions in JSON Interstock dataset.\n");
+    interstockParser.addArgument("--getJsonAllOpinionsBinary")
+    .help("Print every opinion in JSON Interstock dataset into finance nofinance categories.\n");
+    //getting financial opinions into various formats
+    interstockParser.addArgument("--getJsonFinanceOpinionsBinary")
+    .help("Print the first financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
+    interstockParser.addArgument("--getJsonFinanceOpinionsPolarity")
+    .help("Print the first financial opinion in JSON Interstock dataset into positive and negative categories.\n");
+    interstockParser.addArgument("--getJsonFinanceAllOpinionsBinary")
+    .help("Print every financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
+    interstockParser.addArgument("--getJsonFinanceAllOpinionsPolarity")
+    .help("Print every financial opinion in JSON Interstock dataset into positive and negative categories.\n");
+    
   }
   
   public void loadTimeMLParameters() {
