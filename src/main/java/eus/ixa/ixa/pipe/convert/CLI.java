@@ -107,9 +107,11 @@ public class CLI {
     absaParser = subParsers.addParser(ABSA_CONVERSOR_NAME)
         .help("ABSA tasks at SemEval conversion functions.");
     loadAbsaParameters();
-    interstockParser = subParsers.addParser(INTERSTOCK_CONVERSOR_NAME).help("Interstock data conversion functions.");
+    interstockParser = subParsers.addParser(INTERSTOCK_CONVERSOR_NAME)
+        .help("Interstock data conversion functions.");
     loadInterstockParameters();
-    timemlParser = subParsers.addParser(TIMEML_CONVERSOR_NAME).help("TimeML Conversion functions.");
+    timemlParser = subParsers.addParser(TIMEML_CONVERSOR_NAME)
+        .help("TimeML Conversion functions.");
     loadTimeMLParameters();
     clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME)
         .help("Cluster lexicon conversion functions.");
@@ -123,7 +125,8 @@ public class CLI {
     nafParser = subParsers.addParser(NAF_CONVERSOR_NAME)
         .help("NAF to other formats conversion functions.");
     loadNafParameters();
-    epecParser = subParsers.addParser(EPEC_CONVERSOR_NAME).help("EPEC format conversion functions.");
+    epecParser = subParsers.addParser(EPEC_CONVERSOR_NAME)
+        .help("EPEC format conversion functions.");
     loadEpecParameters();
     convertParser = subParsers.addParser(OTHER_CONVERSOR_NAME)
         .help("Other conversion functions.");
@@ -200,6 +203,18 @@ public class CLI {
       String inputFile = parsedArguments.getString("absa2015ToWFs");
       String kafString = AbsaSemEval.absa2015ToWFs(inputFile, language);
       System.out.print(kafString);
+    } else if (parsedArguments.get("absa2015ToPolarity") != null) {
+      int min = 1000;
+      int max = 1000;
+      if (parsedArguments.get("window") != null) {
+        String window = parsedArguments.getString("window");
+        min = Integer.parseInt(window.split(":")[0]);
+        max = Integer.parseInt(window.split(":")[1]);
+      }
+      String inputFile = parsedArguments.getString("absa2015ToPolarity");
+      String text = AbsaSemEval.absa2015ToDocCatFormatForPolarity(inputFile,
+          language, min, max);
+      System.out.print(text);
     } else if (parsedArguments.get("nafToAbsa2015") != null) {
       String inputNAF = parsedArguments.getString("nafToAbsa2015");
       String xmlFile = AbsaSemEval.nafToAbsa2015(inputNAF);
@@ -222,10 +237,11 @@ public class CLI {
       AbsaSemEval.absa2014PrintTargets(inputNAF, language);
     }
   }
-  
+
   public final void interstock() throws IOException {
     if (parsedArguments.get("getJsonFinanceBinaryDataset") != null) {
-      String inputFile = parsedArguments.getString("getJsonFinanceBinaryDataset");
+      String inputFile = parsedArguments
+          .getString("getJsonFinanceBinaryDataset");
       Interstock.getJsonFinanceBinaryDataset(inputFile);
     } else if (parsedArguments.get("getJsonMultipleOpinions") != null) {
       String inputFile = parsedArguments.getString("getJsonMultipleOpinions");
@@ -235,7 +251,7 @@ public class CLI {
       Interstock.getJsonAllOpinions(inputFile);
     }
   }
-  
+
   public final void timeml() {
     String language = parsedArguments.getString("language");
     if (parsedArguments.get("timemlToCoNLL2002") != null) {
@@ -336,7 +352,7 @@ public class CLI {
       Convert.removeEntities(inputDir);
     }
   }
-  
+
   public final void epec() throws IOException {
     if (parsedArguments.get("threeLevel") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("threeLevel"));
@@ -374,35 +390,45 @@ public class CLI {
     this.absaParser.addArgument("-l", "--language")
         .choices("en", "es", "fr", "nl", "tr", "ru").required(true)
         .help("Choose a language.");
+    this.absaParser.addArgument("-w", "--window").required(false)
+         .help(
+        "Define window size around target for document classification for polarity: absa2015ToPolarity. Example: 5:5");
     absaParser.addArgument("--absa2015ToCoNLL2002").help(
         "Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to CoNLL 2002 format.\n");
     absaParser.addArgument("--absa2015ToWFs").help(
         "Convert ABSA SemEval 2015 and 2016 to tokenized WF NAF layer.\n");
+    absaParser.addArgument("--absa2015ToPolarity").help(
+        "Convert ABSA SemEval 2015 and 2016 to Document Classifier format for polarity classification.\n");
     absaParser.addArgument("--nafToAbsa2015").help(
         "Convert NAF containing Opinions into ABSA 2015 and 2016 format.\n");
-    absaParser.addArgument("--absa2015PrintTargets").help("Print all targets in ABSA 2015 and 2016 datasets.\n");
+    absaParser.addArgument("--absa2015PrintTargets")
+        .help("Print all targets in ABSA 2015 and 2016 datasets.\n");
     absaParser.addArgument("--absa2014ToCoNLL2002").help(
         "Convert ABSA SemEval 2014 Aspect Term Extraction to CoNLL 2002 format.\n");
     absaParser.addArgument("--nafToAbsa2014")
         .help("Convert NAF containing opinions into ABSA SemEval 2014 format");
-    absaParser.addArgument("--absa2014PrintTargets").help("Print all targets in ABSA 2014 dataset.\n");
+    absaParser.addArgument("--absa2014PrintTargets")
+        .help("Print all targets in ABSA 2014 dataset.\n");
     absaParser.addArgument("--yelpGetText")
         .help("Extract text attribute from JSON yelp dataset");
   }
-  
+
   public void loadInterstockParameters() {
-    interstockParser.addArgument("--getJsonFinanceBinaryDataset")
-    .help("Convert JSON interstock dataset into Document Classifier finance binary dataset.\n");
-    interstockParser.addArgument("--getJsonMultipleOpinions")
-    .help("Print every document that contains multiple opinions in JSON Interstock dataset\n");
+    interstockParser.addArgument("--getJsonFinanceBinaryDataset").help(
+        "Convert JSON interstock dataset into Document Classifier finance binary dataset.\n");
+    interstockParser.addArgument("--getJsonMultipleOpinions").help(
+        "Print every document that contains multiple opinions in JSON Interstock dataset\n");
     interstockParser.addArgument("--getJsonAllOpinions")
-    .help("Print every opinion in JSON Interstock dataset\n");
+        .help("Print every opinion in JSON Interstock dataset\n");
   }
-  
+
   public void loadTimeMLParameters() {
-    this.timemlParser.addArgument("-l","--language").choices("en","es").required(true).help("Choose a language.");
-    timemlParser.addArgument("--timemlToRawNAF").help("Convert TimemL from Tempeval3 task to Raw NAF layer.\n");
-    timemlParser.addArgument("--timemlToCoNLL2002").help("Convert TimeML from Tempeval3 task to CoNLL 2002 format.\n");
+    this.timemlParser.addArgument("-l", "--language").choices("en", "es")
+        .required(true).help("Choose a language.");
+    timemlParser.addArgument("--timemlToRawNAF")
+        .help("Convert TimemL from Tempeval3 task to Raw NAF layer.\n");
+    timemlParser.addArgument("--timemlToCoNLL2002")
+        .help("Convert TimeML from Tempeval3 task to CoNLL 2002 format.\n");
   }
 
   public void loadClusterParameters() {
@@ -469,11 +495,14 @@ public class CLI {
     nafParser.addArgument("--removeEntities")
         .help("Removes the entity NAF layer.\n");
   }
-  
+
   public void loadEpecParameters() {
-    epecParser.addArgument("--threeLevel").help("Convert Epec to tabulated format containing category, subcategory, case and lemma.\n");
-    epecParser.addArgument("--twoLevel").help("Convert Epec to tabulated format containing category and subcategory.\n");
-    epecParser.addArgument("--oneLevel").help("Convert Epec to tabulated format containing category.\n");
+    epecParser.addArgument("--threeLevel").help(
+        "Convert Epec to tabulated format containing category, subcategory, case and lemma.\n");
+    epecParser.addArgument("--twoLevel").help(
+        "Convert Epec to tabulated format containing category and subcategory.\n");
+    epecParser.addArgument("--oneLevel")
+        .help("Convert Epec to tabulated format containing category.\n");
   }
 
   public void loadConvertParameters() {

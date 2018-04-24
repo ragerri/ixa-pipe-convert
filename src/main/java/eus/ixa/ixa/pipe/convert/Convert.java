@@ -151,9 +151,17 @@ public class Convert {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    List<Entity> entityList = kaf.getEntities();
+    /*List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       System.out.println(entity.getStr() + "\t" + entity.getType());
+    }*/
+    List<List<WF>> tokenList = kaf.getSentences();
+    for (List<WF> sentence : tokenList) {
+      StringBuilder sb = new StringBuilder();
+      for (WF wf : sentence) {
+        sb.append(wf.getForm()).append(" ");
+      }
+      System.out.println(sb.toString());
     }
   }
 

@@ -89,7 +89,7 @@ public class AbsaSemEval {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
                 counter);
             wf.setXpath(sentId);
-            final List<WF> wfTarget = new ArrayList<WF>();
+            final List<WF> wfTarget = new ArrayList<>();
             wfTarget.add(wf);
             wfFromOffsets.add(wf.getOffset());
             wfToOffsets.add(wf.getOffset() + wf.getLength());
@@ -195,6 +195,90 @@ public class AbsaSemEval {
     return kaf.toString();
   }
 
+  public static String absa2015ToDocCatFormatForPolarity(String fileName,
+      String language, int windowMin, int windowMax) {
+    SAXBuilder sax = new SAXBuilder();
+    XPathFactory xFactory = XPathFactory.instance();
+    Document doc = null;
+    String text = "";
+
+    try {
+      doc = sax.build(fileName);
+      XPathExpression<Element> expr = xFactory.compile("//sentence",
+          Filters.element());
+      List<Element> sentences = expr.evaluate(doc);
+
+      for (Element sent : sentences) {
+        Element opinionsElement = sent.getChild("Opinions");
+        String sentStringTmp = sent.getChildText("text");
+
+        List<List<Token>> segmentedSentence = StringUtils
+            .tokenizeSentence(sentStringTmp, language);
+        List<Token> sentence = segmentedSentence.get(0);
+
+        if (opinionsElement != null) {
+          // iterating over every opinion in the opinions element
+          List<Element> opinionList = opinionsElement.getChildren();
+
+          for (Element opinion : opinionList) {
+
+            String sentString = "";
+
+            String targetString = opinion.getAttributeValue("target");
+            String polarityString = opinion.getAttributeValue("polarity");
+
+            if (targetString.equalsIgnoreCase("NULL")
+                || opinionList.size() == 1) {
+              for (Token token : sentence) {
+                sentString += token.getTokenValue() + " ";
+              }
+              text += polarityString + "\t" + sentString + "\n";
+            } else {
+              int posTargetMin = -1;
+              int posTargetMax = -1;
+              // List<String> itemsTarget = Arrays.asList(targetString.split("
+              // "));
+              List<List<Token>> segmentedtarget = StringUtils
+                  .tokenizeSentence(targetString, language);
+              List<Token> target = segmentedtarget.get(0);
+              String targetMin = target.get(0).getTokenValue();
+              String targetMax = target.get(target.size() - 1).getTokenValue();
+              int count = 0;
+              for (Token token : sentence) {
+                if (token.getTokenValue().equals(targetMin)) {
+                  posTargetMin = count;
+                }
+                if (token.getTokenValue().equals(targetMax)
+                    && posTargetMin > -1) {
+                  posTargetMax = count;
+                  break;
+                }
+                count++;
+              }
+              if (posTargetMin - windowMin >= 0) {
+                posTargetMin = posTargetMin - windowMin;
+              } else
+                posTargetMin = 0;
+              if (posTargetMax + windowMax < sentence.size()) {
+                posTargetMax = posTargetMax + windowMax;
+              } else
+                posTargetMax = sentence.size() - 1;
+              for (int x = posTargetMin; x <= posTargetMax; x++) {
+                sentString += sentence.get(x).getTokenValue() + " ";
+              }
+              text += polarityString + "\t" + sentString + "\n";
+            }
+          }
+
+        }
+      } // end of sentence
+    } catch (JDOMException | IOException e) {
+      e.printStackTrace();
+    }
+
+    return text;
+  }
+
   public static String nafToAbsa2015(String inputNAF) throws IOException {
 
     Path kafPath = Paths.get(inputNAF);
@@ -263,7 +347,7 @@ public class AbsaSemEval {
     xmlOutput.setFormat(format);
     return xmlOutput.outputString(doc);
   }
-  
+
   public static void absa2015PrintTargets(String fileName, String language) {
     KAFDocument kaf = new KAFDocument(language, "v1.naf");
     absa2015ToNAFNER(kaf, fileName, language);
@@ -361,8 +445,8 @@ public class AbsaSemEval {
           // iterating over every opinion in the opinions element
           if (!aspectTermsList.isEmpty()) {
             for (Element aspectTerm : aspectTermsList) {
-              //String targetString = aspectTerm.getAttributeValue("term");
-              //System.err.println("-> " + targetString);
+              // String targetString = aspectTerm.getAttributeValue("term");
+              // System.err.println("-> " + targetString);
               // adding OTE
               int fromOffset = Integer
                   .parseInt(aspectTerm.getAttributeValue("from"));
@@ -467,7 +551,7 @@ public class AbsaSemEval {
     xmlOutput.setFormat(format);
     return xmlOutput.outputString(doc);
   }
-  
+
   public static void absa2014PrintTargets(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     absa2014ToNAFNER(kaf, fileName, language);
