@@ -304,6 +304,10 @@ public class CLI {
       String inputNAF = parsedArguments.getString("nafToBARR");
       String barrEntities = MarkytFormat.nafToBARREntities(inputNAF);
       System.out.print(barrEntities);
+    } else if (parsedArguments.get("diannToCoNLL") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL"));
+      String conllFile = DiannFormat.diannToNAFNER(inputFile, language);
+      System.out.print(conllFile);
     }
   }
 
@@ -455,6 +459,7 @@ public class CLI {
         "Convert BARR 2017 document file format to tokenized WF NAF layer.\n");
     markytParser.addArgument("--nafToBARR").help(
         "Convert NAF containing entities into BARR 2017 prediction format.\n");
+    markytParser.addArgument("--diannToCoNLL").help("Convert DIANN format into CoNLL 2002.\n");
   }
 
   public void loadTreebankParameters() {

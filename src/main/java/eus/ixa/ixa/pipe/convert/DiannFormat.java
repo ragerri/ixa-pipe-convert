@@ -1,85 +1,99 @@
 package eus.ixa.ixa.pipe.convert;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jdom2.Content;
-import org.jdom2.Content.CType;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.filter.Filters;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.xpath.XPathExpression;
-import org.jdom2.xpath.XPathFactory;
-
-import eus.ixa.ixa.pipe.ml.tok.Token;
-import ixa.kaflib.KAFDocument;
-import ixa.kaflib.KAFDocument.FileDesc;
-import opennlp.tools.cmdline.CmdLineUtil;
-import ixa.kaflib.WF;
 
 public class DiannFormat {
 
-  private static final Pattern disPattern = Pattern.compile("<dis>(\\.*?)<\\/dis>");
+  private static final Pattern disPattern = Pattern.compile("(<dis>)(.*?)(</dis>)");
+  private static final Pattern disTokenizedBegin = Pattern.compile("(<\\s+dis\\s+>)\\s+");
+  private static final Pattern disTokenizedEnd = Pattern.compile("(\\s+<\\s+/dis\\s+>)");
+  
+  private static final Pattern negPattern = Pattern.compile("(<neg>)(.*?)(</neg>)");
+  private static final Pattern negTokenizedBegin = Pattern.compile("(<\\s+neg\\s+>)\\s+");
+  private static final Pattern negTokenizedEnd = Pattern.compile("(\\s+<\\s+/neg\\s+>)");
+  
+  private static final Pattern scpTokenizedBegin = Pattern.compile("(<\\s+scp\\s+>)\\s+");
+  private static final Pattern scpTokenizedEnd = Pattern.compile("(\\s+<\\s+/scp\\s+>)");
+  
   
   private DiannFormat() {
   }
   
-  private static void diannToNAFNER(KAFDocument kaf, Path fileName, String language) throws IOException {
+  public static String diannToNAFNER(Path fileName, String language) throws IOException {
+    StringBuilder sb = new StringBuilder();
     //reading one Diann file
     if (Files.isRegularFile(fileName)) {
       List<String> inputLines = com.google.common.io.Files.readLines(fileName.toFile(), Charset.forName("UTF-8"));
       for (String line : inputLines) {
-        StringBuilder sb = new StringBuilder();
+        line = line.trim();
+        line = disTokenizedBegin.matcher(line).replaceAll("<dis>");
+        line = disTokenizedEnd.matcher(line).replaceAll("</dis>");
+        line = negTokenizedBegin.matcher(line).replaceAll("<neg>");
+        line = negTokenizedEnd.matcher(line).replaceAll("</neg>");
+        line = scpTokenizedBegin.matcher(line).replaceAll("");
+        line = scpTokenizedEnd.matcher(line).replaceAll("");
+        //convert spaces inside <dis></dis> into tabs
+        line = convertSpaceToTabDis(line);
+        line = convertSpaceToTabNeg(line);
         String[] lines = line.split(" ");
+        //iterate over words and <dis></dis> entities
         for (int i = 0; i < lines.length; i++) {
-          
-          if (lines[i].matches("<dis>")) {
-            
-            
-            
+          if (lines[i].startsWith("<dis>")) {
+            String entity = disPattern.matcher(lines[i]).replaceAll("$2");
+            String[] entityElems = entity.split("\t");
+            sb.append(entityElems[0] + "\t" + "B-DIS").append("\n");
+            for (int j = 1; j < entityElems.length; j++) {
+              sb.append(entityElems[j] + "\t" + "I-DIS").append("\n");
+            }
+          } else if (lines[i].startsWith("<neg>")) {
+            String entity = negPattern.matcher(lines[i]).replaceAll("$2");
+            String[] entityElems = entity.split("\t");
+            sb.append(entityElems[0] + "\t" + "B-NEG").append("\n");
+            for (int j = 1; j < entityElems.length; j++) {
+                sb.append(entityElems[j] + "\t" + "I-NEG").append("\n");
+            }
+          } else {
+           sb.append(lines[i] + "\t" + "O").append("\n");
           }
-        }
+        }//end of sentence
+        sb.append("\n");
       }
     } else {
       System.out.println("Please choose a valid file as input.");
       System.exit(1);
     }
+    return sb.toString();
   }
   
-  public static String diannToCoNLL2002(Path fileName, String language) throws IOException {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    diannToNAFNER(kaf, fileName, language);
-    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
-    return conllFile;
-  }
-  
-  public static String timeMLToRawNAF(String fileName, String language) {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    SAXBuilder sax = new SAXBuilder();
-    try {
-      Document doc = sax.build(fileName);
-      Element rootElement = doc.getRootElement();
-      //getting the Document Creation Time
-      Element dctElement = rootElement.getChild("DCT");
-      Element dctTimex = dctElement.getChild("TIMEX3");
-      String dctTimexValue = dctTimex.getAttributeValue("value");
-      kaf.createFileDesc().creationtime = dctTimexValue;
-      //getting the TEXT
-      Element textElement = rootElement.getChild("TEXT");
-      String words = textElement.getValue(); 
-      kaf.setRawText(words);
-    } catch (JDOMException | IOException e) {
-      e.printStackTrace();
+
+  private static String convertSpaceToTabDis(String line) {
+    final Matcher disMatcher = disPattern.matcher(line);
+    final StringBuffer sb = new StringBuffer();
+    while (disMatcher.find()) {
+      disMatcher.appendReplacement(sb,
+          disMatcher.group().replaceAll("\\s", "\t"));
     }
-    return kaf.toString();
+    disMatcher.appendTail(sb);
+    line = sb.toString();
+    return line;
   }
+  
+  private static String convertSpaceToTabNeg(String line) {
+    final Matcher negMatcher = negPattern.matcher(line);
+    final StringBuffer sb = new StringBuffer();
+    while (negMatcher.find()) {
+      negMatcher.appendReplacement(sb,
+          negMatcher.group().replaceAll("\\s", "\t"));
+    }
+    negMatcher.appendTail(sb);
+    line = sb.toString();
+    return line;
+  }
+
 }
