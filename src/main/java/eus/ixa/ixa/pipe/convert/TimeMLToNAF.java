@@ -64,10 +64,10 @@ public class TimeMLToNAF {
         String[] tokensArray = eus.ixa.ixa.pipe.ml.utils.StringUtils.convertListTokenToArrayStrings(sentence);
         String sentenceString = StringUtils.getStringFromTokens(tokensArray);
         sentenceString = convertSpaceToTabTimex(sentenceString);
-        System.err.println(sentenceString);
+        //System.err.println(sentenceString);
         String[] textArray = sentenceString.split(" ");
         for (int i = 0; i < textArray.length; i++) {
-          //System.err.println(textArray[i]);
+           System.err.println(textArray[i]);
           /*if (textArray[i].startsWith("<\tTIMEX3")) {
             String timexType = timex3Pattern.matcher(textArray[i]).replaceAll("$1").trim();
             String timexText = timex3Pattern.matcher(textArray[i]).replaceAll("$2").trim();
