@@ -67,22 +67,22 @@ public class TimeMLToNAF {
         //System.err.println(sentenceString);
         String[] textArray = sentenceString.split(" ");
         for (int i = 0; i < textArray.length; i++) {
-           System.err.println(textArray[i]);
-          /*if (textArray[i].startsWith("<\tTIMEX3")) {
+          if (textArray[i].startsWith("<\tTIMEX3")) {
+            //System.out.println(textArray[i]);
             String timexType = timex3Pattern.matcher(textArray[i]).replaceAll("$1").trim();
             String timexText = timex3Pattern.matcher(textArray[i]).replaceAll("$2").trim();
-            //System.err.println(timexText);
+            System.out.println(timexText + " " + timexType);
             String[] timexExpression = timexText.split("\t");
-            sb.append(timexExpression[0]).append("\t").append("B-").append(timexType).append("\n");
+            //sb.append(timexExpression[0]).append("\t").append("B-").append(timexType).append("\n");
             //System.err.println(timexExpression[0] + "\t" + "B-" + timexType);
-            if (timexExpression.length > 1) {
+            /*if (timexExpression.length > 1) {
               for (int j = 1; i < timexExpression.length; j++) {
                 sb.append(timexExpression[j]).append("\t").append("I-").append(timexType).append("\n");
               }
-            }
+            }*/
           } else {
-            sb.append(textArray[i]).append("\t").append("O").append("\n");
-          }*/
+            //sb.append(textArray[i]).append("\t").append("O").append("\n");
+          }
       }
       } //System.out.print(sb.toString());
     } catch (JDOMException | IOException e) {
