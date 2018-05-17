@@ -7,23 +7,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jdom2.Content;
-import org.jdom2.Content.CType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.KAFDocument;
-import ixa.kaflib.KAFDocument.FileDesc;
-import ixa.kaflib.WF;
 
-public class TimeMLToNAF {
+public class TimeMLFormat {
 
   private static final Pattern eventPattern = Pattern
       .compile("(<EVENT.*?>)(.*?)(</EVENT>)");
@@ -33,12 +28,8 @@ public class TimeMLToNAF {
       .compile("<TIMEX3.*?>(.*?)</TIMEX3>");
   private static final Pattern timexTokenizedPattern = Pattern
       .compile("<\\s+TIMEX3.*?>\\s+(.*?)\\s+<\\s+/TIMEX3\\s+>");
-  private static final Pattern timexBeginPattern = Pattern
-      .compile("(<\\s+TIMEX3.*?>)");
-  private static final Pattern timexEndPattern = Pattern
-      .compile("<\\s+/TIMEX3\\s+>");
 
-  private TimeMLToNAF() {
+  private TimeMLFormat() {
   }
 
   private static void timeMLToNAFNER(KAFDocument kaf, String fileName,
