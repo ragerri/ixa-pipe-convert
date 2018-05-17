@@ -25,29 +25,36 @@ import ixa.kaflib.WF;
 
 public class TimeMLToNAF {
 
-  private static final Pattern eventPattern = Pattern.compile("(<EVENT.*?>)(.*?)(</EVENT>)");
-  private static final Pattern timex3Pattern = Pattern.compile("<\tTIMEX3.*?type\t=\t\"\t(\\S+)\t\".*?>\t(.*?)\t<\t/TIMEX3\t>");
-  private static final Pattern timexPattern = Pattern.compile("<TIMEX3.*?>(.*?)</TIMEX3>");
-  private static final Pattern timexTokenizedPattern = Pattern.compile("<\\s+TIMEX3.*?>\\s+(.*?)\\s+<\\s+/TIMEX3\\s+>");
-  private static final Pattern timexBeginPattern = Pattern.compile("(<\\s+TIMEX3.*?>)");
-  private static final Pattern timexEndPattern = Pattern.compile("<\\s+/TIMEX3\\s+>");
-  
+  private static final Pattern eventPattern = Pattern
+      .compile("(<EVENT.*?>)(.*?)(</EVENT>)");
+  private static final Pattern timex3Pattern = Pattern
+      .compile("<\tTIMEX3.*?type\t=\t\"\t(\\S+)\t\".*?>\t(.*?)\t<\t/TIMEX3\t>");
+  private static final Pattern timexPattern = Pattern
+      .compile("<TIMEX3.*?>(.*?)</TIMEX3>");
+  private static final Pattern timexTokenizedPattern = Pattern
+      .compile("<\\s+TIMEX3.*?>\\s+(.*?)\\s+<\\s+/TIMEX3\\s+>");
+  private static final Pattern timexBeginPattern = Pattern
+      .compile("(<\\s+TIMEX3.*?>)");
+  private static final Pattern timexEndPattern = Pattern
+      .compile("<\\s+/TIMEX3\\s+>");
+
   private TimeMLToNAF() {
   }
-  
-  private static void timeMLToNAFNER(KAFDocument kaf, String fileName, String language) {
-    //reading the TimeML xml file
+
+  private static void timeMLToNAFNER(KAFDocument kaf, String fileName,
+      String language) {
+    // reading the TimeML xml file
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
       Document doc = sax.build(fileName);
-      Element rootElement = doc.getRootElement(); 
-      //getting the Document Creation Time
+      Element rootElement = doc.getRootElement();
+      // getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
       String dctTimexValue = dctTimex.getAttributeValue("value");
       kaf.createFileDesc().creationtime = dctTimexValue;
-      //getting everything in the TEXT element
+      // getting everything in the TEXT element
       Element textElement = rootElement.getChild("TEXT");
       List<Content> textElements = textElement.getContent();
       StringBuilder sb = new StringBuilder();
@@ -57,68 +64,70 @@ public class TimeMLToNAF {
       StringBuffer sbuffer = sw.getBuffer();
       String text = sbuffer.toString().trim();
       text = eventPattern.matcher(text).replaceAll("$2");
-      //we do not use event elements
+      // we do not use event elements
       List<List<Token>> tokens = StringUtils.tokenizeDocument(text, language);
-      //iterate over the tokenized sentences
+      // iterate over the tokenized sentences
       for (List<Token> sentence : tokens) {
-        String[] tokensArray = eus.ixa.ixa.pipe.ml.utils.StringUtils.convertListTokenToArrayStrings(sentence);
+        String[] tokensArray = eus.ixa.ixa.pipe.ml.utils.StringUtils
+            .convertListTokenToArrayStrings(sentence);
         String sentenceString = StringUtils.getStringFromTokens(tokensArray);
         sentenceString = convertSpaceToTabTimex(sentenceString);
-        //System.err.println(sentenceString);
+        //System.out.println(sentenceString);
         String[] textArray = sentenceString.split(" ");
         for (int i = 0; i < textArray.length; i++) {
           if (textArray[i].startsWith("<\tTIMEX3")) {
             //System.out.println(textArray[i]);
-            String timexType = timex3Pattern.matcher(textArray[i]).replaceAll("$1").trim();
-            String timexText = timex3Pattern.matcher(textArray[i]).replaceAll("$2").trim();
-            System.out.println(timexText + " " + timexType);
+            String timexType = timex3Pattern.matcher(textArray[i])
+                .replaceAll("$1").trim();
+            String timexText = timex3Pattern.matcher(textArray[i])
+                .replaceAll("$2").trim();
+            //System.out.println(timexText + "\t" + timexType);
             String[] timexExpression = timexText.split("\t");
-            //sb.append(timexExpression[0]).append("\t").append("B-").append(timexType).append("\n");
-            //System.err.println(timexExpression[0] + "\t" + "B-" + timexType);
-            /*if (timexExpression.length > 1) {
-              for (int j = 1; i < timexExpression.length; j++) {
-                sb.append(timexExpression[j]).append("\t").append("I-").append(timexType).append("\n");
-              }
-            }*/
+            sb.append(timexExpression[0]).append("\t").append("B-").append(timexType).append("\n");
+            for (int j = 1; j < timexExpression.length; j++) {
+              //System.out.println(timexExpression[j] + "\t" + "I-" + timexType);
+              sb.append(timexExpression[j]).append("\t").append("I-").append(timexType).append("\n");
+            }
           } else {
-            //sb.append(textArray[i]).append("\t").append("O").append("\n");
+            sb.append(textArray[i]).append("\t").append("O").append("\n");
           }
-      }
-      } //System.out.print(sb.toString());
+        } sb.append("\n");
+      } 
+      System.out.print(sb.toString());
     } catch (JDOMException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
-  
+
   public static String timeMLToCoNLL2002(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     timeMLToNAFNER(kaf, fileName, language);
-    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
-    return conllFile;
+    // String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
+    return null;
   }
-  
+
   public static String timeMLToRawNAF(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     SAXBuilder sax = new SAXBuilder();
     try {
       Document doc = sax.build(fileName);
       Element rootElement = doc.getRootElement();
-      //getting the Document Creation Time
+      // getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
       String dctTimexValue = dctTimex.getAttributeValue("value");
       kaf.createFileDesc().creationtime = dctTimexValue;
-      //getting the TEXT
+      // getting the TEXT
       Element textElement = rootElement.getChild("TEXT");
-      String words = textElement.getValue(); 
+      String words = textElement.getValue();
       kaf.setRawText(words);
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
     return kaf.toString();
   }
-  
+
   private static String convertSpaceToTabTimex(String line) {
     final Matcher timexMatcher = timexTokenizedPattern.matcher(line);
     final StringBuffer sb = new StringBuffer();
