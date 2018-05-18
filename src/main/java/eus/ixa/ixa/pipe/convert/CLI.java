@@ -264,12 +264,11 @@ public class CLI {
     }
   }
 
-  public final void timeml() {
+  public final void timeml() throws IOException {
     String language = parsedArguments.getString("language");
     if (parsedArguments.get("timemlToCoNLL2002") != null) {
-      String inputFile = parsedArguments.getString("timemlToCoNLL2002");
-      String conllFile = TimeMLFormat.timeMLToCoNLL2002(inputFile, language);
-      System.out.print(conllFile);
+      Path inputFile = Paths.get(parsedArguments.getString("timemlToCoNLL2002"));
+      TimeMLFormat.timeMLToCoNLL2002(inputFile, language);
     } else if (parsedArguments.get("timemlToRawNAF") != null) {
       String inputFile = parsedArguments.getString("timemlToRawNAF");
       String kafString = TimeMLFormat.timeMLToRawNAF(inputFile, language);

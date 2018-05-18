@@ -2,6 +2,11 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,23 +37,23 @@ public class TimeMLFormat {
   private TimeMLFormat() {
   }
 
-  private static void timeMLToNAFNER(KAFDocument kaf, String fileName,
-      String language) {
+  private static void timeMLToBIO(Path fileName,
+      String language) throws IOException {
     // reading the TimeML xml file
+    StringBuilder sb = new StringBuilder();
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
     try {
-      Document doc = sax.build(fileName);
+      Document doc = sax.build(fileName.toFile());
       Element rootElement = doc.getRootElement();
       // getting the Document Creation Time
       Element dctElement = rootElement.getChild("DCT");
       Element dctTimex = dctElement.getChild("TIMEX3");
       String dctTimexValue = dctTimex.getAttributeValue("value");
-      kaf.createFileDesc().creationtime = dctTimexValue;
+      //KAFDocument.createFileDesc().creationtime = dctTimexValue;
       // getting everything in the TEXT element
       Element textElement = rootElement.getChild("TEXT");
       List<Content> textElements = textElement.getContent();
-      StringBuilder sb = new StringBuilder();
       StringWriter sw = new StringWriter();
       XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
       xmlOutput.output(textElements, sw);
@@ -83,19 +88,36 @@ public class TimeMLFormat {
             sb.append(textArray[i]).append("\t").append("O").append("\n");
           }
         } sb.append("\n");
-      } 
-      System.out.print(sb.toString());
+      }
     } catch (JDOMException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+    Path outfile = Files.createFile(Paths.get(fileName.toString() + ".conll02"));
+    Files.write(outfile,
+        sb.toString().getBytes(StandardCharsets.UTF_8));
+    System.err.println(">> Wrote conll02 document to " + outfile);
   }
-
-  public static String timeMLToCoNLL2002(String fileName, String language) {
-    KAFDocument kaf = new KAFDocument("en", "v1.naf");
-    timeMLToNAFNER(kaf, fileName, language);
-    // String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
-    return null;
+  
+  public static void timeMLToCoNLL2002(Path dir, String language) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir) && !dir.toString().endsWith("conll02")) {
+      timeMLToBIO(dir, language);
+    } // process one file
+    else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            timeMLToCoNLL2002(dir, language);
+          } else {
+            if (!file.toString().endsWith("conll02")) {
+              timeMLToBIO(file, language);
+            }
+          }
+        }
+      }
+    }
   }
 
   public static String timeMLToRawNAF(String fileName, String language) {
