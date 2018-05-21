@@ -2,6 +2,7 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -42,15 +43,9 @@ public class TimeMLFormat {
     // reading the TimeML xml file
     StringBuilder sb = new StringBuilder();
     SAXBuilder sax = new SAXBuilder();
-    XPathFactory xFactory = XPathFactory.instance();
     try {
       Document doc = sax.build(fileName.toFile());
       Element rootElement = doc.getRootElement();
-      // getting the Document Creation Time
-      Element dctElement = rootElement.getChild("DCT");
-      Element dctTimex = dctElement.getChild("TIMEX3");
-      String dctTimexValue = dctTimex.getAttributeValue("value");
-      //KAFDocument.createFileDesc().creationtime = dctTimexValue;
       // getting everything in the TEXT element
       Element textElement = rootElement.getChild("TEXT");
       List<Content> textElements = textElement.getContent();
@@ -152,4 +147,5 @@ public class TimeMLFormat {
     line = sb.toString();
     return line;
   }
+  
 }

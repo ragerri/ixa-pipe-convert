@@ -2,8 +2,11 @@ package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +23,7 @@ public class DiannFormat {
   
   private static final Pattern scpTokenizedBegin = Pattern.compile("(<\\s+scp\\s+>)\\s+");
   private static final Pattern scpTokenizedEnd = Pattern.compile("(\\s+<\\s+/scp\\s+>)");
+  private static final Pattern scopePattern = Pattern.compile("(<neg>.*</dis>)");
   
   
   private DiannFormat() {
@@ -94,6 +98,41 @@ public class DiannFormat {
     negMatcher.appendTail(sb);
     line = sb.toString();
     return line;
+  }
+  
+  public static void addScope(Path dir) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir) && dir.toString().endsWith("tag")) {
+      processScope(dir);
+    } // process one file
+    else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            addScope(dir);
+          } else {
+            if (file.toString().endsWith("tag")) {
+              processScope(file);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  private static void processScope(Path fileName) throws IOException {
+    // reading the TimeML xml file
+    StringBuilder sb = new StringBuilder();
+    List<String> sentences = com.google.common.io.Files.readLines(fileName.toFile(), StandardCharsets.UTF_8);
+    for (String sentence : sentences) {
+       String scopedSentence = scopePattern.matcher(sentence).replaceAll("<scp>$1</scp>");
+       sb.append(scopedSentence).append("\n");
+    }
+    Path outfile = Files.createFile(Paths.get(fileName.toString() + ".scp"));
+    Files.write(outfile,
+        sb.toString().trim().getBytes(StandardCharsets.UTF_8));
+    System.err.println(">> Wrote scp document to " + outfile);
   }
 
 }

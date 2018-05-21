@@ -323,6 +323,9 @@ public class CLI {
       Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL"));
       String conllFile = DiannFormat.diannToNAFNER(inputFile, language);
       System.out.print(conllFile);
+    } else if (parsedArguments.get("addScope") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("addScope"));
+      DiannFormat.addScope(inputFile);
     }
   }
 
@@ -484,6 +487,7 @@ public class CLI {
     markytParser.addArgument("--nafToBARR").help(
         "Convert NAF containing entities into BARR 2017 prediction format.\n");
     markytParser.addArgument("--diannToCoNLL").help("Convert DIANN format into CoNLL 2002.\n");
+    markytParser.addArgument("--addScope").help("Add scope labels after negations in DIANN format.\n");
   }
 
   public void loadTreebankParameters() {
