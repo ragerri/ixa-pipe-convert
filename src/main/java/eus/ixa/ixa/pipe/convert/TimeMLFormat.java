@@ -29,15 +29,14 @@ public class TimeMLFormat {
   private static final Pattern timexTokenizedPattern = Pattern
       .compile("<\\s+TIMEX3.*?>\\s+(.*?)<\\s+/TIMEX3\\s+>", Pattern.DOTALL);
   private static final Pattern timex3Pattern = Pattern
-      .compile("<\tTIMEX3.*?type\t=\t\"\t(\\S+)\t\".*?>\t(.*?)\t<\t/TIMEX3\t>", Pattern.DOTALL);
+      .compile("<maitenaTIMEX3.*?typemaitena=maitena\"maitena(\\S+?)maitena\".*?>maitena(.*?)maitena<maitena/TIMEX3maitena>", Pattern.DOTALL);
   
   
                                                                                                                                                                                                                                                                                                                                             
   private TimeMLFormat() {
   }
 
-  private static void timeMLToBIO(Path fileName,
-      String language) throws IOException {
+  private static void timeMLToBIO(Path fileName, String language) throws IOException {
     // reading the TimeML xml file
     StringBuilder sb = new StringBuilder();
     SAXBuilder sax = new SAXBuilder();
@@ -54,6 +53,8 @@ public class TimeMLFormat {
       String text = sbuffer.toString().trim();
       // we do not use event elements
       text = eventPattern.matcher(text).replaceAll("$2");
+      text = text.replaceAll("``", "\"");
+      text = text.replaceAll("''", "\"");
       //remove spaces from temporal expression prior tokenization
       text = convertTimex(text);
       List<List<Token>> tokens = StringUtils.tokenizeDocument(text, language);
@@ -66,12 +67,12 @@ public class TimeMLFormat {
         sentenceString = convertSpaceToTabTimex(sentenceString);
         String[] textArray = sentenceString.split(" ");
         for (int i = 0; i < textArray.length; i++) {
-          if (textArray[i].startsWith("<\tTIMEX3")) {
+          if (textArray[i].startsWith("<maitenaTIMEX3")) {
             String timexType = timex3Pattern.matcher(textArray[i])
                 .replaceAll("$1").trim();
             String timexText = timex3Pattern.matcher(textArray[i])
                 .replaceAll("$2").trim();
-            String[] timexExpression = timexText.split("maitena");
+            String[] timexExpression = timexText.split("(maitena)+");
             sb.append(timexExpression[0]).append("\t").append("B-").append(timexType).append("\n");
             for (int j = 1; j < timexExpression.length; j++) {
               sb.append(timexExpression[j]).append("\t").append("I-").append(timexType).append("\n");
@@ -110,7 +111,7 @@ public class TimeMLFormat {
     final StringBuffer sb = new StringBuffer();
     while (timexMatcher.find()) {
       timexMatcher.appendReplacement(sb,
-          timexMatcher.group().replaceAll("\\s+", "\t"));
+          timexMatcher.group().replaceAll("\\s+", "maitena"));
     }
     timexMatcher.appendTail(sb);
     line = sb.toString();
