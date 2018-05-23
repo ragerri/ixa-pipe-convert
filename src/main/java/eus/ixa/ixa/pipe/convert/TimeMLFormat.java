@@ -57,7 +57,6 @@ public class TimeMLFormat {
       text = text.replaceAll("''", "\"");
       //remove empty lines before tokenization
       text = text.replaceAll("(?m)^\\s+", "");
-      System.out.print("-> DOC: " + text);
       text = convertTimex(text);
       //remove spaces from temporal expression prior tokenization
       List<List<Token>> tokens = StringUtils.tokenizeDocument(text, language);
