@@ -451,8 +451,8 @@ public class CLI {
   }
 
   public void loadTimeMLParameters() {
-    this.timemlParser.addArgument("-l", "--language").choices("en", "es")
-        .required(true).help("Choose a language.");
+    this.timemlParser.addArgument("-l", "--language").choices("en", "es", "eu", "it")
+        .required(false).setDefault("es").help("Choose a language.");
     timemlParser.addArgument("--timemlToRawNAF")
         .help("Convert TimemL from Tempeval3 task to Raw NAF layer.\n");
     timemlParser.addArgument("--timemlToCoNLL2002")

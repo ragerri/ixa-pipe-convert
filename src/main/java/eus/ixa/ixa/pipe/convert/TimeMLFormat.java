@@ -55,8 +55,11 @@ public class TimeMLFormat {
       text = eventPattern.matcher(text).replaceAll("$2");
       text = text.replaceAll("``", "\"");
       text = text.replaceAll("''", "\"");
-      //remove spaces from temporal expression prior tokenization
+      //remove empty lines before tokenization
+      text = text.replaceAll("(?m)^\\s+", "");
+      System.out.print("-> DOC: " + text);
       text = convertTimex(text);
+      //remove spaces from temporal expression prior tokenization
       List<List<Token>> tokens = StringUtils.tokenizeDocument(text, language);
       // iterate over the tokenized sentences
       for (List<Token> sentence : tokens) {
