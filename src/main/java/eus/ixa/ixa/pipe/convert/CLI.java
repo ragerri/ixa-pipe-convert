@@ -76,6 +76,7 @@ public class CLI {
    * The parser to manage markyt conversions.
    */
   private final Subparser markytParser;
+  private final Subparser diannParser;
   /**
    * The parser that manages treebank conversions.
    */
@@ -95,6 +96,7 @@ public class CLI {
   private static final String TIMEML_CONVERSOR_NAME = "timeml";
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
   private static final String MARKYT_CONVERSOR_NAME = "markyt";
+  private static final String DIANN_CONVERSOR_NAME = "diann";
   private static final String TREEBANK_CONVERSOR_NAME = "treebank";
   private static final String NAF_CONVERSOR_NAME = "naf";
   private static final String EPEC_CONVERSOR_NAME = "epec";
@@ -116,6 +118,9 @@ public class CLI {
     clusterParser = subParsers.addParser(CLUSTER_CONVERSOR_NAME)
         .help("Cluster lexicon conversion functions.");
     loadClusterParameters();
+    diannParser = subParsers.addParser(DIANN_CONVERSOR_NAME)
+        .help("DIANN conversion functions.\n");
+    loadDiannParameters();
     markytParser = subParsers.addParser(MARKYT_CONVERSOR_NAME)
         .help("Markyt conversion functions.\n");
     loadMarkytParameters();
@@ -168,6 +173,9 @@ public class CLI {
       case CLUSTER_CONVERSOR_NAME:
         cluster();
         break;
+      case DIANN_CONVERSOR_NAME:
+        diann();
+        break;
       case MARKYT_CONVERSOR_NAME:
         markyt();
         break;
@@ -187,7 +195,7 @@ public class CLI {
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-          + "-exec.jar (absa|interstock|timeml|cluster|markyt|treebank|naf|epec|convert) -help for details");
+          + "-exec.jar (absa|interstock|timeml|cluster|diann|markyt|treebank|naf|epec|convert) -help for details");
       System.exit(1);
     }
   }
@@ -302,6 +310,18 @@ public class CLI {
       SerializeResources.serializeLemmaDictionary(lemmaDict);
     }
   }
+  
+  public final void diann() throws IOException {
+    String language = parsedArguments.getString("language");
+    if (parsedArguments.get("diannToCoNLL02") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL"));
+      String conllFile = DiannFormat.diannToNAFNER(inputFile, language);
+      System.out.print(conllFile);
+    } else if (parsedArguments.get("addScope") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("addScope"));
+      DiannFormat.addScope(inputFile);
+    }
+  }
 
   public final void markyt() throws IOException {
     String language = parsedArguments.getString("language");
@@ -319,13 +339,6 @@ public class CLI {
       String inputNAF = parsedArguments.getString("nafToBARR");
       String barrEntities = MarkytFormat.nafToBARREntities(inputNAF);
       System.out.print(barrEntities);
-    } else if (parsedArguments.get("diannToCoNLL") != null) {
-      Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL"));
-      String conllFile = DiannFormat.diannToNAFNER(inputFile, language);
-      System.out.print(conllFile);
-    } else if (parsedArguments.get("addScope") != null) {
-      Path inputFile = Paths.get(parsedArguments.getString("addScope"));
-      DiannFormat.addScope(inputFile);
     }
   }
 
@@ -473,6 +486,13 @@ public class CLI {
         .help("Serialize DictionaryLemmatizer files to an object.\n");
     clusterParser.addArgument("--lowercase").action(Arguments.storeTrue())
         .help("Lowercase input text.\n");
+  }
+  
+  public void loadDiannParameters() {
+    this.diannParser.addArgument("-l", "--language").choices("en", "es")
+        .required(true).help("Choose a language.");
+    diannParser.addArgument("--diannToCoNLL02").help("Convert DIANN format into CoNLL 2002.\n");
+    diannParser.addArgument("--addScope").help("Add scope labels after negations in DIANN format.\n");
   }
 
   public void loadMarkytParameters() {

@@ -30,8 +30,6 @@ public class TimeMLFormat {
       .compile("<\\s+TIMEX3.*?>\\s+(.*?)<\\s+/TIMEX3\\s+>", Pattern.DOTALL);
   private static final Pattern timex3Pattern = Pattern
       .compile("<maitenaTIMEX3.*?typemaitena=maitena\"maitena(\\S+?)maitena\".*?>maitena(.*?)maitena<maitena/TIMEX3maitena>", Pattern.DOTALL);
-  
-  
                                                                                                                                                                                                                                                                                                                                             
   private TimeMLFormat() {
   }

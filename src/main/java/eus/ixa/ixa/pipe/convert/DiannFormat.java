@@ -35,6 +35,7 @@ public class DiannFormat {
     if (Files.isRegularFile(fileName)) {
       List<String> inputLines = com.google.common.io.Files.readLines(fileName.toFile(), Charset.forName("UTF-8"));
       for (String line : inputLines) {
+        line = line.replaceAll("(?m)^\\s+", "");
         line = line.trim();
         line = disTokenizedBegin.matcher(line).replaceAll("<dis>");
         line = disTokenizedEnd.matcher(line).replaceAll("</dis>");
