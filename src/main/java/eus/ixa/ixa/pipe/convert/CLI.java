@@ -314,7 +314,7 @@ public class CLI {
   public final void diann() throws IOException {
     String language = parsedArguments.getString("language");
     if (parsedArguments.get("diannToCoNLL02") != null) {
-      Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL"));
+      Path inputFile = Paths.get(parsedArguments.getString("diannToCoNLL02"));
       String conllFile = DiannFormat.diannToNAFNER(inputFile, language);
       System.out.print(conllFile);
     } else if (parsedArguments.get("addScope") != null) {
