@@ -16,12 +16,16 @@
 
 package eus.ixa.ixa.pipe.convert;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -31,6 +35,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import eus.ixa.ixa.pipe.ml.StatisticalDocumentClassifier;
 import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.KAFDocument;
 
@@ -41,7 +46,7 @@ import ixa.kaflib.KAFDocument;
  * @version 2018-06-07
  */
 public class TassFormat {
-  
+
   private static String LANGUAGE = "es";
 
   // do not instantiate this class
@@ -78,8 +83,8 @@ public class TassFormat {
         tweetPolarity = tweet.getChild("sentiments").getChild("polarity")
             .getChildText("value");
       }
-      sb.append(tweetId).append("\t").append(tweetPolarity).append("\t").append(tokenizedTweetContent)
-          .append("\n");
+      sb.append(tweetId).append("\t").append(tweetPolarity).append("\t")
+          .append(tokenizedTweetContent).append("\n");
     }
     System.out.println(sb.toString());
   }
@@ -97,7 +102,7 @@ public class TassFormat {
         String tweetId = tweet.getChildText("tweetid");
         KAFDocument kaf = new KAFDocument(LANGUAGE, "v1.naf");
         kaf.createPublic().publicId = tweetId;
-       
+
         String tweetContentString = tweet.getChildText("content");
         List<List<Token>> segmentedSentences = StringUtils
             .tokenizeSentence(tweetContentString, LANGUAGE);
@@ -107,20 +112,67 @@ public class TassFormat {
           }
         }
         Path outfile = Files.createFile(Paths.get(tweetId + ".naf"));
-        Files.write(outfile,
-            kaf.toString().getBytes(StandardCharsets.UTF_8));
+        Files.write(outfile, kaf.toString().getBytes(StandardCharsets.UTF_8));
         System.err.println(">> Wrote naf document to " + outfile);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
   }
-  
-  public static void nafToGeneralTest(String inputNAF) throws IOException {
-    Path kafPath = Paths.get(inputNAF);
-    KAFDocument kaf = KAFDocument.createFromFile(kafPath.toFile());
+
+  public static String nafToGeneralTest(Path dir) throws IOException {
+    // process one file
+    StringBuilder sb = new StringBuilder();
+    if (Files.isRegularFile(dir) && dir.toString().endsWith("topic")) {
+      processNafToGeneralTest(dir, sb);
+    } // process one file
+    else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            nafToGeneralTest(dir);
+          } else {
+            if (file.toString().endsWith("topic")) {
+              processNafToGeneralTest(file, sb);
+            }
+          }
+        }
+      }
+    }
+    return sb.toString();
+  }
+
+  public static void processNafToGeneralTest(Path inputNAF, StringBuilder sb)
+      throws IOException {
+    KAFDocument kaf = KAFDocument.createFromFile(inputNAF.toFile());
     String tweetId = kaf.getPublic().publicId;
     String polarity = kaf.getTopics().get(0).getTopicValue();
-    System.out.println(tweetId + "\t" + polarity);
+    sb.append(tweetId).append("\t").append(polarity).append("\n");
+  }
+
+  public static void annotateGeneralTest(String inputFile, String model)
+      throws IOException {
+    List<String> inputLines = com.google.common.io.Files
+        .readLines(new File(inputFile), Charset.forName("UTF-8"));
+    Properties properties = setDocProperties(model, LANGUAGE, "no");
+    StatisticalDocumentClassifier docClassifier = new StatisticalDocumentClassifier(
+        properties);
+    for (String line : inputLines) {
+      String[] lineArray = line.split("\t");
+      String tweetId = lineArray[0];
+      String[] document = lineArray[2].split(" ");
+      String polarity = docClassifier.classify(document);
+      System.out.println(tweetId + "\t" + polarity);
+    }
+  }
+
+  private static Properties setDocProperties(String model, String language,
+      String clearFeatures) {
+    Properties oteProperties = new Properties();
+    oteProperties.setProperty("model", model);
+    oteProperties.setProperty("language", language);
+    oteProperties.setProperty("clearFeatures", clearFeatures);
+    return oteProperties;
   }
 }

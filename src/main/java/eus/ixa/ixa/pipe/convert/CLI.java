@@ -351,7 +351,7 @@ public class CLI {
       DiannFormat.addScope(inputFile);
     }
   }
-  
+
   public final void tass() throws IOException, JDOMException {
     if (parsedArguments.get("generalToTabulated") != null) {
       String inputFile = parsedArguments.getString("generalToTabulated");
@@ -360,11 +360,15 @@ public class CLI {
       String inputFile = parsedArguments.getString("generalToWFs");
       TassFormat.generalToWFs(inputFile);
     } else if (parsedArguments.get("nafToGeneralTest") != null) {
-      String inputNAF = parsedArguments.getString("nafToGeneralTest");
-      TassFormat.nafToGeneralTest(inputNAF);
+      Path inputNAF = Paths.get(parsedArguments.getString("nafToGeneralTest"));
+      String outputTest = TassFormat.nafToGeneralTest(inputNAF);
+      System.out.print(outputTest);
+    } else if (parsedArguments.get("annotateGeneralTest") != null) {
+      String inputFile = parsedArguments.getString("annotateGeneralTest");
+      String model = parsedArguments.getString("model");
+      TassFormat.annotateGeneralTest(inputFile, model);
     }
   }
-
 
   public final void markyt() throws IOException {
     String language = parsedArguments.getString("language");
@@ -541,10 +545,16 @@ public class CLI {
   }
 
   public void loadTassParameters() {
-    tassParser.addArgument("--generalToTabulated")
-        .help("Converts TASS General Corpus into tabulated format for document classication with ixa-pipe-doc.\n");
-    tassParser.addArgument("--generalToWFs").help("Converts TASS General Corpus into a NAF containing the tokens and the tweeId in the NAF header. One NAF document per tweet.\n");
-    tassParser.addArgument("--nafToGeneralTest").help("Converts NAF containing polarity classification in Topics element into TASS General Corpus test format\n.");
+    tassParser.addArgument("--generalToTabulated").help(
+        "Converts TASS General Corpus into tabulated format for document classication with ixa-pipe-doc.\n");
+    tassParser.addArgument("--generalToWFs").help(
+        "Converts TASS General Corpus into a NAF containing the tokens and the tweeId in the NAF header. One NAF document per tweet.\n");
+    tassParser.addArgument("--nafToGeneralTest").help(
+        "Converts NAF containing polarity classification in Topics element into TASS General Corpus test format\n.");
+    tassParser.addArgument("--annotateGeneralTest")
+        .help("Reads and annotates the testset from TASS General Corpus.\n");
+    tassParser.addArgument("--model")
+        .help("Chooses the model to annotateGeneralTest argument.\n");
   }
 
   public void loadMarkytParameters() {
