@@ -225,5 +225,4 @@ public final class StringUtils {
     annotateProperties.setProperty("untokenizable", "no");
     return annotateProperties;
   }
-
 }

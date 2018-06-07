@@ -38,7 +38,7 @@ import net.sourceforge.argparse4j.inf.Subparsers;
  * ixa-pipe-convert.
  * 
  * @author ragerri
- * @version 2017-05-17
+ * @version 2018-06-07
  * 
  */
 
@@ -66,7 +66,13 @@ public class CLI {
    * The parser that manages the absa sub-command.
    */
   private final Subparser absaParser;
+  /**
+   * The parser to manage Interstock JSON data.
+   */
   private final Subparser interstockParser;
+  /**
+   * The parser to manage Tempeval3 datasets.
+   */
   private final Subparser timemlParser;
   /**
    * The parser that manages cluster lexicon related functions.
@@ -76,7 +82,14 @@ public class CLI {
    * The parser to manage markyt conversions.
    */
   private final Subparser markytParser;
+  /**
+   * The parser to manage DIANN 2018 shared task data.
+   */
   private final Subparser diannParser;
+  /**
+   * The parser to manage TASS shared tasks data.
+   */
+  private final Subparser tassParser;
   /**
    * The parser that manages treebank conversions.
    */
@@ -85,6 +98,9 @@ public class CLI {
    * The parser that manages NAF to other formats conversions.
    */
   private final Subparser nafParser;
+  /**
+   * The parser to manage EPEC corpus.
+   */
   private final Subparser epecParser;
   /**
    * The parser that manages the general conversion functions.
@@ -97,6 +113,7 @@ public class CLI {
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
   private static final String MARKYT_CONVERSOR_NAME = "markyt";
   private static final String DIANN_CONVERSOR_NAME = "diann";
+  private static final String TASS_CONVERSOR_NAME = "tass";
   private static final String TREEBANK_CONVERSOR_NAME = "treebank";
   private static final String NAF_CONVERSOR_NAME = "naf";
   private static final String EPEC_CONVERSOR_NAME = "epec";
@@ -121,6 +138,9 @@ public class CLI {
     diannParser = subParsers.addParser(DIANN_CONVERSOR_NAME)
         .help("DIANN conversion functions.\n");
     loadDiannParameters();
+    tassParser = subParsers.addParser(TASS_CONVERSOR_NAME)
+        .help("TASS corpora conversion functions.\n");
+    loadTassParameters();
     markytParser = subParsers.addParser(MARKYT_CONVERSOR_NAME)
         .help("Markyt conversion functions.\n");
     loadMarkytParameters();
@@ -175,6 +195,9 @@ public class CLI {
         break;
       case DIANN_CONVERSOR_NAME:
         diann();
+        break;
+      case TASS_CONVERSOR_NAME:
+        tass();
         break;
       case MARKYT_CONVERSOR_NAME:
         markyt();
@@ -258,16 +281,21 @@ public class CLI {
       String inputFile = parsedArguments.getString("getJsonAllOpinionsBinary");
       Interstock.getJsonAllOpinionsBinary(inputFile);
     } else if (parsedArguments.get("getJsonFinanceOpinionsBinary") != null) {
-      String inputFile = parsedArguments.getString("getJsonFinanceOpinionsBinary");
+      String inputFile = parsedArguments
+          .getString("getJsonFinanceOpinionsBinary");
       Interstock.getJsonFinanceOpinionsBinary(inputFile);
     } else if (parsedArguments.get("getJsonFinanceAllOpinionsBinary") != null) {
-      String inputFile = parsedArguments.getString("getJsonFinanceAllOpinionsBinary");
+      String inputFile = parsedArguments
+          .getString("getJsonFinanceAllOpinionsBinary");
       Interstock.getJsonFinanceAllOpinionsBinary(inputFile);
     } else if (parsedArguments.get("getJsonFinanceOpinionsPolarity") != null) {
-      String inputFile = parsedArguments.getString("getJsonFinanceOpinionsPolarity");
+      String inputFile = parsedArguments
+          .getString("getJsonFinanceOpinionsPolarity");
       Interstock.getJsonFinanceOpinionsPolarity(inputFile);
-    } else if (parsedArguments.get("getJsonFinanceAllOpinionsPolarity") != null) {
-      String inputFile = parsedArguments.getString("getJsonFinanceAllOpinionsPolarity");
+    } else if (parsedArguments
+        .get("getJsonFinanceAllOpinionsPolarity") != null) {
+      String inputFile = parsedArguments
+          .getString("getJsonFinanceAllOpinionsPolarity");
       Interstock.getJsonFinanceAllOpinionsPolarity(inputFile);
     }
   }
@@ -275,7 +303,8 @@ public class CLI {
   public final void timeml() throws IOException {
     String language = parsedArguments.getString("language");
     if (parsedArguments.get("timemlToCoNLL2002") != null) {
-      Path inputFile = Paths.get(parsedArguments.getString("timemlToCoNLL2002"));
+      Path inputFile = Paths
+          .get(parsedArguments.getString("timemlToCoNLL2002"));
       TimeMLFormat.timeMLToCoNLL2002(inputFile, language);
     } else if (parsedArguments.get("timemlToRawNAF") != null) {
       String inputFile = parsedArguments.getString("timemlToRawNAF");
@@ -310,7 +339,7 @@ public class CLI {
       SerializeResources.serializeLemmaDictionary(lemmaDict);
     }
   }
-  
+
   public final void diann() throws IOException {
     String language = parsedArguments.getString("language");
     if (parsedArguments.get("diannToCoNLL02") != null) {
@@ -322,6 +351,20 @@ public class CLI {
       DiannFormat.addScope(inputFile);
     }
   }
+  
+  public final void tass() throws IOException, JDOMException {
+    if (parsedArguments.get("generalToTabulated") != null) {
+      String inputFile = parsedArguments.getString("generalToTabulated");
+      TassFormat.generalToTabulated(inputFile);
+    } else if (parsedArguments.get("generalToWFs") != null) {
+      String inputFile = parsedArguments.getString("generalToWFs");
+      TassFormat.generalToWFs(inputFile);
+    } else if (parsedArguments.get("nafToGeneralTest") != null) {
+      String inputNAF = parsedArguments.getString("nafToGeneralTest");
+      TassFormat.nafToGeneralTest(inputNAF);
+    }
+  }
+
 
   public final void markyt() throws IOException {
     String language = parsedArguments.getString("language");
@@ -421,8 +464,7 @@ public class CLI {
     this.absaParser.addArgument("-l", "--language")
         .choices("en", "es", "fr", "nl", "tr", "ru").required(true)
         .help("Choose a language.");
-    this.absaParser.addArgument("-w", "--window").required(false)
-         .help(
+    this.absaParser.addArgument("-w", "--window").required(false).help(
         "Define window size around target for document classification for polarity: absa2015ToPolarity. Example: 5:5");
     absaParser.addArgument("--absa2015ToCoNLL2002").help(
         "Convert ABSA SemEval 2015 and 2016 Opinion Target Extraction to CoNLL 2002 format.\n");
@@ -445,27 +487,28 @@ public class CLI {
   }
 
   public void loadInterstockParameters() {
-    //getting all documents into various formats
-    interstockParser.addArgument("--getJsonFinanceBinaryDataset")
-    .help("Print the first opinion from each document in JSON Interstock dataset into finance nofinance categories.\n");
-    interstockParser.addArgument("--getJsonMultipleOpinions")
-    .help("Print every document that contains multiple opinions in JSON Interstock dataset.\n");
-    interstockParser.addArgument("--getJsonAllOpinionsBinary")
-    .help("Print every opinion in JSON Interstock dataset into finance nofinance categories.\n");
-    //getting financial opinions into various formats
-    interstockParser.addArgument("--getJsonFinanceOpinionsBinary")
-    .help("Print the first financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
-    interstockParser.addArgument("--getJsonFinanceOpinionsPolarity")
-    .help("Print the first financial opinion in JSON Interstock dataset into positive and negative categories.\n");
-    interstockParser.addArgument("--getJsonFinanceAllOpinionsBinary")
-    .help("Print every financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
-    interstockParser.addArgument("--getJsonFinanceAllOpinionsPolarity")
-    .help("Print every financial opinion in JSON Interstock dataset into positive and negative categories.\n");
+    // getting all documents into various formats
+    interstockParser.addArgument("--getJsonFinanceBinaryDataset").help(
+        "Print the first opinion from each document in JSON Interstock dataset into finance nofinance categories.\n");
+    interstockParser.addArgument("--getJsonMultipleOpinions").help(
+        "Print every document that contains multiple opinions in JSON Interstock dataset.\n");
+    interstockParser.addArgument("--getJsonAllOpinionsBinary").help(
+        "Print every opinion in JSON Interstock dataset into finance nofinance categories.\n");
+    // getting financial opinions into various formats
+    interstockParser.addArgument("--getJsonFinanceOpinionsBinary").help(
+        "Print the first financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
+    interstockParser.addArgument("--getJsonFinanceOpinionsPolarity").help(
+        "Print the first financial opinion in JSON Interstock dataset into positive and negative categories.\n");
+    interstockParser.addArgument("--getJsonFinanceAllOpinionsBinary").help(
+        "Print every financial opinion from each document in JSON Interstock dataset into subjective objective categories.\n");
+    interstockParser.addArgument("--getJsonFinanceAllOpinionsPolarity").help(
+        "Print every financial opinion in JSON Interstock dataset into positive and negative categories.\n");
   }
 
   public void loadTimeMLParameters() {
-    this.timemlParser.addArgument("-l", "--language").choices("en", "es", "eu", "it")
-        .required(false).setDefault("es").help("Choose a language.");
+    this.timemlParser.addArgument("-l", "--language")
+        .choices("en", "es", "eu", "it").required(false).setDefault("es")
+        .help("Choose a language.");
     timemlParser.addArgument("--timemlToRawNAF")
         .help("Convert TimemL from Tempeval3 task to Raw NAF layer.\n");
     timemlParser.addArgument("--timemlToCoNLL2002")
@@ -487,12 +530,21 @@ public class CLI {
     clusterParser.addArgument("--lowercase").action(Arguments.storeTrue())
         .help("Lowercase input text.\n");
   }
-  
+
   public void loadDiannParameters() {
     this.diannParser.addArgument("-l", "--language").choices("en", "es")
         .required(true).help("Choose a language.");
-    diannParser.addArgument("--diannToCoNLL02").help("Convert DIANN format into CoNLL 2002.\n");
-    diannParser.addArgument("--addScope").help("Add scope labels after negations in DIANN format.\n");
+    diannParser.addArgument("--diannToCoNLL02")
+        .help("Convert DIANN format into CoNLL 2002.\n");
+    diannParser.addArgument("--addScope")
+        .help("Add scope labels after negations in DIANN format.\n");
+  }
+
+  public void loadTassParameters() {
+    tassParser.addArgument("--generalToTabulated")
+        .help("Converts TASS General Corpus into tabulated format for document classication with ixa-pipe-doc.\n");
+    tassParser.addArgument("--generalToWFs").help("Converts TASS General Corpus into a NAF containing the tokens and the tweeId in the NAF header. One NAF document per tweet.\n");
+    tassParser.addArgument("--nafToGeneralTest").help("Converts NAF containing polarity classification in Topics element into TASS General Corpus test format\n.");
   }
 
   public void loadMarkytParameters() {
@@ -506,8 +558,10 @@ public class CLI {
         "Convert BARR 2017 document file format to tokenized WF NAF layer.\n");
     markytParser.addArgument("--nafToBARR").help(
         "Convert NAF containing entities into BARR 2017 prediction format.\n");
-    markytParser.addArgument("--diannToCoNLL").help("Convert DIANN format into CoNLL 2002.\n");
-    markytParser.addArgument("--addScope").help("Add scope labels after negations in DIANN format.\n");
+    markytParser.addArgument("--diannToCoNLL")
+        .help("Convert DIANN format into CoNLL 2002.\n");
+    markytParser.addArgument("--addScope")
+        .help("Add scope labels after negations in DIANN format.\n");
   }
 
   public void loadTreebankParameters() {
