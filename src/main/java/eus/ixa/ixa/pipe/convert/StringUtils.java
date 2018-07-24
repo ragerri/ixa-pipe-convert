@@ -17,12 +17,18 @@ package eus.ixa.ixa.pipe.convert;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.google.common.io.Files;
-
+import eus.ixa.ixa.pipe.ml.StatisticalDocumentClassifier;
 import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
 import eus.ixa.ixa.pipe.ml.tok.RuleBasedTokenizer;
 import eus.ixa.ixa.pipe.ml.tok.Token;
@@ -178,7 +184,7 @@ public final class StringUtils {
    */
   public static List<File> getFilesInDir(File inputPath) {
     List<File> fileList = new ArrayList<File>();
-    for (File aFile : Files.fileTreeTraverser().preOrderTraversal(inputPath)) {
+    for (File aFile : com.google.common.io.Files.fileTreeTraverser().preOrderTraversal(inputPath)) {
       if (aFile.isFile()) {
         fileList.add(aFile);
       }
@@ -224,5 +230,59 @@ public final class StringUtils {
     annotateProperties.setProperty("hardParagraph", "no");
     annotateProperties.setProperty("untokenizable", "no");
     return annotateProperties;
+  }
+  
+  public static void classifyDocuments(Path dir, String model, String language) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir)) {
+      classifyDocument(dir, model, language);
+    } // process one file
+    else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            classifyDocuments(dir, model, language);
+          } else {
+            classifyDocument(file, model, language);
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Process a text file containing one tokenized sentence per line
+   * and provides a document class per line.
+   * @param inputFile the file to be processed
+   * @param model the model
+   * @param language the language
+   * @throws IOException if io errors
+   */
+  public static void classifyDocument(Path inputFile, String model, String language)
+      throws IOException {
+    StringBuilder sb = new StringBuilder();
+    List<String> inputLines = com.google.common.io.Files
+        .readLines(new File(inputFile.toString()), Charset.forName("UTF-8"));
+    Properties properties = setDocProperties(model, language, "no");
+    StatisticalDocumentClassifier docClassifier = new StatisticalDocumentClassifier(
+        properties);
+    for (String line : inputLines) {
+      String[] document = line.split(" ");
+      String docClass = docClassifier.classify(document);
+      sb.append(docClass + "\t" + line).append("\n");
+    }
+    Path outfile = Files.createFile(Paths.get(inputFile + ".doc"));
+    Files.write(outfile, sb.toString().getBytes(StandardCharsets.UTF_8));
+    System.err.println(">> Wrote document classifier document to " + outfile);
+  }
+  
+  private static Properties setDocProperties(String model, String language,
+      String clearFeatures) {
+    Properties oteProperties = new Properties();
+    oteProperties.setProperty("model", model);
+    oteProperties.setProperty("language", language);
+    oteProperties.setProperty("clearFeatures", clearFeatures);
+    return oteProperties;
   }
 }

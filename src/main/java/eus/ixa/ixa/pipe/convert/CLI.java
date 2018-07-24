@@ -461,6 +461,11 @@ public class CLI {
       Path lemmaDict = Paths.get((String) fileArgs.get(0));
       Path xmlDict = Paths.get((String) fileArgs.get(1));
       Convert.addLemmaToPOSDict(lemmaDict, xmlDict);
+    } else if (parsedArguments.get("classifyDocuments") != null) {
+      Path inputDir = Paths.get(parsedArguments.getString("classifyDocuments"));
+      String model = parsedArguments.getString("model");
+      String language = parsedArguments.getString("language");
+      StringUtils.classifyDocuments(inputDir, model, language);
     }
   }
 
@@ -628,5 +633,11 @@ public class CLI {
     convertParser.addArgument("--addLemmaDict2POSDict").nargs(2)
         .help("Aggregate a lemmatizer dictionary to a POSTagger OpenNLP "
             + "dictionary: first input is lemmatizer dictionary and second output the XML dictionary to be expanded.\n");
+    convertParser.addArgument("--classifyDocuments")
+        .help("Classify documents in a file where each document is a line.\n");
+    convertParser.addArgument("-l", "--language").choices("eu", "en", "es")
+        .required(false).help("Choose a language.");
+    convertParser.addArgument("-m", "--model").required(false)
+        .help("Choose a model.");
   }
 }
