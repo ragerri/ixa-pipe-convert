@@ -66,6 +66,7 @@ public class CLI {
    * The parser that manages the absa sub-command.
    */
   private final Subparser absaParser;
+  private final Subparser hyperPartisanParser;
   /**
    * The parser to manage Interstock JSON data.
    */
@@ -108,6 +109,7 @@ public class CLI {
   private final Subparser convertParser;
 
   private static final String ABSA_CONVERSOR_NAME = "absa";
+  private static final String HYPERPARTISAN_CONVERSOR_NAME = "hyperpartisan";
   private static final String INTERSTOCK_CONVERSOR_NAME = "interstock";
   private static final String TIMEML_CONVERSOR_NAME = "timeml";
   private static final String CLUSTER_CONVERSOR_NAME = "cluster";
@@ -126,6 +128,8 @@ public class CLI {
     absaParser = subParsers.addParser(ABSA_CONVERSOR_NAME)
         .help("ABSA tasks at SemEval conversion functions.");
     loadAbsaParameters();
+    hyperPartisanParser = subParsers.addParser(HYPERPARTISAN_CONVERSOR_NAME).help("HyperPartisan task at Semeval");
+    loadHyperPartisanParameters();
     interstockParser = subParsers.addParser(INTERSTOCK_CONVERSOR_NAME)
         .help("Interstock data conversion functions.");
     loadInterstockParameters();
@@ -184,6 +188,9 @@ public class CLI {
       case ABSA_CONVERSOR_NAME:
         absa();
         break;
+      case HYPERPARTISAN_CONVERSOR_NAME:
+        hyperpartisan();
+        break;
       case INTERSTOCK_CONVERSOR_NAME:
         interstock();
         break;
@@ -218,7 +225,7 @@ public class CLI {
     } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.out.println("Run java -jar target/ixa-pipe-convert-" + version
-          + "-exec.jar (absa|interstock|timeml|cluster|diann|markyt|treebank|naf|epec|convert) -help for details");
+          + "-exec.jar (absa|hyperpartisan|interstock|timeml|cluster|diann|markyt|treebank|naf|epec|convert) -help for details");
       System.exit(1);
     }
   }
@@ -268,6 +275,17 @@ public class CLI {
       AbsaSemEval.absa2014PrintTargets(inputNAF, language);
     }
   }
+  
+  public final void hyperpartisan() throws IOException {
+
+    if (parsedArguments.get("hyperPartisanToTrainDoc") != null) {
+      Path inputFile = Paths
+          .get(parsedArguments.getString("hyperPartisanToTrainDoc"));
+      Path truthFile = Paths.get(parsedArguments.getString("truthFile"));
+      HyperPartisan.hyperPartisanToTrainDoc(inputFile, truthFile);
+    }
+    }
+
 
   public final void interstock() throws IOException {
     if (parsedArguments.get("getJsonFinanceBinaryDataset") != null) {
@@ -493,6 +511,13 @@ public class CLI {
         .help("Print all targets in ABSA 2014 dataset.\n");
     absaParser.addArgument("--yelpGetText")
         .help("Extract text attribute from JSON yelp dataset");
+  }
+  
+  public void loadHyperPartisanParameters() {
+    hyperPartisanParser.addArgument("--hyperPartisanToTrainDoc")
+        .help("Document file to convert HyperPartisanNews for Document Classification.\n");
+    hyperPartisanParser.addArgument("--truthFile")
+        .help("Ground truth file to convert HyperPartisanNews 2019 for Document Classification.");
   }
 
   public void loadInterstockParameters() {
