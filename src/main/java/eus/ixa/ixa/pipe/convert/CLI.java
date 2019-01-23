@@ -17,6 +17,8 @@
 package eus.ixa.ixa.pipe.convert;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -283,9 +285,12 @@ public class CLI {
           .get(parsedArguments.getString("hyperPartisanToTrainDoc"));
       Path truthFile = Paths.get(parsedArguments.getString("truthFile"));
       HyperPartisan.hyperPartisanToTrainDoc(inputFile, truthFile);
+    } else if (parsedArguments.get("hyperPartisanTest") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("hyperPartisanTest"));
+      String inputModel = parsedArguments.getString("model");
+      System.out.print(HyperPartisan.hyperPartisanToTest(inputFile, inputModel));
     }
-    }
-
+  }
 
   public final void interstock() throws IOException {
     if (parsedArguments.get("getJsonFinanceBinaryDataset") != null) {
@@ -518,6 +523,9 @@ public class CLI {
         .help("Document file to convert HyperPartisanNews for Document Classification.\n");
     hyperPartisanParser.addArgument("--truthFile")
         .help("Ground truth file to convert HyperPartisanNews 2019 for Document Classification.");
+    hyperPartisanParser.addArgument("--hyperPartisanTest")
+        .help("Process test file from HyperPartisanNews task.\n");
+    hyperPartisanParser.addArgument("--model");
   }
 
   public void loadInterstockParameters() {
