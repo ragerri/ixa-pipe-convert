@@ -56,7 +56,7 @@ public class HyperPartisan {
         String articleTitle = articles.get(i).getAttributeValue("title");
         String sourceUrl = articlesTruth.get(i).getAttributeValue("url");
         String date = articles.get(i).getAttributeValue("published-at");
-        System.out.println(articleTruth + "\t" + sb.toString());
+        System.out.println(articleTruth + "\t" + articleTitle + " " + sb.toString() + "\t" + sourceUrl);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
