@@ -30,6 +30,8 @@ import eus.ixa.ixa.pipe.ml.tok.Token;
 import ixa.kaflib.KAFDocument;
 
 public class HyperPartisan {
+  
+  private static final Pattern htmlPattern = Pattern.compile("<.*?>");
                                                                                                                                                                                                                                                                                                                                             
   private HyperPartisan() {
   }
@@ -55,17 +57,25 @@ public class HyperPartisan {
         StringWriter sw = new StringWriter();
         outp.output(articles.get(i).getContent(), sw);
         StringBuffer sb = sw.getBuffer();
+        String documentText = htmlPattern.matcher(sb.toString()).replaceAll("");
         //obtain rest of elements
         String articleTruth = articlesTruth.get(i).getAttributeValue("hyperpartisan");
         String articleTitle = articles.get(i).getAttributeValue("title");
         String sourceUrl = articlesTruth.get(i).getAttributeValue("url");
-        String date = articles.get(i).getAttributeValue("published-at");
-        System.out.println(articleTruth + "\t" + articleTitle + " " + sb.toString() + "\t" + sourceUrl);
+        //tokenizing the document
+        List<List<Token>> tokenizedContent = StringUtils
+            .tokenizeSentence(documentText + " " + articleTitle, "en");
+        StringBuilder tokenizedText = new StringBuilder();
+        for (List<Token> sentence : tokenizedContent) {
+          for (Token token : sentence) {
+            tokenizedText.append(token).append(" ");
+          }
+        }
+        System.out.println(articleTruth + "\t" + tokenizedText + "\t" + sourceUrl);
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
     }
-    //return sb.toString();
   }
   
   public static String hyperPartisanToTest(Path textXML, String model) throws IOException {
@@ -86,10 +96,20 @@ public class HyperPartisan {
         StringWriter sw = new StringWriter();
         outp.output(article.getContent(), sw);
         StringBuffer sb = sw.getBuffer();
+        String documentText = htmlPattern.matcher(sb.toString()).replaceAll("");
         //obtain rest of elements
         String articleId = article.getAttributeValue("id");
         String articleTitle = article.getAttributeValue("title");
-        outputText.append(articleId).append("\t").append(articleTitle).append(" ").append(sb.toString()).append("\n");
+        //tokenizing the document
+        List<List<Token>> tokenizedContent = StringUtils
+            .tokenizeSentence(documentText + " " + articleTitle, "en");
+        StringBuilder tokenizedText = new StringBuilder();
+        for (List<Token> sentence : tokenizedContent) {
+          for (Token token : sentence) {
+            tokenizedText.append(token).append(" ");
+          }
+        }
+        outputText.append(articleId).append("\t").append(tokenizedText.toString()).append("\n");
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
