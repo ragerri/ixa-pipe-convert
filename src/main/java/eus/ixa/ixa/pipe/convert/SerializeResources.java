@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -203,7 +204,7 @@ public class SerializeResources {
     Map<List<String>, String> dictMap = new HashMap<List<String>, String>();
     InputStream inputStream = CmdLineUtil.openInFile(lemmaDict.toFile());
     BufferedReader breader = new BufferedReader(
-        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+        new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     String line;
     while ((line = breader.readLine()) != null) {
       final String[] elems = tabPattern.split(line);

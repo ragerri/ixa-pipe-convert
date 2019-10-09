@@ -471,7 +471,12 @@ public class CLI {
   }
 
   public final void convert() throws IOException {
-    if (parsedArguments.getString("createMonosemicDictionary") != null) {
+    if (parsedArguments.getString("convertToUTF8") != null) {
+      Path inputDir = Paths
+              .get(parsedArguments.getString("convertToUTF8"));
+      Convert.unicodeForDirectories(inputDir, false);
+    }
+    else if (parsedArguments.getString("createMonosemicDictionary") != null) {
       Path inputDir = Paths
           .get(parsedArguments.getString("createMonosemicDictionary"));
       Convert.createMonosemicDictionary(inputDir);
@@ -658,6 +663,7 @@ public class CLI {
   }
 
   public void loadConvertParameters() {
+    convertParser.addArgument("--convertToUTF8").help("Convert texts to UTF-8.\n");
     convertParser.addArgument("--createMonosemicDictionary")
         .help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     convertParser.addArgument("--createPOSDictionary")

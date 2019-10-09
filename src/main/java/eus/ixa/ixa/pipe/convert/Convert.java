@@ -388,15 +388,15 @@ public class Convert {
   /**
    * Do not print a sentence if is less than 90% lowercase.
    * 
-   * @param sentences
-   *          the list of sentences
+   * @param inFile
+   *          the input file
    * @throws IOException
    */
   private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
     InputStream inputStream = CmdLineUtil.openInFile(inFile.toFile());
     BufferedReader breader = new BufferedReader(
-        new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+        new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     String line;
     while ((line = breader.readLine()) != null) {
       double lowercaseCounter = 0;
@@ -429,8 +429,8 @@ public class Convert {
    * Takes a text file and put the contents in a NAF document. It creates the WF
    * elements.
    * 
-   * @param inputFile
-   * @throws IOException
+   * @param inputFile the input file
+   * @throws IOException if io errors
    */
   public static void textToNAF(final Path inputFile) throws IOException {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
@@ -456,6 +456,47 @@ public class Convert {
         }
       }
     }
+  }
+
+  public static void unicodeForDirectories(Path dir, boolean lowercase)
+          throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir)) {
+      unicodeForFiles(dir, lowercase);
+    } else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            unicodeForDirectories(file, lowercase);
+          } else {
+            unicodeForFiles(file, lowercase);
+          }
+        }
+      }
+    }
+  }
+
+  public static void unicodeForFiles(Path inputFile, boolean lowercase)
+          throws IOException {
+
+    StringBuilder sb = new StringBuilder();
+    InputStream inputStream = CmdLineUtil.openInFile(inputFile.toFile());
+    BufferedReader breader = new BufferedReader(
+            new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+    String line;
+    while ((line = breader.readLine()) != null) {
+      if (lowercase) {
+        line = line.toLowerCase();
+      }
+      sb.append(line).append("\n");
+    }
+    String outputFile = inputFile.toRealPath().toString() + ".utf8";
+    Path outfile = Files.createFile(Paths.get(outputFile));
+    Files.write(outfile,
+            sb.toString().getBytes(StandardCharsets.UTF_8));
+    System.err.println("-> File converted to " + outputFile);
+    breader.close();
   }
 
 }
