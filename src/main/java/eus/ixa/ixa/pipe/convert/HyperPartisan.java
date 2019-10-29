@@ -32,7 +32,7 @@ import ixa.kaflib.KAFDocument;
 public class HyperPartisan {
   
   private static final Pattern htmlPattern = Pattern.compile("<.*?>");
-  private static boolean tokenize = False;
+  private static boolean tokenize = false;
                                                                                                                                                                                                                                                                                                                                             
   private HyperPartisan() {
   }
