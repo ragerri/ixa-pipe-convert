@@ -32,6 +32,7 @@ import ixa.kaflib.KAFDocument;
 public class HyperPartisan {
   
   private static final Pattern htmlPattern = Pattern.compile("<.*?>");
+  private static boolean tokenize = False;
                                                                                                                                                                                                                                                                                                                                             
   private HyperPartisan() {
   }
@@ -62,16 +63,21 @@ public class HyperPartisan {
         String articleTruth = articlesTruth.get(i).getAttributeValue("hyperpartisan");
         String articleTitle = articles.get(i).getAttributeValue("title");
         String sourceUrl = articlesTruth.get(i).getAttributeValue("url");
-        //tokenizing the document
-        List<List<Token>> tokenizedContent = StringUtils
-            .tokenizeSentence(documentText + " " + articleTitle, "en");
-        StringBuilder tokenizedText = new StringBuilder();
-        for (List<Token> sentence : tokenizedContent) {
-          for (Token token : sentence) {
-            tokenizedText.append(token).append(" ");
+        if (tokenize) {
+          //tokenizing the document
+          List<List<Token>> tokenizedContent = StringUtils
+                  .tokenizeSentence(documentText + " " + articleTitle, "en");
+          StringBuilder tokenizedText = new StringBuilder();
+          for (List<Token> sentence : tokenizedContent) {
+            for (Token token : sentence) {
+              tokenizedText.append(token).append(" ");
+            }
           }
+          System.out.println(articleTruth + "\t" + tokenizedText + "\t" + sourceUrl);
         }
-        System.out.println(articleTruth + "\t" + tokenizedText + "\t" + sourceUrl);
+        else {
+          System.out.println(articleTruth + "\t" + documentText + " " + articleTitle);
+        }
       }
     } catch (JDOMException | IOException e) {
       e.printStackTrace();
