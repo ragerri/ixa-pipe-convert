@@ -74,20 +74,19 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class AncoraTreebankReader extends DefaultHandler {
 
-  List<String> constituents = new ArrayList<String>();
+  List<String> constituents = new ArrayList<>();
 
   /**
    * Process the ancora constituent XML annotation into Penn Treebank bracketing
    * style.
    * 
    * @param inXML
-   *          the ancora xml constituent document
-   * @return the ancora trees in penn treebank one line format
+   *          the ancora xml constituent document to be converted into ancora trees in penn treebank one line format
    * @throws IOException
    *           if io exception
    */
   public static void ancora2treebank(Path inXML) throws IOException {
-    String filteredTrees = null;
+    String filteredTrees;
     if (Files.isRegularFile(inXML)) {
       Path outfile = Paths.get(inXML.toString() + ".th");
       System.err
@@ -104,13 +103,11 @@ public class AncoraTreebankReader extends DefaultHandler {
         // format correctly closing brackets
         filteredTrees = filteredTrees.replace(") )", "))");
         // remove double spaces
-        filteredTrees = filteredTrees.replaceAll("  ", " ");
+        filteredTrees = filteredTrees.replaceAll(" {2}", " ");
         // remove empty sentences created by <sentence title="yes"> elements
         filteredTrees = filteredTrees.replaceAll("\\(SENTENCE \\)\n", "");
         Files.write(outfile, filteredTrees.getBytes(StandardCharsets.UTF_8));
-      } catch (ParserConfigurationException e) {
-        e.printStackTrace();
-      } catch (SAXException e) {
+      } catch (ParserConfigurationException | SAXException e) {
         e.printStackTrace();
       }
     } else {
@@ -164,7 +161,7 @@ public class AncoraTreebankReader extends DefaultHandler {
 
   // this method is called every time the parser gets an open tag '<'
   public void startElement(String uri, String localName, String qName,
-      Attributes attributes) throws SAXException {
+      Attributes attributes) {
 
     // do not print/use these elements/constituents
     if (!qName.equals("article") && !qName.equals("spec")) {
@@ -196,8 +193,7 @@ public class AncoraTreebankReader extends DefaultHandler {
   }
 
   // calls by the parser whenever '>' end tag is found in xml
-  public void endElement(String uri, String localName, String qName)
-      throws SAXException {
+  public void endElement(String uri, String localName, String qName) {
 
     // do not close or use these elements
     if (!qName.equals("article") && !qName.equals("spec")) {

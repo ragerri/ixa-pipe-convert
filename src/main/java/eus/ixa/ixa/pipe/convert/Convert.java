@@ -16,12 +16,16 @@
 
 package eus.ixa.ixa.pipe.convert;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
+import ixa.kaflib.Entity;
+import ixa.kaflib.KAFDocument;
+import ixa.kaflib.WF;
+import opennlp.tools.cmdline.CmdLineUtil;
+import opennlp.tools.postag.POSDictionary;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -31,16 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-
-import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
-import ixa.kaflib.Entity;
-import ixa.kaflib.KAFDocument;
-import ixa.kaflib.WF;
-import opennlp.tools.cmdline.CmdLineUtil;
-import opennlp.tools.postag.POSDictionary;
 
 /**
  * Convert functions.
@@ -90,11 +84,9 @@ public class Convert {
    * 
    * @param inFile
    *          the NAF document
-   * @throws IOException
-   *           if io problems
    */
   private static void removeEntityLayer(Path inFile) {
-    KAFDocument kaf = null;
+    KAFDocument kaf;
     try {
       Path outfile = Files
           .createFile(Paths.get(inFile.toString() + ".tok.naf"));
@@ -141,8 +133,6 @@ public class Convert {
    * 
    * @param inFile
    *          the NAF document
-   * @throws IOException
-   *           if io problems
    */
   public static void printEntities(Path inFile) {
     KAFDocument kaf = null;
@@ -155,6 +145,7 @@ public class Convert {
     for (Entity entity : entityList) {
       System.out.println(entity.getStr() + "\t" + entity.getType());
     }*/
+    assert kaf != null;
     List<List<WF>> tokenList = kaf.getSentences();
     for (List<WF> sentence : tokenList) {
       StringBuilder sb = new StringBuilder();
@@ -193,8 +184,6 @@ public class Convert {
    * 
    * @param inFile
    *          the NAF document
-   * @throws IOException
-   *           if io problems
    */
   public static void printNEDEntities(Path inFile) {
     KAFDocument kaf = null;
@@ -203,6 +192,7 @@ public class Convert {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    assert kaf != null;
     List<Entity> entityList = kaf.getEntities();
     for (Entity entity : entityList) {
       if (entity.getExternalRefs().size() > 0)
@@ -233,7 +223,7 @@ public class Convert {
   }
 
   private static void getMonosemicDict(List<String> inputLines) {
-    Map<String, String> monosemicMap = new HashMap<String, String>();
+    Map<String, String> monosemicMap = new HashMap<>();
     ListMultimap<String, String> dictMultiMap = ArrayListMultimap.create();
     for (String line : inputLines) {
       String[] lineArray = line.split("\t");
@@ -390,7 +380,7 @@ public class Convert {
    * 
    * @param inFile
    *          the input file
-   * @throws IOException
+   * @throws IOException if io problems
    */
   private static void brownCleanUpperCase(Path inFile) throws IOException {
     StringBuilder precleantext = new StringBuilder();
@@ -403,9 +393,7 @@ public class Convert {
       StringBuilder sb = new StringBuilder();
       String[] lineArray = line.split(" ");
       for (String word : lineArray) {
-        if (lineArray.length > 0) {
-          sb.append(word);
-        }
+        sb.append(word);
       }
       char[] lineCharArray = sb.toString().toCharArray();
       for (char lineArr : lineCharArray) {

@@ -142,7 +142,7 @@ public class AbsaSemEval {
                   List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
                   ixa.kaflib.Span<Term> neSpan = KAFDocument
                       .newTermSpan(nameTerms);
-                  List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+                  List<ixa.kaflib.Span<Term>> references = new ArrayList<>();
                   references.add(neSpan);
                   Entity neEntity = kaf.newEntity(references);
                   neEntity.setType(category);
@@ -160,8 +160,7 @@ public class AbsaSemEval {
   public static String absa2015ToCoNLL2002(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     absa2015ToNAFNER(kaf, fileName, language);
-    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
-    return conllFile;
+    return ConllUtils.nafToCoNLLConvert2002(kaf);
   }
 
   public static String absa2015ToWFs(String fileName, String language) {
@@ -199,8 +198,8 @@ public class AbsaSemEval {
       String language, int windowMin, int windowMax) {
     SAXBuilder sax = new SAXBuilder();
     XPathFactory xFactory = XPathFactory.instance();
-    Document doc = null;
-    String text = "";
+    Document doc;
+    StringBuilder text = new StringBuilder();
 
     try {
       doc = sax.build(fileName);
@@ -222,7 +221,7 @@ public class AbsaSemEval {
 
           for (Element opinion : opinionList) {
 
-            String sentString = "";
+            StringBuilder sentString = new StringBuilder();
 
             String targetString = opinion.getAttributeValue("target");
             String polarityString = opinion.getAttributeValue("polarity");
@@ -230,9 +229,8 @@ public class AbsaSemEval {
             if (targetString.equalsIgnoreCase("NULL")
                 || opinionList.size() == 1) {
               for (Token token : sentence) {
-                sentString += token.getTokenValue() + " ";
+                sentString.append(token.getTokenValue()).append(" ");
               }
-              text += polarityString + "\t" + sentString + "\n";
             } else {
               int posTargetMin = -1;
               int posTargetMax = -1;
@@ -264,10 +262,10 @@ public class AbsaSemEval {
               } else
                 posTargetMax = sentence.size() - 1;
               for (int x = posTargetMin; x <= posTargetMax; x++) {
-                sentString += sentence.get(x).getTokenValue() + " ";
+                sentString.append(sentence.get(x).getTokenValue()).append(" ");
               }
-              text += polarityString + "\t" + sentString + "\n";
             }
+            text.append(polarityString).append("\t").append(sentString).append("\n");
           }
 
         }
@@ -276,7 +274,7 @@ public class AbsaSemEval {
       e.printStackTrace();
     }
 
-    return text;
+    return text.toString();
   }
 
   public static String nafToAbsa2015(String inputNAF) throws IOException {
@@ -359,7 +357,7 @@ public class AbsaSemEval {
 
   private static List<List<WF>> getSentencesByReview(KAFDocument kaf,
       String reviewId) {
-    List<List<WF>> sentsByReview = new ArrayList<List<WF>>();
+    List<List<WF>> sentsByReview = new ArrayList<>();
     for (List<WF> sent : kaf.getSentences()) {
       if (sent.get(0).getXpath().split(":")[0].equalsIgnoreCase(reviewId)) {
         sentsByReview.add(sent);
@@ -419,7 +417,7 @@ public class AbsaSemEval {
             WF wf = kaf.newWF(token.startOffset(), token.getTokenValue(),
                 counter);
             wf.setXpath(sentId);
-            final List<WF> wfTarget = new ArrayList<WF>();
+            final List<WF> wfTarget = new ArrayList<>();
             wfTarget.add(wf);
             wfFromOffsets.add(wf.getOffset());
             wfToOffsets.add(wf.getOffset() + wf.getLength());
@@ -474,7 +472,7 @@ public class AbsaSemEval {
                   List<Term> nameTerms = kaf.getTermsFromWFs(wfIds);
                   ixa.kaflib.Span<Term> neSpan = KAFDocument
                       .newTermSpan(nameTerms);
-                  List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
+                  List<ixa.kaflib.Span<Term>> references = new ArrayList<>();
                   references.add(neSpan);
                   Entity neEntity = kaf.newEntity(references);
                   neEntity.setType("term");
@@ -492,8 +490,7 @@ public class AbsaSemEval {
   public static String absa2014ToCoNLL2002(String fileName, String language) {
     KAFDocument kaf = new KAFDocument("en", "v1.naf");
     absa2014ToNAFNER(kaf, fileName, language);
-    String conllFile = ConllUtils.nafToCoNLLConvert2002(kaf);
-    return conllFile;
+    return ConllUtils.nafToCoNLLConvert2002(kaf);
   }
 
   public static String nafToAbsa2014(String kafDocument) {
@@ -508,6 +505,7 @@ public class AbsaSemEval {
     Element sentencesElem = new Element("sentences");
     Document doc = new Document(sentencesElem);
 
+    assert kaf != null;
     for (List<WF> sent : kaf.getSentences()) {
       String sentId = sent.get(0).getXpath();
       Integer sentNumber = sent.get(0).getSent();
