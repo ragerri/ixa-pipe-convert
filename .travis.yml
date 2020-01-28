@@ -9,9 +9,9 @@ cache:
     - $HOME/.m2
 
 before_install:
-  - wget http://apache.rediris.es/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz
-  - tar xf apache-maven-3.6.2-bin.tar.gz
-  - export M2_HOME=$PWD/apache-maven-3.6.2
+  - wget http://mirrors.ae-online.de/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+  - tar xf apache-maven-3.3.9-bin.tar.gz
+  - export M2_HOME=$PWD/apache-maven-3.3.9
   - export PATH=$M2_HOME/bin:$PATH
 
 script: mvn clean install
