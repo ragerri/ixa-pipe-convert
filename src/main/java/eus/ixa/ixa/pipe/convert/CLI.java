@@ -475,8 +475,11 @@ public class CLI {
       Path inputDir = Paths
               .get(parsedArguments.getString("convertToUTF8"));
       Convert.unicodeForDirectories(inputDir, false);
-    }
-    else if (parsedArguments.getString("createMonosemicDictionary") != null) {
+    } else if (parsedArguments.getString("getSES") != null) {
+      Path inputFile = Paths.get(parsedArguments.getString("getSES"));
+      String conllSesCorpus = Convert.getSES(inputFile);
+      System.out.print(conllSesCorpus);
+    } else if (parsedArguments.getString("createMonosemicDictionary") != null) {
       Path inputDir = Paths
           .get(parsedArguments.getString("createMonosemicDictionary"));
       Convert.createMonosemicDictionary(inputDir);
@@ -664,6 +667,7 @@ public class CLI {
 
   public void loadConvertParameters() {
     convertParser.addArgument("--convertToUTF8").help("Convert texts to UTF-8.\n");
+    convertParser.addArgument("--getSES").help("Convert lemmas to SES.\n");
     convertParser.addArgument("--createMonosemicDictionary")
         .help("Create monosemic dictionary from a lemmatizer dictionary.\n");
     convertParser.addArgument("--createPOSDictionary")

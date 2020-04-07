@@ -19,6 +19,7 @@ package eus.ixa.ixa.pipe.convert;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
+import eus.ixa.ixa.pipe.ml.utils.StringUtils;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
 import ixa.kaflib.WF;
@@ -199,6 +200,34 @@ public class Convert {
         System.out.println(entity.getExternalRefs().get(0).getReference());
     }
   }
+
+  /**
+   *G et the SES required to go from a word to a lemma.
+   * @param inputFile a file containing word and lemma in tabulated format
+   * @throws IOException if io problems
+   */
+  public static String getSES(Path inputFile) throws IOException {
+    // process one file
+    StringBuilder sb = new StringBuilder();
+    if (Files.isRegularFile(inputFile)) {
+      List<String> inputLines = Files.readAllLines(inputFile,
+              StandardCharsets.UTF_8);
+      for (String line : inputLines) {
+        String[] lineArray = line.split("\t");
+        if (lineArray.length == 3) {
+          String ses = StringUtils.getShortestEditScript(lineArray[0].toLowerCase(), lineArray[2]);
+          sb.append(lineArray[0]).append("\t").append(lineArray[1]).append("\t").append(ses).append("\n");
+        } else if (lineArray.length == 1) {
+          sb.append("\n");
+        }
+      }
+    } else {
+      System.out.println("Please choose a valid file as input.");
+      System.exit(1);
+    }
+    return sb.toString();
+  }
+
 
   /**
    * Convert a lemma dictionary (word lemma postag) into a
