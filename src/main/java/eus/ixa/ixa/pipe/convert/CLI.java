@@ -442,6 +442,9 @@ public class CLI {
     } else if (parsedArguments.get("nafToCoNLL03") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("nafToCoNLL03"));
       ConllUtils.nafToCoNLL2003(inputDir);
+    } else if (parsedArguments.getString("printTerm") != null) {
+      Path inputDir = Paths.get(parsedArguments.getString("printTerm"));
+      Convert.getTermsFromNAF(inputDir);
     } else if (parsedArguments.getString("printNER") != null) {
       Path inputDir = Paths.get(parsedArguments.getString("printNER"));
       Convert.getNERFromNAF(inputDir);
@@ -647,7 +650,8 @@ public class CLI {
         .help("Filter Name Entity types.\n");
     nafParser.addArgument("--neTypes").help(
         "Choose named entity type to use with the --filterNameTypes option.\n");
-
+    nafParser.addArgument("--printTerm")
+            .help("Prints terms available in NAF.\n");
     nafParser.addArgument("--printNER")
         .help("Prints named entity string if NER available in NAF.\n");
     nafParser.addArgument("--printNED")

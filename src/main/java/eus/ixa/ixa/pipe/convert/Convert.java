@@ -22,6 +22,7 @@ import eus.ixa.ixa.pipe.ml.tok.RuleBasedSegmenter;
 import eus.ixa.ixa.pipe.ml.utils.StringUtils;
 import ixa.kaflib.Entity;
 import ixa.kaflib.KAFDocument;
+import ixa.kaflib.Term;
 import ixa.kaflib.WF;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSDictionary;
@@ -104,7 +105,62 @@ public class Convert {
   }
 
   /**
-   * Extract entities that contain a link to an external resource in NAF.
+   * Extract entities in NAF.
+   *
+   * @param dir
+   *          the directory containing the NAF documents
+   * @throws IOException
+   *           if io problems
+   */
+  public static void getTermsFromNAF(Path dir) throws IOException {
+    // process one file
+    if (Files.isRegularFile(dir)) {
+      printTerms(dir);
+    } else {
+      // recursively process directories
+      try (DirectoryStream<Path> filesDir = Files.newDirectoryStream(dir)) {
+        for (Path file : filesDir) {
+          if (Files.isDirectory(file)) {
+            getTermsFromNAF(file);
+          } else {
+            printTerms(file);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Print terms in NAF.
+   *
+   * @param inFile
+   *          the NAF document
+   */
+  public static void printTerms(Path inFile) {
+    KAFDocument kaf = null;
+    try {
+      kaf = KAFDocument.createFromFile(inFile.toFile());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    List<Term> termList = kaf.getTerms();
+    for (Term term : termList) {
+      System.out.println(term.getForm() + "\t" + term.getMorphofeat() + "\t" + term.getLemma());
+    }
+    //assert kaf != null;
+    /*List<List<WF>> tokenList = kaf.getSentences();
+    for (List<WF> sentence : tokenList) {
+      StringBuilder sb = new StringBuilder();
+      for (WF wf : sentence) {
+        sb.append(wf.getForm()).append(" ");
+      }
+      System.out.println(sb.toString());
+    }*/
+  }
+
+
+  /**
+   * Extract entities in NAF.
    * 
    * @param dir
    *          the directory containing the NAF documents
@@ -130,7 +186,7 @@ public class Convert {
   }
 
   /**
-   * Print entities that contain an external resource link in NAF.
+   * Print entities in NAF.
    * 
    * @param inFile
    *          the NAF document
