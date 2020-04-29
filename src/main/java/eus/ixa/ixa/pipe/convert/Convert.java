@@ -33,6 +33,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,19 +144,19 @@ public class Convert {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    List<Term> termList = kaf.getTerms();
-    for (Term term : termList) {
-      System.out.println(term.getForm() + "\t" + term.getMorphofeat() + "\t" + term.getLemma());
-    }
-    //assert kaf != null;
-    /*List<List<WF>> tokenList = kaf.getSentences();
-    for (List<WF> sentence : tokenList) {
-      StringBuilder sb = new StringBuilder();
-      for (WF wf : sentence) {
-        sb.append(wf.getForm()).append(" ");
+    assert kaf != null;
+    final List<List<WF>> sentences = kaf.getSentences();
+    for (final List<WF> wfs : sentences) {
+      final List<String> wfIds = new ArrayList<>();
+      for (int i = 0; i < wfs.size(); i++) {
+        wfIds.add(wfs.get(i).getId());
       }
-      System.out.println(sb.toString());
-    }*/
+      List<Term> termList = kaf.getTermsFromWFs(wfIds);
+      for (Term term : termList) {
+        System.out.println(term.getForm() + "\t" + term.getMorphofeat() + "\t" + term.getLemma());
+      }
+      System.out.println();
+    }
   }
 
 
