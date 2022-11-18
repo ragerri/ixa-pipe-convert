@@ -272,7 +272,7 @@ public class Convert {
       for (String line : inputLines) {
         String[] lineArray = line.split("\t");
         if (lineArray.length == 3) {
-          String ses = StringUtils.getShortestEditScript(lineArray[0].toLowerCase(), lineArray[2]);
+          String ses = StringUtils.getShortestEditScript(lineArray[0], lineArray[2]);
           sb.append(lineArray[0]).append("\t").append(lineArray[1]).append("\t").append(ses).append("\n");
         } else if (lineArray.length == 1) {
           sb.append("\n");
